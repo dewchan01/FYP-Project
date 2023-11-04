@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { configureChains,createClient, WagmiConfig  } from 'wagmi';
-import { mainnet, polygonMumbai } from 'wagmi/chains';
+import { mainnet, polygonMumbai } from '@wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 

@@ -99,6 +99,7 @@ function App() {
                   address={address}
                   name={name}
                   balance={balance}
+                  getNameAndBalance = {getNameAndBalance}
                 />
               </div>
               <div className="secondColumn">

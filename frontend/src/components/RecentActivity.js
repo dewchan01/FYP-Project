@@ -71,7 +71,7 @@ const dataSource = [
 
 const columns = [
   {
-    title: "Payment Subjet",
+    title: "Payment Subject",
     dataIndex: "subject",
     key: "subject",
   },

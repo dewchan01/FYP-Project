@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { DollarOutlined, SwapOutlined } from "@ant-design/icons";
 import { Modal, Input, InputNumber } from "antd";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction  } from "wagmi";
-import { polygonMumbai } from "wagmi/chains";
-import ABI from "../Payment.json";
+import { polygonMumbai } from "@wagmi/chains";
+import PaymentABI from "../Payment.json";
+import DSGDABI from "../DSGDToken.json";
 
 function RequestAndPay({ requests, getNameAndBalance }) {
 
@@ -18,12 +19,12 @@ function RequestAndPay({ requests, getNameAndBalance }) {
   const { config } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
     address: "0x45aC5d28bd2a83E62F8132D958047027CC93a91c",
-    abi: ABI,
+    abi: PaymentABI,
     functionName: "payRequest",
     args: [0],
-    overrides: {
-      value: String(Number(requests["1"][0] * 1e18)),
-    },
+    // overrides: {
+    //   value: String(Number(requests["1"][0])),
+    // },
   });
 
   const { write, data } = useContractWrite(config);
@@ -31,13 +32,22 @@ function RequestAndPay({ requests, getNameAndBalance }) {
   const { config: configRequest } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
     address: "0x45aC5d28bd2a83E62F8132D958047027CC93a91c",
-    abi: ABI,
+    abi: PaymentABI,
     functionName: "createRequest",
-    args: [requestAddress, requestAmount, requestMessage],
+    args: [requestAddress, String(requestAmount*(10**18)), requestMessage],
   });
 
   const { write: writeRequest, data: dataRequest } = useContractWrite(configRequest);
 
+  const { config: configApprove } = usePrepareContractWrite({
+    chainId: polygonMumbai.id,
+    address: "0x5a02b2051203c2baFb143F5B396A8b7D46Ecc022",
+    abi: DSGDABI,
+    functionName: "approve",
+    args: ["0x45aC5d28bd2a83E62F8132D958047027CC93a91c",String(Number(requests["1"][0]))],
+  });
+
+  const { write: writeApprove, data: dataApprove } = useContractWrite(configApprove);
 
   const { isSuccess } = useWaitForTransaction({
     hash: data?.hash,
@@ -45,6 +55,10 @@ function RequestAndPay({ requests, getNameAndBalance }) {
 
   const { isSuccess: isSuccessRequest } = useWaitForTransaction({
     hash: dataRequest?.hash,
+  })
+
+  const { isSuccess: isSuccessApprove } = useWaitForTransaction({
+    hash: dataApprove?.hash,
   })
 
 
@@ -63,11 +77,11 @@ function RequestAndPay({ requests, getNameAndBalance }) {
   };
 
   useEffect(()=>{
-    if(isSuccess || isSuccessRequest){
+    if(isSuccess || isSuccessRequest || isSuccessApprove){
       getNameAndBalance();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[isSuccess, isSuccessRequest])
+  },[isSuccess, isSuccessRequest, isSuccessApprove])
 
   return (
     <>
@@ -75,6 +89,7 @@ function RequestAndPay({ requests, getNameAndBalance }) {
         title="Confirm Payment"
         open={payModal}
         onOk={() => {
+          writeApprove?.();
           write?.();
           hidePayModal();
         }}
@@ -102,7 +117,7 @@ function RequestAndPay({ requests, getNameAndBalance }) {
         cancelText="Cancel"
       >
         <p>Amount (DSGD)</p>
-        <InputNumber value={requestAmount} onChange={(val)=>setRequestAmount(val*1e18)}/>
+        <InputNumber value={requestAmount} onChange={(val)=>setRequestAmount(val)}/>
         <p>From (address)</p>
         <Input placeholder="0x..." value={requestAddress} onChange={(val)=>setRequestAddress(val.target.value)}/>
         <p>Message</p>

@@ -8,9 +8,11 @@ const port = 3001;
 
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL); // Replace with your Alchemy API key
 
-const contractAddress = process.env.CONTRACT_ADDRESS; // Replace with your smart contract address
-console.debug(contractAddress)
-const contractABI = require("./artifacts/contracts/Payment.sol/Payment.json").abi;
+const PaymentContractAddress = process.env.PAYMENT_CONTRACT_ADDRESS; // Replace with your smart contract address
+const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
+console.debug(PaymentContractAddress)
+const PaymentContractABI = require("./artifacts/contracts/Payment.sol/Payment.json").abi;
+const DSGDTokenContractABI = require("./artifacts/contracts/DSGDToken.sol/DSGDToken.json").abi;
 
 function convertArrayToObjects(arr) {
     if (!Array.isArray(arr)) {
@@ -37,14 +39,15 @@ app.use((_, res, next) => {
 app.get("/getNameAndBalance", async (req, res) => {
   const { userAddress } = req.query;
   // Get the name
-  const getNameFunction = new web3.eth.Contract(contractABI,contractAddress).methods.getMyName(userAddress);
+  const getNameFunction = new web3.eth.Contract(PaymentContractABI,PaymentContractAddress).methods.getMyName(userAddress);
   const name = await getNameFunction.call();
 
   // Get the balance
-  const balance = await web3.eth.getBalance(userAddress);
+  const nativeBalance = await web3.eth.getBalance(userAddress);
+  
 
   // Fetch native balance
-  const balanceInEth = web3.utils.fromWei(balance, "ether");
+  const balanceInEth = web3.utils.fromWei(nativeBalance, "ether");
 
   // Fetch token price (replace with the actual token address)
   const tokenPriceResponse = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=sgd`);
@@ -56,20 +59,22 @@ app.get("/getNameAndBalance", async (req, res) => {
   const balanceInDollars = (balanceInEth * tokenPrice).toFixed(2);
 
   // Fetch transaction history using your smart contract ABI (modify based on your contract)
-  const contract = new web3.eth.Contract(contractABI, contractAddress); // Replace with your contract address
-  const history = await contract.methods.getMyHistory(userAddress).call();
+  const PaymentContract = new web3.eth.Contract(PaymentContractABI, PaymentContractAddress); // Replace with your contract address
+  const history = await PaymentContract.methods.getMyHistory(userAddress).call();
 
   // Fetch user requests using your smart contract ABI (modify based on your contract)
-  const requests = await contract.methods.getMyRequests(userAddress).call();
-
+  const requests = await PaymentContract.methods.getMyRequests(userAddress).call();
+  
+  const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenAddress); // Replace with your contract address
+  const balance = await DSGDTokenContract.methods.balanceOf(userAddress).call();
   // Transform history and requests (modify based on your data structure)
   const jsonResponseHistory = convertArrayToObjects(history);
   const jsonResponseRequests = requests;
 
   const jsonResponse = {
     name,
-    balance,
-    dollars: balanceInDollars,
+    balance:balanceInEth,
+    dollars: String(balance/(1e18)),
     history: jsonResponseHistory, // Modify this to include transaction history
     requests: jsonResponseRequests, // Modify this to include user requests
   };

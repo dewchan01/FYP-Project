@@ -106,7 +106,6 @@ const columns = [
 ];
 
 function RecentActivity({ history }) {
-
   return (
     <Card title="Recent Activity" style={{ width: "100%", minHeight: "663px" }}>
       {history && 

@@ -48,7 +48,22 @@ function App() {
     setDollars(String(response.dollars));
     setHistory(response.history);
     setRequests(response.requests);
+
+    if (window.ethereum) {
+      const ethereum = window.ethereum;
     
+      // Add an event listener to detect account changes
+      ethereum.on('accountsChanged', (accounts) => {
+        // `accounts` is an array of the current accounts
+        const newAccount = accounts[0];
+        // Handle the account change here
+        console.log('MetaMask account changed to:', newAccount);
+    
+        // You can perform any actions or updates in response to the account change here
+        // For example, call your `getNameAndBalance` function
+        disconnectAndSetNull();
+      });
+    }
   }
 
   useEffect(() => {
@@ -93,8 +108,8 @@ function App() {
           {isConnected ? (
             <>
               <div className="firstColumn">
-                <CurrentBalance dollars={dollars} />
-                <RequestAndPay requests={requests} getNameAndBalance={getNameAndBalance}/>
+                <CurrentBalance dollars={dollars} address={address} getNameAndBalance={getNameAndBalance} />
+                <RequestAndPay requests={requests} getNameAndBalance={getNameAndBalance} address={address}/>
                 <AccountDetails
                   address={address}
                   name={name}
@@ -103,7 +118,7 @@ function App() {
                 />
               </div>
               <div className="secondColumn">
-                <RecentActivity history={history} />
+                <RecentActivity history={history}/>
               </div>
             </>
           ) : (

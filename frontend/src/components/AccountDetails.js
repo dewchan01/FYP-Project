@@ -54,12 +54,12 @@ function AccountDetails({ address, name, balance,getNameAndBalance }) {
         <img src={matic} alt="maticLogo" width={25} />
         <div>
           <div className="accountDetailHead"> Native Matic Tokens</div>
-          <div className="accountDetailBody">{balance/(10**18)} Matic</div>
+          <div className="accountDetailBody">{balance} Matic</div>
         </div>
       </div>
       <div className="balanceOptions">
         <div className="extraOption" onClick={() => showUsernameModal()}>Set Username</div>
-        <div className="extraOption">Switch Accounts</div>
+        {/* <div className="extraOption">Switch Accounts</div> */}
       </div>
 
       <Modal

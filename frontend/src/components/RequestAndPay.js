@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { DollarOutlined, SwapOutlined } from "@ant-design/icons";
 import { Modal, Input, InputNumber } from "antd";
-import { usePrepareContractWrite, useContractWrite, useWaitForTransaction  } from "wagmi";
+import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
 import PaymentABI from "../Payment.json";
-import DSGDABI from "../DSGDToken.json";
+import DSGDTokenABI from "../DSGDToken.json";
 
-function RequestAndPay({ requests, getNameAndBalance }) {
+function RequestAndPay({ requests, getNameAndBalance, address }) {
 
   const [payModal, setPayModal] = useState(false);
   const [requestModal, setRequestModal] = useState(false);
@@ -14,7 +14,7 @@ function RequestAndPay({ requests, getNameAndBalance }) {
   const [requestAddress, setRequestAddress] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
 
-  console.log(requests);
+  // console.log(getNameAndBalance);
 
   const { config } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
@@ -34,7 +34,7 @@ function RequestAndPay({ requests, getNameAndBalance }) {
     address: "0x45aC5d28bd2a83E62F8132D958047027CC93a91c",
     abi: PaymentABI,
     functionName: "createRequest",
-    args: [requestAddress, String(requestAmount*(10**18)), requestMessage],
+    args: [requestAddress, String(requestAmount * (10 ** 18)), requestMessage],
   });
 
   const { write: writeRequest, data: dataRequest } = useContractWrite(configRequest);
@@ -42,9 +42,9 @@ function RequestAndPay({ requests, getNameAndBalance }) {
   const { config: configApprove } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
     address: "0x5a02b2051203c2baFb143F5B396A8b7D46Ecc022",
-    abi: DSGDABI,
+    abi: DSGDTokenABI,
     functionName: "approve",
-    args: ["0x45aC5d28bd2a83E62F8132D958047027CC93a91c",String(Number(requests["1"][0]))],
+    args: ["0x45aC5d28bd2a83E62F8132D958047027CC93a91c", String(Number(requests["1"][0]))],
   });
 
   const { write: writeApprove, data: dataApprove } = useContractWrite(configApprove);
@@ -76,12 +76,12 @@ function RequestAndPay({ requests, getNameAndBalance }) {
     setRequestModal(false);
   };
 
-  useEffect(()=>{
-    if(isSuccess || isSuccessRequest || isSuccessApprove){
+  useEffect(() => {
+    if (isSuccess || isSuccessRequest || isSuccessApprove) {
       getNameAndBalance();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[isSuccess, isSuccessRequest, isSuccessApprove])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, isSuccessRequest, isSuccessApprove])
 
   return (
     <>
@@ -89,7 +89,7 @@ function RequestAndPay({ requests, getNameAndBalance }) {
         title="Confirm Payment"
         open={payModal}
         onOk={() => {
-          writeApprove?.();
+          writeApprove()
           write?.();
           hidePayModal();
         }}
@@ -100,34 +100,42 @@ function RequestAndPay({ requests, getNameAndBalance }) {
         {requests && requests["0"].length > 0 && (
           <>
             <h2>Sending payment to {requests["3"][0]}</h2>
-            <h3>Value: {requests["1"][0]/1e18} DSGD</h3>
+            <h3>Value: {requests["1"][0] / 1e18} DSGD</h3>
             <p>"{requests["2"][0]}"</p>
           </>
         )}
       </Modal>
+
       <Modal
         title="Request A Payment"
         open={requestModal}
         onOk={() => {
-          writeRequest?.();
-          hideRequestModal();
+          if (requestAddress !== address) { // Check if requestAddress is not equal to userAddress
+            writeRequest?.();
+            hideRequestModal();
+          }
         }}
         onCancel={hideRequestModal}
         okText="Proceed To Request"
         cancelText="Cancel"
       >
         <p>Amount (DSGD)</p>
-        <InputNumber value={requestAmount} onChange={(val)=>setRequestAmount(val)}/>
+        <InputNumber value={requestAmount} onChange={(val) => setRequestAmount(val)}/>
         <p>From (address)</p>
-        <Input placeholder="0x..." value={requestAddress} onChange={(val)=>setRequestAddress(val.target.value)}/>
+        <Input placeholder="0x..." value={requestAddress} onChange={(val) => setRequestAddress(val.target.value)}/>
+        {requestAddress === address && (
+          <p style={{ color: 'red' }}>You cannot request payment from your own address.</p>
+        )}
         <p>Message</p>
-        <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val)=>setRequestMessage(val.target.value)}/>
+        <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val) => setRequestMessage(val.target.value)}/>
       </Modal>
       <div className="requestAndPay">
         <div
-          className="quickOption"
+          className={`quickOption ${requests && requests["0"].length > 0 ? "quickOption" : "quickOption-disabled"}`}
           onClick={() => {
-            showPayModal();
+            if (requests && requests["0"].length > 0) {
+              showPayModal();
+            }
           }}
         >
           <DollarOutlined style={{ fontSize: "26px" }} />

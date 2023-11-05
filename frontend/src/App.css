@@ -109,6 +109,10 @@
   position: relative;
 }
 
+.quickOption-disabled{
+  background-color: #767676;
+}
+
 .numReqs {
   position: absolute;
   top: -5px;

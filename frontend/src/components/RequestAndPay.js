@@ -49,7 +49,7 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
 
   const { write: writeApprove, data: dataApprove } = useContractWrite(configApprove);
 
-  const { isSuccess } = useWaitForTransaction({
+  const { isLoading,isSuccess } = useWaitForTransaction({
     hash: data?.hash,
   })
 
@@ -77,7 +77,7 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
   };
 
   useEffect(() => {
-    if (isSuccess || isSuccessRequest || isSuccessApprove) {
+    if (isSuccess || isSuccessRequest) {
       getNameAndBalance();
       hidePayModal();
       hideRequestModal();
@@ -91,12 +91,16 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
         title="Confirm Payment"
         open={payModal}
         onOk={() => {
+          if(!isSuccessApprove){
           writeApprove()
+          }
+          if(isSuccessApprove){
           write?.();
+          }
         }}
-        confirmLoading={isLoadingApprove}
+        confirmLoading={isLoadingApprove || isLoading}
         onCancel={hidePayModal}
-        okText="Proceed To Pay"
+        okText={!isSuccessApprove ? "Approved to Pay" : "Proceed To Pay"} // Change the text based on isSuccessApprove
         cancelText="Cancel"
       >
         {requests && requests["0"].length > 0 && (

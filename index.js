@@ -56,7 +56,7 @@ app.get("/getNameAndBalance", async (req, res) => {
   const tokenPrice = tokenPriceResponse.data["matic-network"].sgd;
 
   // Calculate balance in dollars
-  const balanceInDollars = (balanceInEth * tokenPrice).toFixed(2);
+  // const balanceInDollars = (balanceInEth * tokenPrice).toFixed(2);
 
   // Fetch transaction history using your smart contract ABI (modify based on your contract)
   const PaymentContract = new web3.eth.Contract(PaymentContractABI, PaymentContractAddress); // Replace with your contract address

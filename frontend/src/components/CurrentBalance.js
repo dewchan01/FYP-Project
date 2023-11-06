@@ -43,15 +43,15 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
 
   const { write: writeBurn, data: dataBurn } = useContractWrite(configBurn);
 
-  const { isSuccess: isSuccessMint } = useWaitForTransaction({
+  const { isLoading: isLoadingMint, isSuccess: isSuccessMint } = useWaitForTransaction({
     hash: dataMint?.hash,
   })
 
-  const { isSuccess: isSuccessTransfer } = useWaitForTransaction({
+  const { isLoading: isLoadingTransfer, isSuccess: isSuccessTransfer } = useWaitForTransaction({
     hash: dataTransfer?.hash,
   })
 
-  const { isSuccess: isSuccessBurn } = useWaitForTransaction({
+  const { isLoading: isLoadingBurn, isSuccess: isSuccessBurn } = useWaitForTransaction({
     hash: dataBurn?.hash,
   })
 
@@ -77,6 +77,9 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
   useEffect(() => {
     if (isSuccessMint || isSuccessTransfer || isSuccessBurn) {
       getNameAndBalance();
+      hideMintModal();
+      hideTransferModal();
+      hideBurnModal();
       //prompt tx is successful
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,10 +98,10 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
           onOk={() => {
             if (transferAmount > 0 && address !== transferAddress && transferAmount <= dollars) {
               writeTransfer?.();
-              hideTransferModal();
             }
           }
           }
+          confirmLoading={isLoadingTransfer}
           onCancel={hideTransferModal}
           okText="Transfer"
           cancelText="Cancel"
@@ -123,12 +126,12 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
               onOk={() => {
                 if (mintAmount > 0) {
                   writeMint?.();
-                  hideMintModal();
                 }
               }
               }
               onCancel={hideMintModal}
               okText="Mint"
+              confirmLoading={isLoadingMint}
               cancelText="Cancel"
             >
               <p>Amount (DSGD)</p>
@@ -143,12 +146,12 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
               onOk={() => {
                 if (burnAmount <= dollars) {
                   writeBurn?.();
-                  hideBurnModal();
                 }
               }
               }
               onCancel={hideBurnModal}
               okText="Burn"
+              confirmLoading={isLoadingBurn}
               cancelText="Cancel"
             >
               <p>Amount (DSGD)</p>

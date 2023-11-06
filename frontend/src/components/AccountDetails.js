@@ -20,7 +20,7 @@ function AccountDetails({ address, name, balance,getNameAndBalance }) {
 
   const { write, data } = useContractWrite(config);
 
-  const { isSuccess } = useWaitForTransaction({
+  const { isLoading,isSuccess } = useWaitForTransaction({
     hash: data?.hash,
   })
 
@@ -34,6 +34,7 @@ function AccountDetails({ address, name, balance,getNameAndBalance }) {
   useEffect(()=>{
     if(isSuccess){
       getNameAndBalance();
+      hideUsernameModal();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[isSuccess])
@@ -67,8 +68,8 @@ function AccountDetails({ address, name, balance,getNameAndBalance }) {
         open={usernameModal}
         onOk={() => {
           write?.();
-          hideUsernameModal();
         }}
+        confirmLoading={isLoading}
         onCancel={hideUsernameModal}
       >
         <Input

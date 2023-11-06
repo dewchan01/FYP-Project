@@ -53,11 +53,11 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
     hash: data?.hash,
   })
 
-  const { isSuccess: isSuccessRequest } = useWaitForTransaction({
+  const { isLoading:isLoadingRequest, isSuccess: isSuccessRequest } = useWaitForTransaction({
     hash: dataRequest?.hash,
   })
 
-  const { isSuccess: isSuccessApprove } = useWaitForTransaction({
+  const { isLoading:isLoadingApprove, isSuccess: isSuccessApprove } = useWaitForTransaction({
     hash: dataApprove?.hash,
   })
 
@@ -79,6 +79,8 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
   useEffect(() => {
     if (isSuccess || isSuccessRequest || isSuccessApprove) {
       getNameAndBalance();
+      hidePayModal();
+      hideRequestModal();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess, isSuccessRequest, isSuccessApprove])
@@ -91,8 +93,8 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
         onOk={() => {
           writeApprove()
           write?.();
-          hidePayModal();
         }}
+        confirmLoading={isLoadingApprove}
         onCancel={hidePayModal}
         okText="Proceed To Pay"
         cancelText="Cancel"
@@ -112,9 +114,9 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
         onOk={() => {
           if (requestAddress !== address) { // Check if requestAddress is not equal to userAddress
             writeRequest?.();
-            hideRequestModal();
           }
         }}
+        confirmLoading={isLoadingRequest}
         onCancel={hideRequestModal}
         okText="Proceed To Request"
         cancelText="Cancel"
@@ -129,6 +131,7 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
         <p>Message</p>
         <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val) => setRequestMessage(val.target.value)}/>
       </Modal>
+
       <div className="requestAndPay">
         <div
           className={`quickOption ${requests && requests["0"].length > 0 ? "quickOption" : "quickOption-disabled"}`}

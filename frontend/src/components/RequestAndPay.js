@@ -18,7 +18,7 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
 
   const { config } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: "0x45aC5d28bd2a83E62F8132D958047027CC93a91c",
+    address: process.env.REACT_APP_PAYMENT_CONTRACT_ADDRESS,
     abi: PaymentABI,
     functionName: "payRequest",
     args: [0],
@@ -31,7 +31,7 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
 
   const { config: configRequest } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: "0x45aC5d28bd2a83E62F8132D958047027CC93a91c",
+    address: process.env.REACT_APP_PAYMENT_CONTRACT_ADDRESS,
     abi: PaymentABI,
     functionName: "createRequest",
     args: [requestAddress, String(requestAmount * (10 ** 18)), requestMessage],
@@ -41,10 +41,10 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
 
   const { config: configApprove } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: "0x5a02b2051203c2baFb143F5B396A8b7D46Ecc022",
+    address: process.env.REACT_APP_DSGD_CONTRACT_ADDRESS,
     abi: DSGDTokenABI,
     functionName: "approve",
-    args: ["0x45aC5d28bd2a83E62F8132D958047027CC93a91c", String(Number(requests["1"][0]))],
+    args: [process.env.REACT_APP_PAYMENT_CONTRACT_ADDRESS, String(Number(requests["1"][0]))],
   });
 
   const { write: writeApprove, data: dataApprove } = useContractWrite(configApprove);
@@ -92,12 +92,14 @@ function RequestAndPay({ requests, getNameAndBalance, address }) {
         open={payModal}
         onOk={() => {
           if(!isSuccessApprove){
-          writeApprove()
+          writeApprove?.()
           }
-          if(isSuccessApprove){
+          else if(isSuccessApprove){
           write?.();
           }
-        }}
+          if(isSuccess){
+            hidePayModal();
+        }}}
         confirmLoading={isLoadingApprove || isLoading}
         onCancel={hidePayModal}
         okText={!isSuccessApprove ? "Approved to Pay" : "Proceed To Pay"} // Change the text based on isSuccessApprove

@@ -12,7 +12,7 @@ function AccountDetails({ address, name, balance,getNameAndBalance }) {
 
   const { config } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: "0x45aC5d28bd2a83E62F8132D958047027CC93a91c",
+    address: process.env.REACT_APP_PAYMENT_CONTRACT_ADDRESS,
     abi: ABI,
     functionName: "addName",
     args: [username],

@@ -15,7 +15,7 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
 
   const { config: configTransfer } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: "0x5a02b2051203c2baFb143F5B396A8b7D46Ecc022",
+    address: process.env.REACT_APP_DSGD_CONTRACT_ADDRESS,
     abi: DSGDTokenABI,
     functionName: "transfer",
     args: [transferAddress, String(transferAmount * (1e18))],
@@ -25,7 +25,7 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
 
   const { config: configMint } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: "0x5a02b2051203c2baFb143F5B396A8b7D46Ecc022",
+    address: process.env.REACT_APP_DSGD_CONTRACT_ADDRESS,
     abi: DSGDTokenABI,
     functionName: "mint",
     args: [address, String(mintAmount * (1e18))],
@@ -34,8 +34,7 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
   const { write: writeMint, data: dataMint } = useContractWrite(configMint);
 
   const { config: configBurn } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
-    address: "0x5a02b2051203c2baFb143F5B396A8b7D46Ecc022",
+    chainId: process.env.REACT_APP_DSGD_CONTRACT_ADDRESS,
     abi: DSGDTokenABI,
     functionName: "burn",
     args: [String(burnAmount * (1e18))],
@@ -85,6 +84,7 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccessMint,isSuccessTransfer,isSuccessBurn])
 
+
   return (
     <Card title="Current Balance" style={{ width: "100%" }}>
       <div className="currentBalance">
@@ -115,7 +115,7 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
           )}
         </Modal>
         <div className="extraOption" onClick={showTransferModal}>Transfer Tokens</div>
-        {address === '0x1f0Bac3BF8F38a01a2D53838F477789B6aeEf472' && (
+        {address === process.env.REACT_APP_DSGD_CONTRACT_OWNER && (
           <>
             <div className="extraOption" onClick={() => {
               showMintModal();
@@ -135,7 +135,7 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
               cancelText="Cancel"
             >
               <p>Amount (DSGD)</p>
-              <InputNumber value={burnAmount} onChange={(val) => setMintAmount(val)} />
+              <InputNumber value={mintAmount} onChange={(val) => setMintAmount(val)} />
             </Modal>
             <div className="extraOption" onClick={() => {
               showBurnModal();

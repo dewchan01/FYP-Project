@@ -2,37 +2,51 @@ const hre = require("hardhat");
 const { network, run, ethers } = hre;
 
 async function main() {
+  let contract_owner = await ethers.getSigners();
+
   // Deploy the DSGDToken contract
   const DSGDToken = await ethers.getContractFactory("DSGDToken");
-  let [contract_owner] = await ethers.getSigners();
-  const dsgdContract = await DSGDToken.connect(contract_owner).deploy();
+  const dsgdContract = await DSGDToken.connect(contract_owner[0]).deploy();
 
   await dsgdContract.deployed();
-  console.log(`DSGD Token is deployed to ${dsgdContract.address} by ${contract_owner.address}`);
+  console.log(`DSGD Token is deployed to ${dsgdContract.address} by ${contract_owner[0].address}`);
 
-  // Deploy the Payment contract
-  const Payment = await ethers.getContractFactory("Payment");
-  const paymentContract = await Payment.deploy(dsgdContract.address);
+  // Deploy the DMYRToken contract
+  const DMYRToken = await ethers.getContractFactory("DMYRToken");
+  const dmyrContract = await DMYRToken.connect(contract_owner[1]).deploy();
 
-  await paymentContract.deployed();
-  console.log(`Payment contract is deployed to ${paymentContract.address}`);
+  await dmyrContract.deployed();
+  console.log(`DMYR Token is deployed to ${dmyrContract.address} by ${contract_owner[1].address}`);
+
+  // Deploy the mCBDC contract
+  const mCBDC = await ethers.getContractFactory("MCBDC");
+  const mCBDCContract = await mCBDC.connect(contract_owner[2]).deploy();
+
+  await mCBDCContract.deployed();
+  console.log(`MCBDC is deployed to ${mCBDCContract.address} by ${contract_owner[2].address}`);
 
   // Verify the DSGDToken contract
   if (network.name !== "localhost" && network.name !== "hardhat") {
-    await verifyContract(dsgdContract.address, []);
+    await verifyContract(dsgdContract.address, [], "contracts/DSGDToken.sol:DSGDToken");
   }
 
-  // Verify the Payment contract
+  // Verify the DMYRToken contract
   if (network.name !== "localhost" && network.name !== "hardhat") {
-    await verifyContract(paymentContract.address, [dsgdContract.address]);
+    await verifyContract(dmyrContract.address, [], "contracts/DMYRToken.sol:DMYRToken");
+  }
+
+  // Verify the mCBDC contract
+  if (network.name !== "localhost" && network.name !== "hardhat") {
+    await verifyContract(mCBDCContract.address, [], "contracts/MCBDC.sol:MCBDC");
   }
 }
 
-async function verifyContract(address, args) {
+async function verifyContract(address, args, contractPath) {
   try {
     await run("verify:verify", {
       address,
       constructorArguments: args,
+      contract: contractPath,
     });
   } catch (e) {
     if (e.message.toLowerCase().includes("already verified")) {

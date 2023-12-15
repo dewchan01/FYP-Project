@@ -111,6 +111,7 @@
 
 .quickOption-disabled{
   background-color: #767676;
+  pointer-events: none;
 }
 
 .numReqs {
@@ -126,6 +127,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.numReqs-disabled{
+  display: none;
 }
 
 .quickOption:hover {

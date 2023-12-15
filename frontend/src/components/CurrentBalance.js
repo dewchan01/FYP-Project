@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Card, Modal, InputNumber, Input } from "antd";
+import { Card, Modal, InputNumber, Input, Dropdown, Space, Menu } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 import { polygonMumbai } from "@wagmi/chains";
-import DSGDTokenABI from "../DSGDToken.json";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
+import { tokenConfig, getLabelByKey,getContractABIByKey,getContractAddressByKey, getContractOwnerByKey } from "./tokenConfig";
 
-function CurrentBalance({ address, dollars, getNameAndBalance }) {
+function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSelectedCurrency }) {
   const [transferModal, setTransferModal] = useState(false);
   const [mintModal, setMintModal] = useState(false);
   const [burnModal, setBurnModal] = useState(false);
@@ -12,11 +13,45 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
   const [mintAmount, setMintAmount] = useState(5);
   const [burnAmount, setBurnAmount] = useState(5);
   const [transferAmount, setTransferAmount] = useState(5);
+  const items = tokenConfig;
+
+  const BalanceDropdown = ({ sgd, myr, selectedCurrency, onCurrencyChange }) => {
+    const onClick = ({ key }) => {
+      onCurrencyChange(key);
+    };
+
+    const menu = (
+      <Menu onClick={onClick}>
+        {items.map(item => (
+          <Menu.Item key={item.key}>{item.label}</Menu.Item>
+        ))}
+      </Menu>
+    );
+
+    return (
+      <Dropdown overlay={menu} trigger={['click']}>
+        <a style={{ color: "black" }} onClick={(e) => e.preventDefault()}>
+          <Space>
+            {selectedCurrency === '1' && (
+              <div style={{ lineHeight: "70px" }}>{(sgd!=="..."?Number(sgd).toFixed(2):sgd)} </div>
+            )}
+            {selectedCurrency === '2' && (
+              <div style={{ lineHeight: "70px" }}>{(myr!=="..."?Number(myr).toFixed(2):myr)} </div>
+            )}
+            <div style={{ fontSize: "20px" }}>
+              {selectedCurrency === '1' ? 'DSGD' : 'DMYR'}
+              <DownOutlined />
+            </div>
+          </Space>
+        </a>
+      </Dropdown>
+    );
+  };
 
   const { config: configTransfer } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: process.env.REACT_APP_DSGD_CONTRACT_ADDRESS,
-    abi: DSGDTokenABI,
+    address: getContractAddressByKey(selectedCurrency),
+    abi: getContractABIByKey(selectedCurrency),
     functionName: "transfer",
     args: [transferAddress, String(transferAmount * (1e18))],
   });
@@ -25,8 +60,8 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
 
   const { config: configMint } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: process.env.REACT_APP_DSGD_CONTRACT_ADDRESS,
-    abi: DSGDTokenABI,
+    address: getContractAddressByKey(selectedCurrency),
+    abi: getContractABIByKey(selectedCurrency),
     functionName: "mint",
     args: [address, String(mintAmount * (1e18))],
   });
@@ -34,8 +69,8 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
   const { write: writeMint, data: dataMint } = useContractWrite(configMint);
 
   const { config: configBurn } = usePrepareContractWrite({
-    chainId: process.env.REACT_APP_DSGD_CONTRACT_ADDRESS,
-    abi: DSGDTokenABI,
+    chainId: getContractAddressByKey(selectedCurrency),
+    abi: getContractABIByKey(selectedCurrency),
     functionName: "burn",
     args: [String(burnAmount * (1e18))],
   });
@@ -75,28 +110,32 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
 
   useEffect(() => {
     if (isSuccessMint || isSuccessTransfer || isSuccessBurn) {
-      getNameAndBalance();
+      getBalance();
       hideMintModal();
       hideTransferModal();
       hideBurnModal();
       //prompt tx is successful
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessMint,isSuccessTransfer,isSuccessBurn])
+  }, [isSuccessMint, isSuccessTransfer, isSuccessBurn])
 
 
   return (
     <Card title="Current Balance" style={{ width: "100%" }}>
       <div className="currentBalance">
-        <div style={{ lineHeight: "70px" }}>{dollars} DSGD </div>
-        <div style={{ fontSize: "20px" }}>Available</div>
+        <BalanceDropdown
+          sgd={sgd}
+          myr={myr}
+          selectedCurrency={selectedCurrency}
+          onCurrencyChange={setSelectedCurrency}
+        />
       </div>
       <div className="balanceOptions">
         <Modal
           title="Transfer Tokens"
           open={transferModal}
           onOk={() => {
-            if (transferAmount > 0 && address !== transferAddress && transferAmount <= dollars) {
+            if (transferAmount > 0 && address !== transferAddress && transferAmount <= (selectedCurrency === '1' ? sgd : myr)) {
               writeTransfer?.();
             }
           }
@@ -106,7 +145,7 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
           okText="Transfer"
           cancelText="Cancel"
         >
-          <p>Amount (DSGD)</p>
+          <p>Amount ({getLabelByKey(selectedCurrency)})</p>
           <InputNumber value={transferAmount} onChange={(val) => setTransferAmount(val)} />
           <p>To (address)</p>
           <Input placeholder="0x..." value={transferAddress} onChange={(val) => setTransferAddress(val.target.value)} />
@@ -114,12 +153,13 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
             <p style={{ color: 'red' }}>You cannot transfer token to your own address.</p>
           )}
         </Modal>
-        <div className="extraOption" onClick={showTransferModal}>Transfer Tokens</div>
-        {address === process.env.REACT_APP_DSGD_CONTRACT_OWNER && (
+        
+        <div className="extraOption" onClick={showTransferModal}>Local Transfer</div>
+        {address === getContractOwnerByKey(selectedCurrency) && (
           <>
             <div className="extraOption" onClick={() => {
               showMintModal();
-            }}>Mint Tokens</div>
+            }}>Mint</div>
             <Modal
               title="Mint Tokens"
               open={mintModal}
@@ -134,17 +174,18 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
               confirmLoading={isLoadingMint}
               cancelText="Cancel"
             >
-              <p>Amount (DSGD)</p>
+              <p>Amount ({getLabelByKey(selectedCurrency)})</p>
               <InputNumber value={mintAmount} onChange={(val) => setMintAmount(val)} />
             </Modal>
+
             <div className="extraOption" onClick={() => {
               showBurnModal();
-            }}>Burn Tokens</div>
+            }}>Burn</div>
             <Modal
               title="Burn Tokens"
               open={burnModal}
               onOk={() => {
-                if (burnAmount <= dollars) {
+                if (burnAmount <= (selectedCurrency === '1' ? sgd : myr)) {
                   writeBurn?.();
                 }
               }
@@ -154,7 +195,7 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
               confirmLoading={isLoadingBurn}
               cancelText="Cancel"
             >
-              <p>Amount (DSGD)</p>
+              <p>Amount ({getLabelByKey(selectedCurrency)})</p>
               <InputNumber value={burnAmount} onChange={(val) => setBurnAmount(val)} />
             </Modal>
           </>
@@ -165,3 +206,4 @@ function CurrentBalance({ address, dollars, getNameAndBalance }) {
 }
 
 export default CurrentBalance;
+

@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import logo from "./logo.svg";
 import { Layout, Button } from "antd";
-import CurrentBalance from "./components/CurrentBalance";
-import RequestAndPay from "./components/RequestAndPay";
+import CurrencyStatus from "./components/CurrencyStatus";
 import AccountDetails from "./components/AccountDetails";
 import RecentActivity from "./components/RecentActivity";
 import { useConnect, useAccount, useDisconnect } from "wagmi";
@@ -19,36 +18,27 @@ function App() {
     connector: new MetaMaskConnector(),
   });
 
-  const [name, setName] = useState("...");
   const [balance, setBalance] = useState("...");
-  const [dollars, setDollars] = useState("...");
+  const [sgd, setSGD] = useState("...");
+  const [myr, setMYR] = useState("...");
   const [history, setHistory] = useState(null);
-  const [requests, setRequests] = useState({ "1": [0], "0": [] });
+  const [requests, setRequests] = useState({"0":[],"1":[],"2":[],"3":[],"4":[],"5":[]});
+  const [balanceOfLink, setBalanceOfLink] = useState("...");
+  const [rate, setFXRate] = useState("...");
+  const [tokenSymbol,setTokenSymbol] = useState("...");
+  const [tokenAddress, setTokenAddress] = useState(null);
 
   function disconnectAndSetNull() {
     disconnect();
-    setName("...");
     setBalance("...");
-    setDollars("...");
+    setSGD("...");
+    setMYR("...");
     setHistory(null);
-    setRequests({ "1": [0], "0": [] });
+    setRequests(null);
+    setTokenAddress(null);
   }
 
-  async function getNameAndBalance() {
-    const res = await axios.get(`http://localhost:3001/getNameAndBalance`, {
-      params: { userAddress: address },
-    });
-
-    const response = res.data;
-    console.log(response.requests);
-    if (response.name[1]) {
-      setName(response.name[0]);
-    }
-    setBalance(String(response.balance));
-    setDollars(String(response.dollars));
-    setHistory(response.history);
-    setRequests(response.requests);
-
+  function checkAccount(){
     if (window.ethereum) {
       const ethereum = window.ethereum;
     
@@ -65,10 +55,86 @@ function App() {
       });
     }
   }
+  async function getBalance() {
+    const res = await axios.get(`http://localhost:3001/getBalance`, {
+      params: { userAddress: address },
+    });
+
+    const response = res.data;
+    console.log(response);
+    
+    setBalance(String(response.balance));
+    setSGD(String(response.sgd));
+    setMYR(String(response.myr));
+    
+    checkAccount();
+  }
+
+  async function getHistory() {
+    const res = await axios.get(`http://localhost:3001/getHistory`, {
+      params: { userAddress: address },
+    });
+
+    const response = res.data;
+    setHistory(response.history[0]);
+    // console.log("History",response.history[0])
+
+    checkAccount();
+  }
+
+  async function getRequests() {
+    const res = await axios.get(`http://localhost:3001/getRequests`, {
+      params: { userAddress: address },
+    });
+    let response;
+    if (res== null){
+      response = {}
+    }else{
+      response = res.data;
+    }
+    console.log(response);
+    setRequests(response);
+
+    checkAccount();
+  }
+
+  async function getBalanceOfLink(){
+    const res = await axios.get(`http://localhost:3001/getBalanceOfLink`);
+    const response = res.data;
+    console.log(response);
+
+    setBalanceOfLink(String(response.balance));
+    checkAccount();
+  }
+
+  async function getFXRate(){
+    const res = await axios.get(`http://localhost:3001/getFXRate`);
+    const response = res.data;
+    console.log(response);
+
+    setFXRate(String(response.rate));
+
+    checkAccount();
+  }
+
+  async function showTokenAddress(){
+    const res = await axios.get(`http://localhost:3001/showTokenAddress`, {
+      params: { token: tokenSymbol },
+  });
+    const response = res.data;
+    console.log(response);
+
+    setTokenSymbol(String(response.tokenSymbol));
+    setTokenAddress(String(response.tokenAddress));
+
+    checkAccount();
+  }
 
   useEffect(() => {
     if (!isConnected) return;
-    getNameAndBalance();
+    getBalance();
+    getHistory();
+    getRequests();
   }, [isConnected]);
 
   return (
@@ -108,17 +174,14 @@ function App() {
           {isConnected ? (
             <>
               <div className="firstColumn">
-                <CurrentBalance dollars={dollars} address={address} getNameAndBalance={getNameAndBalance} />
-                <RequestAndPay requests={requests} getNameAndBalance={getNameAndBalance} address={address}/>
+                <CurrencyStatus sgd={sgd} myr={myr} address={address} getBalance={getBalance} requests={requests}/>
                 <AccountDetails
                   address={address}
-                  name={name}
                   balance={balance}
-                  getNameAndBalance = {getNameAndBalance}
                 />
               </div>
               <div className="secondColumn">
-                <RecentActivity history={history}/>
+                <RecentActivity history={history} address={address}/>
               </div>
             </>
           ) : (

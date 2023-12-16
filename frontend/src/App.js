@@ -25,6 +25,8 @@ function App() {
   const [requests, setRequests] = useState({"0":[],"1":[],"2":[],"3":[],"4":[],"5":[]});
   const [balanceOfLink, setBalanceOfLink] = useState("...");
   const [rate, setFXRate] = useState("...");
+  const [isFXRateResponseValid, setIsFXRateAvailable] = useState(false);
+  const [expiringTime, setExpiringTime] = useState("...");
   const [tokenSymbol,setTokenSymbol] = useState("...");
   const [tokenAddress, setTokenAddress] = useState(null);
 
@@ -36,6 +38,7 @@ function App() {
     setHistory(null);
     setRequests(null);
     setTokenAddress(null);
+    setExpiringTime(0);
   }
 
   function checkAccount(){
@@ -113,6 +116,8 @@ function App() {
     console.log(response);
 
     setFXRate(String(response.rate));
+    setExpiringTime(String(response.expiringTime));
+    setIsFXRateAvailable(response.availableStatus);
 
     checkAccount();
   }
@@ -135,6 +140,8 @@ function App() {
     getBalance();
     getHistory();
     getRequests();
+    getFXRate();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   return (
@@ -174,7 +181,7 @@ function App() {
           {isConnected ? (
             <>
               <div className="firstColumn">
-                <CurrencyStatus sgd={sgd} myr={myr} address={address} getBalance={getBalance} requests={requests}/>
+                <CurrencyStatus sgd={sgd} myr={myr} address={address} getBalance={getBalance} requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid} expiringTime={expiringTime} getFXRate={getFXRate}/>
                 <AccountDetails
                   address={address}
                   balance={balance}

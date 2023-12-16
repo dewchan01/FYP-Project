@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import CurrentBalance from "./CurrentBalance";
 import RequestAndPay from "./RequestAndPay";
 
-function CurrencyStatus({ sgd, myr, address, getBalance, requests }) {
+function CurrencyStatus({ sgd, myr, address, getBalance, requests,rate,expiringTime, isFXRateResponseValid,getFXRate }) {
     const [selectedCurrency, setSelectedCurrency] = useState('1');
 
     return (
@@ -16,7 +16,7 @@ function CurrencyStatus({ sgd, myr, address, getBalance, requests }) {
                 setSelectedCurrency={setSelectedCurrency}
             />
             <RequestAndPay requests={requests} getBalance={getBalance} address={address} selectedCurrency={selectedCurrency}
-                setSelectedCurrency={setSelectedCurrency} />
+                setSelectedCurrency={setSelectedCurrency} rate={rate} expiringTime = {expiringTime} isFXRateResponseValid={isFXRateResponseValid} getFXRate={getFXRate}/>
 
             {/* You can use getSelectedCurrencyState here too */}
         </div>

@@ -50,7 +50,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
 
   const { config: configTransfer } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: getContractAddressByKey(selectedCurrency),
+    address: getContractAddressByKey(String(selectedCurrency)),
     abi: getContractABIByKey(selectedCurrency),
     functionName: "transfer",
     args: [transferAddress, String(transferAmount * (1e18))],
@@ -116,7 +116,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
       hideBurnModal();
       //prompt tx is successful
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccessMint, isSuccessTransfer, isSuccessBurn])
 
 

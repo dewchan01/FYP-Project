@@ -1,28 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { DollarOutlined, SwapOutlined, TransactionOutlined } from "@ant-design/icons";
-import { Modal, Input, InputNumber, message } from "antd";
+import { Modal, Input, InputNumber } from "antd";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
 import MCBDCABI from "../ABI/MCBDC.json";
-import { getLabelByKey,getContractAddressByKey,getContractABIByKey } from "./tokenConfig";
+import { getLabelByKey, getContractAddressByKey, getContractABIByKey } from "./tokenConfig";
 
-function RequestAndPay({ requests, getBalance, address, selectedCurrency }) {
+//check balanceOfLink
+function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, expiringTime, isFXRateResponseValid, getFXRate }) {
   const [payModal, setPayModal] = useState(false);
   const [remitIntModal, setRemitIntModal] = useState(false);
   const [requestModal, setRequestModal] = useState(false);
   const [requestCurrency, setRequestCurrency] = useState("");
-  const [fromCurrency, setFromCurrency] = useState("");
   const [toCurrency, setToCurrency] = useState("");
-  const [requestAmount, setRequestAmount] = useState(5);
-  const [swapAmount, setSwapAmount] = useState(5);
+  const [requestAmount, setRequestAmount] = useState(0);
+  const [swapAmount, setSwapAmount] = useState(0);
   const [recipientAddress, setRecipientAddress] = useState("");
   const [requestAddress, setRequestAddress] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
   const [swapMessage, setSwapMessage] = useState("");
 
   requests = requests?.["requests"];
-
-  // console.log(getNameAndBalance);
 
   const { config } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
@@ -47,12 +45,22 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency }) {
 
   const { write: writeRequest, data: dataRequest } = useContractWrite(configRequest);
 
+  const { config: configRate } = usePrepareContractWrite({
+    chainId: polygonMumbai.id,
+    address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
+    abi: MCBDCABI,
+    functionName: "requestFxRate",
+    args: [getLabelByKey(selectedCurrency).slice(1,), toCurrency.slice(1,)],
+  });
+
+  const { write: writeRate, data: dataRate } = useContractWrite(configRate);
+
   const { config: configApprove } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
     address: getContractAddressByKey(selectedCurrency),
     abi: getContractABIByKey(selectedCurrency),
     functionName: "approve",
-    args: [process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS, String(Number(requests?.["2"]?.[0]))],
+    args: [process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS, (swapAmount!==0)?String(Number(swapAmount*1e18)):String(Number(requests?.["2"]?.[0]))],
   });
 
   const { write: writeApprove, data: dataApprove } = useContractWrite(configApprove);
@@ -62,25 +70,29 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency }) {
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "swapToken",
-    args: [swapAmount,recipientAddress,fromCurrency.slice(1,),toCurrency.slice(1,),swapMessage],
+    args: [String(Number(swapAmount*1e18)), recipientAddress, getLabelByKey(selectedCurrency).slice(1,), toCurrency.slice(1,), swapMessage],
   });
 
   const { write: writeSwap, data: dataSwap } = useContractWrite(configSwap);
 
-  const { isLoading,isSuccess } = useWaitForTransaction({
+  const { isLoading, isSuccess } = useWaitForTransaction({
     hash: data?.hash,
   })
 
-  const { isLoading:isLoadingRequest, isSuccess: isSuccessRequest } = useWaitForTransaction({
+  const { isLoading: isLoadingRequest, isSuccess: isSuccessRequest } = useWaitForTransaction({
     hash: dataRequest?.hash,
   })
 
-  const { isLoading:isLoadingApprove, isSuccess: isSuccessApprove } = useWaitForTransaction({
+  const { isLoading: isLoadingApprove, isSuccess: isSuccessApprove } = useWaitForTransaction({
     hash: dataApprove?.hash,
   })
 
-  const { isLoading:isLoadingSwap, isSuccess: isSuccessSwap } = useWaitForTransaction({
+  const { isLoading: isLoadingSwap, isSuccess: isSuccessSwap } = useWaitForTransaction({
     hash: dataSwap?.hash,
+  })
+
+  const { isLoading: isLoadingRate, isSuccess: isSuccessRate } = useWaitForTransaction({
+    hash: dataRate?.hash,
   })
 
   const showRemitIntModal = () => {
@@ -104,56 +116,84 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency }) {
     setRequestModal(false);
   };
   useEffect(() => {
+    console.log(isSuccessRequest,isSuccessRate, isSuccessApprove,isSuccessSwap)
     if (isSuccess || isSuccessRequest || isSuccessSwap) {
       getBalance();
+      getFXRate();
       hidePayModal();
       hideRequestModal();
       hideRemitIntModal();
+      
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, isSuccessRequest, isSuccessApprove, isSuccessSwap])
+    if(isSuccessRate){
+      getFXRate();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, isSuccessRequest, isSuccessSwap,isSuccessRate])
 
   return (
     <>
-    <Modal
+      <Modal
         title="Cross Border Transaction"
         open={remitIntModal}
         onOk={() => {
-            writeRequest?.();
+          if (!isSuccessRate) {
+            writeRate?.()
+            getFXRate();
+          }
+          else if (isSuccessRate && !isSuccessApprove && isFXRateResponseValid) {
+            setInterval(getFXRate,3000);
+            writeApprove?.()
+          }
+          else if (isSuccessApprove && !isSuccessSwap && isFXRateResponseValid) {
+            writeSwap?.();
+          }
         }}
-        confirmLoading={isLoadingSwap}
+        confirmLoading={isLoadingSwap || isLoadingApprove || isLoadingRate}
         onCancel={hideRemitIntModal}
-        okText="Make Transaction"
+        okText={(!isFXRateResponseValid) ? "Request FX Rate" : ((!isSuccessApprove && isSuccessRate && !isSuccessSwap && isFXRateResponseValid) ? "Approved to Make Transaction" : ((isSuccessApprove && isSuccessRate && !isSuccessSwap) ? "Make Transaction" : "Request FX Rate"))}
         cancelText="Cancel"
       >
         <p>To (address)</p>
-        <Input placeholder="0x..." value={recipientAddress} onChange={(val) => setRecipientAddress(val.target.value)}/>
-        {/* {recipientAddress === address && (
-          <p style={{ color: 'red' }}>You cannot send payment to your own address.</p>
-        )} */}
+        <Input placeholder="0x..." value={recipientAddress} onChange={(val) => setRecipientAddress(val.target.value)} required={true}/>
         <p>Amount</p>
-        <InputNumber value={swapAmount} onChange={(val) => setSwapAmount(val)}/>
+        <InputNumber value={swapAmount} onChange={(val) => setSwapAmount(val)} />
         <p>From Currency</p>
-        <Input placeholder={getLabelByKey(selectedCurrency)} value={fromCurrency} onChange={(val) => setFromCurrency(val.target.value)}/>
-        <p>To Currency</p>
-        <Input placeholder={getLabelByKey(String(selectedCurrency%2+1))} value={toCurrency} onChange={(val) => setToCurrency(val.target.value)}/>
+        <Input value={getLabelByKey(selectedCurrency)} readOnly={true} />
+        <p>Target Currency</p>
+        <Input placeholder={getLabelByKey(String(selectedCurrency % 2 + 1))} value={toCurrency} onChange={(val) => setToCurrency(val.target.value)} required={true}/>
+        {!isSuccessRate && !isFXRateResponseValid ? (
+          <p></p>
+        ) : (isSuccessRate && isFXRateResponseValid
+          ?
+          (
+            <>
+              <p>Rate for {expiringTime / 60}mins {"("}1{getLabelByKey(selectedCurrency)}: {(rate / 1e18).toFixed(6)}{getLabelByKey(String(selectedCurrency % 2 + 1))}{")"}</p>
+              <Input value={(swapAmount * rate / 1e18).toFixed(2)} readOnly={true} />
+            </>
+          )
+          :(
+          <p style={{ color: "red" }}>Please request FX Rate!</p>
+        ))
+        }
         <p>Message</p>
-        <Input placeholder="Lunch Bill..." value={swapMessage} onChange={(val) => setSwapMessage(val.target.value)}/>
+        <Input placeholder="Lunch Bill..." value={swapMessage} onChange={(val) => setSwapMessage(val.target.value)} />
       </Modal>
 
       <Modal
         title="Confirm Payment"
         open={payModal}
         onOk={() => {
-          if(!isSuccessApprove){
-          writeApprove?.()
+          if (!isSuccessApprove) {
+            writeApprove?.()
           }
-          else if(isSuccessApprove){
-          write?.();
+          else if (isSuccessApprove) {
+            write?.();
           }
-          if(isSuccess){
+          if (isSuccess) {
             hidePayModal();
-        }}}
+          }
+        }}
         confirmLoading={isLoadingApprove || isLoading}
         onCancel={hidePayModal}
         okText={!isSuccessApprove ? "Approved to Pay" : "Proceed To Pay"} // Change the text based on isSuccessApprove
@@ -164,6 +204,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency }) {
             <h2>Sending payment to {requests["0"][0]}</h2>
             <h3>Value: {requests["2"][0] / 1e18} {requests["4"][0]}</h3>
             <p>"{requests["5"][0]}"</p>
+            <p>Pay by <strong>{getLabelByKey(selectedCurrency)}</strong></p>
           </>
         )}
       </Modal>
@@ -182,20 +223,20 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency }) {
         cancelText="Cancel"
       >
         <p>From (address)</p>
-        <Input placeholder="0x..." value={requestAddress} onChange={(val) => setRequestAddress(val.target.value)}/>
+        <Input placeholder="0x..." value={requestAddress} onChange={(val) => setRequestAddress(val.target.value)} />
         {requestAddress === address && (
           <p style={{ color: 'red' }}>You cannot request payment from your own address.</p>
         )}
         <p>Amount</p>
-        <InputNumber value={requestAmount} onChange={(val) => setRequestAmount(val)}/>
+        <InputNumber value={requestAmount} onChange={(val) => setRequestAmount(val)} />
         <p>Receive Currency</p>
-        <Input placeholder={getLabelByKey(selectedCurrency)} value={requestCurrency} onChange={(val) => setRequestCurrency(val.target.value)}/>
+        <Input placeholder={getLabelByKey(selectedCurrency)} value={requestCurrency} onChange={(val) => setRequestCurrency(val.target.value)} />
         <p>Message</p>
-        <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val) => setRequestMessage(val.target.value)}/>
+        <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val) => setRequestMessage(val.target.value)} />
       </Modal>
 
       <div className="requestAndPay">
-      <div
+        <div
           className="quickOption"
           onClick={() => {
             showRemitIntModal();
@@ -205,7 +246,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency }) {
           Remit Int.
         </div>
         <div
-          className={`quickOption ${requests && requests["0"]?.length >0  ? "quickOption" : "quickOption-disabled"}`}
+          className={`quickOption ${requests && requests["0"]?.length > 0 ? "quickOption" : "quickOption-disabled"}`}
           onClick={() => {
             if (requests && requests["0"].length > 0) {
               showPayModal();
@@ -215,7 +256,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency }) {
           <DollarOutlined style={{ fontSize: "26px" }} />
           Pay
           {requests && requests["0"] && (
-            <div className={`numReqs ${requests && requests["0"]?.length >0  ? "numReqs" : "numReqs-disabled"}`}>{requests["0"].length}</div>
+            <div className={`numReqs ${requests && requests["0"]?.length > 0 ? "numReqs" : "numReqs-disabled"}`}>{requests["0"].length}</div>
           )}
         </div>
         <div

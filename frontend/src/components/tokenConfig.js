@@ -17,7 +17,6 @@ export const tokenConfig = [
     ABI: DMYRTokenABI,
   }
 ];
-
 export const getLabelByKey = (key) => {
   const item = tokenConfig.find(item => item.key === key);
   return item ? item.label : null;

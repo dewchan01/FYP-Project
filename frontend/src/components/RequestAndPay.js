@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { DollarOutlined, SwapOutlined, TransactionOutlined } from "@ant-design/icons";
-import { Modal, Input, InputNumber } from "antd";
+import { Modal, Input, InputNumber, Card, Table } from "antd";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
 import MCBDCABI from "../ABI/MCBDC.json";
 import { getLabelByKey, getContractAddressByKey, getContractABIByKey } from "./tokenConfig";
 
 //check balanceOfLink
-function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, expiringTime, isFXRateResponseValid, getFXRate }) {
+function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, expiringTime, isFXRateResponseValid, getFXRate, getHistory, getRequests }) {
   const [payModal, setPayModal] = useState(false);
   const [remitIntModal, setRemitIntModal] = useState(false);
   const [requestModal, setRequestModal] = useState(false);
@@ -19,6 +19,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const [requestAddress, setRequestAddress] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
   const [swapMessage, setSwapMessage] = useState("");
+  const [payIndex, setPayIndex] = useState(1);
 
   const [isSuccessApprove, setIsSuccessApprove] = useState(false);
   const [isSuccessSwap, setIsSuccessSwap] = useState(false);
@@ -31,7 +32,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "payRequest",
-    args: [0, getLabelByKey(selectedCurrency).slice(1,)],
+    args: [payIndex - 1, getLabelByKey(selectedCurrency).slice(1,)],
     // overrides: {
     //   value: String(Number(requests["1"][0])),
     // },
@@ -58,13 +59,14 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   });
 
   const { write: writeRate, data: dataRate } = useContractWrite(configRate);
+  // console.log("HI",String(Number(requests?.[2]?.[payIndex - 1])));
 
   const { config: configApprove } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
     address: getContractAddressByKey(selectedCurrency),
     abi: getContractABIByKey(selectedCurrency),
     functionName: "approve",
-    args: [process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS, (swapAmount !== 0) ? String(Number(swapAmount * 1e18)) : String(Number(requests?.["2"]?.[0]))],
+    args: [process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS, (remitIntModal === true) ? String(Number(swapAmount * 1e18)) : String(Number(requests?.[2]?.[payIndex - 1]))],
   });
 
   const { write: writeApprove, data: dataApprove } = useContractWrite(configApprove);
@@ -92,7 +94,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     onSuccess: () => setIsSuccessApprove(true),
   })
 
-  const { isLoading: isLoadingSwap} = useWaitForTransaction({
+  const { isLoading: isLoadingSwap } = useWaitForTransaction({
     hash: dataSwap?.hash,
     onSuccess: () => setIsSuccessSwap(true),
   })
@@ -125,6 +127,8 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   useEffect(() => {
     if (isSuccess || isSuccessRequest || isSuccessSwap) {
       getBalance();
+      getHistory();
+      getRequests();
       getFXRate();
       hidePayModal();
       hideRequestModal();
@@ -138,7 +142,75 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       getFXRate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, isSuccessRequest, isSuccessSwap, isSuccessRate,isSuccessApprove])
+  }, [isSuccess, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessApprove])
+
+
+  const columns = [
+    {
+      title: "No",
+      dataIndex: "No",
+      key: "No",
+    },
+    {
+      title: "Recipient",
+      dataIndex: "Recipient",
+      key: "Recipient",
+      //   render: (value, record) => (
+      //     <div style={{ color: requests?.[1] === address ? "green" : "black" }}>
+      //       {value}
+      //     </div>
+      //   ),
+    },
+    {
+      title: "Send",
+      dataIndex: "Send",
+      key: "Send",
+      // render: (value, record) => (
+      //   <div style={{ color: requests?.[0] === address ? "red" : "black" }}>
+      //     {requests?.[0] === address ? "-" : ""}
+      //     {value}
+      //   </div>
+      // ),
+    },
+    {
+      title: "Message",
+      dataIndex: "Message",
+      key: "Message",
+    },
+  ];
+
+  const fieldNames = [
+    "No",
+    "Recipient",
+    "Send",
+    "Message",
+  ];
+
+  const dataSource = requests
+    ? Object.keys(requests["0"]).map((index) => {
+      const item = Object.values(requests).map((arr) => arr[index]);
+      // console.log(item);
+
+      const record = fieldNames.reduce((acc, field, i) => {
+        const value = item[i];
+        if (field === "No") {
+          acc[field] = Number(index) + 1;
+        } else if (field === "Recipient") {
+          acc[field] = `${item[i - 1]}`;
+        } else if (field === "Send") {
+          acc[field] = `${(item[i] / 10 ** 18).toFixed(2)} D${item[i + 2]}`;
+        } else if (field === "Message") {
+          acc[field] = ` ${item[i + 2]}`;
+        } else {
+          acc[field] = value;
+        }
+        return acc;
+      }, {});
+
+      return record;
+    })
+    : [];
+
 
   return (
     <>
@@ -151,7 +223,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
             getFXRate();
           }
           else if (isSuccessRate && !isSuccessApprove && isFXRateResponseValid) {
-            setInterval(getFXRate, 3000);
+            setInterval(getFXRate, 3000);// late response while changing currency
             writeApprove?.()
           }
           else if (isSuccessApprove && !isSuccessSwap && isFXRateResponseValid) {
@@ -166,7 +238,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <p>To (address)</p>
         <Input placeholder="0x..." value={recipientAddress} onChange={(val) => setRecipientAddress(val.target.value)} required={true} />
         <p>Amount</p>
-        <InputNumber value={swapAmount} onChange={(val) => setSwapAmount(val)} />
+        <InputNumber value={swapAmount} onChange={(val) => setSwapAmount(val.target.value)} required={true} />
         <p>From Currency</p>
         <Input value={getLabelByKey(selectedCurrency)} readOnly={true} />
         <p>Target Currency</p>
@@ -190,7 +262,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       </Modal>
 
       <Modal
-        title="Confirm Payment"
+        title="Recent Requests"
         open={payModal}
         onOk={() => {
           if (!isSuccessApprove) {
@@ -207,13 +279,20 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         onCancel={hidePayModal}
         okText={!isSuccessApprove ? "Approved to Pay" : "Proceed To Pay"} // Change the text based on isSuccessApprove
         cancelText="Cancel"
+        width={880}
       >
         {requests && requests["0"] && (
           <>
-            <h2>Sending payment to {requests["0"][0]}</h2>
-            <h3>Value: {requests["2"][0] / 1e18} {requests["4"][0]}</h3>
-            <p>"{requests["5"][0]}"</p>
-            <p>Pay by <strong>{getLabelByKey(selectedCurrency)}</strong></p>
+            <Table
+              dataSource={dataSource}
+              address={address}
+              columns={columns}
+              pagination={{ position: ["bottomCenter"], pageSize: 3 }}
+            />
+            <p>Pay by: <strong>{getLabelByKey(selectedCurrency)}</strong></p>
+            <p>Index No: &nbsp;
+            <InputNumber value={payIndex} onChange={(val) => setPayIndex(val)} />
+            </p>
           </>
         )}
       </Modal>

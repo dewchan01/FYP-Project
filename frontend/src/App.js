@@ -22,12 +22,12 @@ function App() {
   const [sgd, setSGD] = useState("...");
   const [myr, setMYR] = useState("...");
   const [history, setHistory] = useState(null);
-  const [requests, setRequests] = useState({"0":[],"1":[],"2":[],"3":[],"4":[],"5":[]});
+  const [requests, setRequests] = useState({ "0": [], "1": [], "2": [], "3": [], "4": [], "5": [] });
   const [balanceOfLink, setBalanceOfLink] = useState("...");
   const [rate, setFXRate] = useState("...");
   const [isFXRateResponseValid, setIsFXRateAvailable] = useState(false);
   const [expiringTime, setExpiringTime] = useState("...");
-  const [tokenSymbol,setTokenSymbol] = useState("...");
+  const [tokenSymbol, setTokenSymbol] = useState("...");
   const [tokenAddress, setTokenAddress] = useState(null);
 
   function disconnectAndSetNull() {
@@ -41,17 +41,17 @@ function App() {
     setExpiringTime(0);
   }
 
-  function checkAccount(){
+  function checkAccount() {
     if (window.ethereum) {
       const ethereum = window.ethereum;
-    
+
       // Add an event listener to detect account changes
       ethereum.on('accountsChanged', (accounts) => {
         // `accounts` is an array of the current accounts
         const newAccount = accounts[0];
         // Handle the account change here
         console.log('MetaMask account changed to:', newAccount);
-    
+
         // You can perform any actions or updates in response to the account change here
         // For example, call your `getNameAndBalance` function
         disconnectAndSetNull();
@@ -65,11 +65,11 @@ function App() {
 
     const response = res.data;
     console.log(response);
-    
+
     setBalance(String(response.balance));
     setSGD(String(response.sgd));
     setMYR(String(response.myr));
-    
+
     checkAccount();
   }
 
@@ -79,7 +79,7 @@ function App() {
     });
 
     const response = res.data;
-    setHistory(response.history[0]);
+    setHistory(response.history);
     // console.log("History",response.history[0])
 
     checkAccount();
@@ -90,9 +90,9 @@ function App() {
       params: { userAddress: address },
     });
     let response;
-    if (res== null){
+    if (res == null) {
       response = {}
-    }else{
+    } else {
       response = res.data;
     }
     console.log(response);
@@ -101,7 +101,7 @@ function App() {
     checkAccount();
   }
 
-  async function getBalanceOfLink(){
+  async function getBalanceOfLink() {
     const res = await axios.get(`http://localhost:3001/getBalanceOfLink`);
     const response = res.data;
     console.log(response);
@@ -110,7 +110,7 @@ function App() {
     checkAccount();
   }
 
-  async function getFXRate(){
+  async function getFXRate() {
     const res = await axios.get(`http://localhost:3001/getFXRate`);
     const response = res.data;
     console.log(response);
@@ -122,10 +122,10 @@ function App() {
     checkAccount();
   }
 
-  async function showTokenAddress(){
+  async function showTokenAddress() {
     const res = await axios.get(`http://localhost:3001/showTokenAddress`, {
       params: { token: tokenSymbol },
-  });
+    });
     const response = res.data;
     console.log(response);
 
@@ -141,7 +141,7 @@ function App() {
     getHistory();
     getRequests();
     getFXRate();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   return (
@@ -170,7 +170,7 @@ function App() {
               Disconnect Wallet
             </Button>
           ) : (
-            <Button type={"primary"} onClick={()=>{
+            <Button type={"primary"} onClick={() => {
               console.log(requests); connect();
             }}>
               Connect Wallet
@@ -181,14 +181,18 @@ function App() {
           {isConnected ? (
             <>
               <div className="firstColumn">
-                <CurrencyStatus sgd={sgd} myr={myr} address={address} getBalance={getBalance} requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid} expiringTime={expiringTime} getFXRate={getFXRate}/>
+                <CurrencyStatus
+                  sgd={sgd} myr={myr} address={address} getBalance={getBalance}
+                  requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid}
+                  expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
+                  getRequests={getRequests} />
                 <AccountDetails
                   address={address}
                   balance={balance}
                 />
               </div>
               <div className="secondColumn">
-                <RecentActivity history={history} address={address}/>
+                <RecentActivity history={history} address={address} />
               </div>
             </>
           ) : (

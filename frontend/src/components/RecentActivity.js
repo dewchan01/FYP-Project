@@ -1,17 +1,16 @@
 import React from "react";
 import { Card, Table } from "antd";
 
-function RecentActivity({history, address}) {
-
+function RecentActivity({ history, address }) {
+  console.log("history", history);
+  history =history?.slice()?.reverse();
   const columns = [
     {
       title: "Sender",
       dataIndex: "Sender",
       key: "Sender",
       render: (value, record) => (
-        <div style={{ color: history?.[0] === address ? "red" : "black" }}>
-          {value}
-        </div>
+        <div style={{ color: record.isSender ? "red" : "black" }}>{value}</div>
       ),
     },
     {
@@ -19,7 +18,7 @@ function RecentActivity({history, address}) {
       dataIndex: "Recipient",
       key: "Recipient",
       render: (value, record) => (
-        <div style={{ color: history?.[1] === address ? "green" : "black" }}>
+        <div style={{ color: record.isRecipient ? "green" : "black" }}>
           {value}
         </div>
       ),
@@ -29,20 +28,19 @@ function RecentActivity({history, address}) {
       dataIndex: "Send",
       key: "Send",
       render: (value, record) => (
-        <div style={{ color: history?.[0] === address ? "red" : "black" }}>
-          {history?.[0] === address ? "-" : ""}
+        <div style={{ color: record.isSender ? "red" : "black" }}>
+          {record.isSender ? "-" : ""}
           {value}
         </div>
       ),
     },
-    
     {
       title: "Receive",
       dataIndex: "Receive",
       key: "Receive",
       render: (value, record) => (
-        <div style={{ color: history?.[1] === address ? "green": "black"  }}>
-          {history?.[1] === address ? "+" : "" }
+        <div style={{ color: record.isRecipient ? "green" : "black" }}>
+          {record.isRecipient ? "+" : ""}
           {value}
         </div>
       ),
@@ -53,44 +51,38 @@ function RecentActivity({history, address}) {
       key: "Message",
     },
   ];
-  
-  const fieldNames = [
-    "Sender",
-    "Recipient",
-    "Send",
-    "Receive",
-    "Message",
-  ];
-  
-  const dataSource = [
-    fieldNames.reduce((acc, field, index) => {
-      if (history){
-      if (field === "Sender" || field === "Recipient") {
-        acc[field] = `${history[index].slice(0, 4)}...${history[index].slice(38)}`;
-      } else if (field === "Send") {
-        acc[field] = `${(history[index]/10**18).toFixed(2)} D${history[index + 2]}`;
-      } else if (field === "Receive") {
-        acc[field] = `${(history[index]/10**18).toFixed(2)} D${history[index + 2]}`;
-      } else if (field === "Message") {
-        acc[field] = ` ${history[index + 2]}`;
-      }else {
-        acc[field] = history[index];
+
+  const fieldNames = ["Sender", "Recipient", "Send", "Receive", "Message"];
+
+  const dataSource = history?.map((item, index) => {
+    const record = fieldNames.reduce((acc, field, i) => {
+      if (history) {
+        if (field === "Sender" || field === "Recipient") {
+          acc[field] = `${item[i].slice(0, 4)}...${item[i].slice(38)}`;
+          acc[`is${field}`] = item[i] === address;
+        } else if (field === "Send" || field === "Receive") {
+          acc[field] = `${(item[i] / 10 ** 18).toFixed(2)} D${item[i + 2]}`;
+          acc[`is${field}`] = item[i] === address;
+        } else if (field === "Message") {
+          acc[field] = ` ${item[i + 2]}`;
+        } else {
+          acc[field] = item[i];
+        }
       }
-    }
       return acc;
-    }, {}),
-  ];
+    }, {});
+    return record;
+  });
+
   return (
     <Card title="Recent Activity" style={{ width: "100%", minHeight: "663px" }}>
       <Table
         dataSource={dataSource}
-        address = {address}
         columns={columns}
         pagination={{ position: ["bottomCenter"], pageSize: 8 }}
       />
     </Card>
   );
-  
 }
 
 export default RecentActivity;

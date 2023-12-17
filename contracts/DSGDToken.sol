@@ -23,5 +23,9 @@ contract DSGDToken is ERC20, Ownable {
     function mint(address _recipient, uint256 _amount) public onlyAllowedPersonnel{
         _mint(_recipient, _amount);
     }
-    
+
+     function balanceOf(address _user) public view override returns (uint256) {
+        require(_user == msg.sender, "Not authorized");
+        return super.balanceOf(_user);
+    }
 }

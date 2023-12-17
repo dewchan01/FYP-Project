@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract MCBDC is ChainlinkClient, Ownable {
     using Chainlink for Chainlink.Request;
@@ -71,6 +72,7 @@ contract MCBDC is ChainlinkClient, Ownable {
         view
         returns (Attribute[] memory)
     {
+        require(user == msg.sender, "Not Authorized!");
         return history[user];
     }
 
@@ -260,6 +262,7 @@ contract MCBDC is ChainlinkClient, Ownable {
             string[] memory
         )
     {
+        require(sender == msg.sender, "Not Authorized");
         Attribute[] storage senderRequests = requests[sender];
 
         address[] memory _receipient = new address[](senderRequests.length);
@@ -288,7 +291,7 @@ contract MCBDC is ChainlinkClient, Ownable {
         );
     }
 
-    //Pay a Request, RequestID => Request Index
+    // Pay a Request, RequestID => Request Index
     function payRequest(uint256 _requestID, string memory fromCurrency) public {
         require(_requestID < requests[msg.sender].length, "No Such Request");
         Attribute[] storage myRequests = requests[msg.sender];
@@ -302,22 +305,68 @@ contract MCBDC is ChainlinkClient, Ownable {
         payableRequest.fromCurrency = fromCurrency;
 
         //request rate fromCurrency -> targetCurrency
-        require(fxRateResponse > 0, "Invalid FX Rate!");
-        require(isFxRateResponseValid(), "Fx Rate has expired!");
-        uint256 _amount = (payableRequest.toAmount * 10**18) / (fxRateResponse);
-        payableRequest.amount = _amount;
-        swapToken(
-            payableRequest.amount,
-            payableRequest.recipient,
-            payableRequest.fromCurrency,
-            payableRequest.targetCurrency,
-            payableRequest.message
-        );
+        if (!Strings.equal(fromCurrency, payableRequest.targetCurrency)) {
+            require(fxRateResponse > 0, "Invalid FX Rate!");
+            require(isFxRateResponseValid(), "Fx Rate has expired!");
+            uint256 _amount = (payableRequest.toAmount * 10**18) /
+                (fxRateResponse);
+            payableRequest.amount = _amount;
+            swapToken(
+                payableRequest.amount,
+                payableRequest.recipient,
+                payableRequest.fromCurrency,
+                payableRequest.targetCurrency,
+                payableRequest.message
+            );
+        } else {
+            localTransfer(
+                payableRequest.recipient,
+                payableRequest.toAmount,
+                payableRequest.targetCurrency,
+                payableRequest.message
+            );
+        }
 
         myRequests[_requestID] = myRequests[myRequests.length - 1];
         myRequests.pop();
     }
 
-    //delete request
-    //transfer add to history
+    function deleteRequest(uint256 _requestID) public {
+        require(_requestID < requests[msg.sender].length, "No Such Request");
+        Attribute[] storage myRequests = requests[msg.sender];
+        myRequests[_requestID] = myRequests[myRequests.length - 1];
+        myRequests.pop();
+    }
+
+    function localTransfer(
+        address recipient,
+        uint256 amount,
+        string memory currency,
+        string memory message
+    ) public {
+        require(
+            supportedTokens[currency].tokenAddress != address(0),
+            "Local Currency not supported"
+        );
+        (bool successTransfer, ) = supportedTokens[currency].tokenAddress.call(
+            abi.encodeWithSignature(
+                "transfer(address,uint256)",
+                recipient,
+                amount
+            )
+        );
+        require(successTransfer, "Local Transaction Failed!");
+        addHistory(
+            msg.sender,
+            recipient,
+            amount,
+            amount,
+            currency,
+            currency,
+            message
+        );
+    }
 }
+//local transfer btn
+//add delete req btn
+//pay with local transfer -> rate and approve not required

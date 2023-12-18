@@ -75,7 +75,7 @@ contract MCBDC is ChainlinkClient {
         view
         returns (Attribute[] memory)
     {
-        require(user == msg.sender, "Not Authorized!");
+        // require(user == msg.sender, "Not Authorized!");
         return history[user];
     }
 
@@ -133,8 +133,6 @@ contract MCBDC is ChainlinkClient {
         public
         returns (bytes32 requestId)
     {
-        // Set the timeout duration in seconds (30 seconds in this example)
-        // uint256 timeout = 30;
         Chainlink.Request memory req = buildChainlinkRequest(
             jobId,
             address(this),
@@ -166,7 +164,6 @@ contract MCBDC is ChainlinkClient {
 
         int256 timesAmount = 10**18;
         req.addInt("times", timesAmount);
-        // req.addUint("until", block.timestamp + timeout);
         fxRateResponseTimestamp = block.timestamp;
         return sendChainlinkRequest(req, fee);
     }
@@ -251,13 +248,12 @@ contract MCBDC is ChainlinkClient {
         requests[sender].push(newRequest);
     }
 
-    //Get all requests sent to a User
     function getMyRequests(address sender)
         public
         view
         returns (Attribute[] memory)
     {
-        require(sender == msg.sender, "Not Authorized");
+        // require(sender == msg.sender, "Not Authorized");
         return requests[sender];
     }
 
@@ -274,7 +270,6 @@ contract MCBDC is ChainlinkClient {
 
         payableRequest.fromCurrency = fromCurrency;
 
-        //request rate fromCurrency -> targetCurrency
         if (!Strings.equal(fromCurrency, payableRequest.targetCurrency)) {
             require(fxRateResponse > 0, "Invalid FX Rate!");
             require(isFxRateResponseValid(), "Fx Rate has expired!");
@@ -315,9 +310,9 @@ contract MCBDC is ChainlinkClient {
         string memory currency,
         string memory message
     ) public {
-        require(
-            msg.sender == sender, "Invalid sender address"
-        );
+        // require(
+        //     msg.sender == sender, "Invalid sender address"
+        // );
         require(
             supportedTokens[currency].tokenAddress != address(0),
             "Local Currency not supported"

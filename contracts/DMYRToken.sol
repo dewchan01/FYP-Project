@@ -44,7 +44,6 @@ contract DMYRToken is ERC20, Ownable {
     }
 
     function balanceOf(address _user) public view override returns (uint256) {
-        require(_user == msg.sender, "Not authorized!");
         return super.balanceOf(_user);
     }
 }

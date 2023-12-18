@@ -182,6 +182,20 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           &nbsp;
           <Button type="primary" loading={isLoadingDeleteRequest} onClick={() => handleDelete(record.No)}>Delete</Button>
           {/* </Popconfirm> */}
+          {(!isSuccessRate || !isFXRateResponseValid) && requests?.[record.No - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,) ? (
+          <p></p>
+        ) : (isSuccessRate && isFXRateResponseValid
+          ?
+          (
+            <>
+              <p>Rate for {expiringTime / 60}mins {"("}1{getLabelByKey(selectedCurrency)}: {(rate / 1e18).toFixed(6)}{getLabelByKey(String(selectedCurrency % 2 + 1))}{")"}</p>
+              <p>Payable Amount: {(requests?.[record.No - 1]?.[3] / rate).toFixed(2)}{getLabelByKey(selectedCurrency)}</p>
+            </>
+          )
+          : (
+            <p style={{ color: "red" }}>Please request FX Rate!</p>
+          ))
+        }
         </>
       ),
     }

@@ -22,7 +22,7 @@ function App() {
   const [sgd, setSGD] = useState("...");
   const [myr, setMYR] = useState("...");
   const [history, setHistory] = useState(null);
-  const [requests, setRequests] = useState({ "0": [], "1": [], "2": [], "3": [], "4": [], "5": [] });
+  const [requests, setRequests] = useState(null);
   const [balanceOfLink, setBalanceOfLink] = useState("...");
   const [rate, setFXRate] = useState("...");
   const [isFXRateResponseValid, setIsFXRateAvailable] = useState(false);

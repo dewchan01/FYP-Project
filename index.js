@@ -8,12 +8,10 @@ const port = 3001;
 
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL); // Replace with your Alchemy API key
 
-// const PaymentContractAddress = process.env.PAYMENT_CONTRACT_ADDRESS; // Replace with your smart contract address
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
 const DMYRTokenAddress = process.env.DMYRTOKEN_CONTRACT_ADDRESS;
 const MCBDCContractAddress = process.env.MCBDC_CONTRACT_ADDRESS;
 
-// const PaymentContractABI = require("./artifacts/contracts/Payment.sol/Payment.json").abi;
 const DSGDTokenContractABI = require("./artifacts/contracts/DSGDToken.sol/DSGDToken.json").abi;
 const DMYRTokenContractABI = require("./artifacts/contracts/DMYRToken.sol/DMYRToken.json").abi;
 const MCBDCContractABI = require("./artifacts/contracts/MCBDC.sol/MCBDC.json").abi;
@@ -22,47 +20,35 @@ const MCBDCContract = new web3.eth.Contract(MCBDCContractABI, MCBDCContractAddre
 const DMYRTokenContract = new web3.eth.Contract(DMYRTokenContractABI, DMYRTokenAddress); 
 const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenAddress); 
 
-// function convertArrayToObjects(arr) {
-//   if (!Array.isArray(arr)) {
-//     // Handle the case where arr is not an array (e.g., empty or undefined)
-//     return [];
-//   }
-
-//   const dataArray = arr.map((transaction, index) => ({
-//     key: (arr.length + 1 - index).toString(),
-//     type: transaction[0],
-//     amount: transaction[1],
-//     message: transaction[2],
-//     address: `${transaction[3].slice(0, 4)}...${transaction[3].slice(0, 4)}`,
-//     subject: transaction[4],
-//   }));
-//   return dataArray.reverse();
-// }
-
 app.use((_, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   next();
 });
 
 app.get("/getBalance", async (req, res) => {
-  const { userAddress } = req.query;
+  try {
+    const { userAddress } = req.query;
 
-  // Get the balance
-  const nativeBalance = await web3.eth.getBalance(userAddress);
+    // Get the balance
+    const nativeBalance = await web3.eth.getBalance(userAddress);
 
-  // Fetch native balance
-  const balanceInEth = web3.utils.fromWei(nativeBalance, "ether");
-  const DSGDbalance = await DSGDTokenContract.methods.balanceOf(userAddress).call();
-  const DMYRbalance = await DMYRTokenContract.methods.balanceOf(userAddress).call();
+    // Fetch native balance
+    const balanceInEth = web3.utils.fromWei(nativeBalance, "ether");
+    const DSGDbalance = await DSGDTokenContract.methods.balanceOf(userAddress).call();
+    const DMYRbalance = await DMYRTokenContract.methods.balanceOf(userAddress).call();
 
-  // Transform history and requests (modify based on your data structure)
-  const jsonResponse = {
-    balance: balanceInEth,
-    sgd: String(DSGDbalance / (1e18)),
-    myr: String(DMYRbalance / (1e18)),
-  };
-  console.log(jsonResponse);
-  return res.status(200).json(jsonResponse);
+    // Transform history and requests (modify based on your data structure)
+    const jsonResponse = {
+      balance: balanceInEth,
+      sgd: String(DSGDbalance / (1e18)),
+      myr: String(DMYRbalance / (1e18)),
+    };
+    console.log(jsonResponse);
+    return res.status(200).json(jsonResponse);
+  } catch (error) {
+    console.error("Error fetching balance:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 app.get("/getHistory", async (req, res) => {

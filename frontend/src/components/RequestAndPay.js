@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { DollarOutlined, SwapOutlined, TransactionOutlined } from "@ant-design/icons";
-import { Modal, Input, InputNumber, Table } from "antd";
+import { Modal, Input, InputNumber, Table, Button } from "antd";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
 import MCBDCABI from "../ABI/MCBDC.json";
-import { getLabelByKey, getContractAddressByKey, getContractABIByKey } from "./tokenConfig";
+import { getLabelByKey } from "./tokenConfig";
 
 //check balanceOfLink
 function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, expiringTime, isFXRateResponseValid, getFXRate, getHistory, getRequests }) {
@@ -20,15 +20,15 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const [requestMessage, setRequestMessage] = useState("");
   const [swapMessage, setSwapMessage] = useState("");
   const [payIndex, setPayIndex] = useState(1);
+  const [deleteIndex, setDeleteIndex] = useState(1);
 
-  const [isSuccessApprove, setIsSuccessApprove] = useState(false);
   const [isSuccessSwap, setIsSuccessSwap] = useState(false);
   const [isSuccessRate, setIsSuccessRate] = useState(false);
 
-  requests = requests?.["requests"];
-  // console.log("Requests", requests[4]);
+  requests = requests?.['requests']?.slice();
+  console.log("Requests", requests?.[0]);
 
-  const { config } = usePrepareContractWrite({
+  const { config: configPay } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
@@ -39,7 +39,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     // },
   });
 
-  const { writePay, dataPay } = useContractWrite(config);
+  const { write: writePay, data: dataPay } = useContractWrite(configPay);
 
   const { config: configRequest } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
@@ -51,6 +51,16 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   const { write: writeRequest, data: dataRequest } = useContractWrite(configRequest);
 
+  const { config: configDeleteRequest } = usePrepareContractWrite({
+    chainId: polygonMumbai.id,
+    address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
+    abi: MCBDCABI,
+    functionName: "deleteRequest",
+    args: [deleteIndex - 1],
+  });
+
+  const { write: writeDeleteRequest, data: dataDeleteRequest } = useContractWrite(configDeleteRequest);
+
   const { config: configRate } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
@@ -60,17 +70,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   });
 
   const { write: writeRate, data: dataRate } = useContractWrite(configRate);
-  // console.log("HI",String(Number(requests?.[2]?.[payIndex - 1])));
-
-  const { config: configApprove } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
-    address: getContractAddressByKey(selectedCurrency),
-    abi: getContractABIByKey(selectedCurrency),
-    functionName: "approve",
-    args: [process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS, (remitIntModal === true) ? String(Number(swapAmount * 1e18)) : String(Number(requests?.[2]?.[payIndex - 1]))],
-  });
-
-  const { write: writeApprove, data: dataApprove } = useContractWrite(configApprove);
 
   const { config: configSwap } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
@@ -82,15 +81,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   const { write: writeSwap, data: dataSwap } = useContractWrite(configSwap);
 
-  const { config: configTransfer } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
-    address: getContractAddressByKey(String(selectedCurrency)),
-    abi: getContractABIByKey(selectedCurrency),
-    functionName: "transfer",
-    args: [requests?.[0]?.[payIndex - 1], String(Number(requests?.[2]?.[payIndex - 1]))],
-  });
-
-  const { isLoading: isLoadingPay, isSuccessPay } = useWaitForTransaction({
+  const { isLoading: isLoadingPay, isSuccess:isSuccessPay } = useWaitForTransaction({
     hash: dataPay?.hash,
   })
 
@@ -98,9 +89,8 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     hash: dataRequest?.hash,
   })
 
-  const { isLoading: isLoadingApprove } = useWaitForTransaction({
-    hash: dataApprove?.hash,
-    onSuccess: () => setIsSuccessApprove(true),
+  const { isLoading: isLoadingDeleteRequest, isSuccess: isSuccessDeleteRequest } = useWaitForTransaction({
+    hash: dataDeleteRequest?.hash,
   })
 
   const { isLoading: isLoadingSwap } = useWaitForTransaction({
@@ -135,7 +125,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     setRequestModal(false);
   };
   useEffect(() => {
-    if (isSuccessPay || isSuccessRequest || isSuccessSwap) {
+    if (isSuccessPay || isSuccessRequest || isSuccessSwap || isSuccessDeleteRequest) {
       getBalance();
       getHistory();
       getRequests();
@@ -143,17 +133,15 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       hidePayModal();
       hideRequestModal();
       hideRemitIntModal();
-      setIsSuccessApprove(false);
       setIsSuccessRate(false);
       setIsSuccessSwap(false);
     }
-    console.log(isSuccessRate, isSuccessApprove, isSuccessSwap)
+    console.log(isSuccessRate, isSuccessSwap)
     if (isSuccessRate) {
       getFXRate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessApprove])
-
+  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest])
 
   const columns = [
     {
@@ -165,28 +153,38 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       title: "Recipient",
       dataIndex: "Recipient",
       key: "Recipient",
-      //   render: (value, record) => (
-      //     <div style={{ color: requests?.[1] === address ? "green" : "black" }}>
-      //       {value}
-      //     </div>
-      //   ),
     },
     {
       title: "Send",
       dataIndex: "Send",
       key: "Send",
-      // render: (value, record) => (
-      //   <div style={{ color: requests?.[0] === address ? "red" : "black" }}>
-      //     {requests?.[0] === address ? "-" : ""}
-      //     {value}
-      //   </div>
-      // ),
     },
     {
       title: "Message",
       dataIndex: "Message",
       key: "Message",
     },
+    {
+      title: "Action",
+      dataIndex: "Action",
+      key: "Action",
+      render: (_, record) => (
+        <>
+          <Button type="primary" loading={isLoadingPay || isLoadingRate} onClick={() => handlePay(record.No)}>{((!isSuccessRate || !isFXRateResponseValid) && requests?.[record.No - 1]?.[5] !== getLabelByKey(selectedCurrency).slice(1,)) ? "Request FX Rate" : "Pay"}</Button>
+          {/* <Popconfirm
+            title="Delete request"
+            description="Are you sure to delete this request?"
+            onConfirm={ message.success(`Request ${record.No} is deleted!`)}
+            onCancel={message.error('Request is not deleted!')}
+            okText="Yes"
+            cancelText="No"
+          > */}
+          &nbsp;
+          <Button type="primary" loading={isLoadingDeleteRequest} onClick={() => handleDelete(record.No)}>Delete</Button>
+          {/* </Popconfirm> */}
+        </>
+      ),
+    }
   ];
 
   const fieldNames = [
@@ -194,33 +192,52 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     "Recipient",
     "Send",
     "Message",
+    "Delete"
   ];
 
-  const dataSource = requests
-    ? Object.keys(requests["0"]).map((index) => {
-      const item = Object.values(requests).map((arr) => arr[index]);
-      // console.log(item);
-
-      const record = fieldNames.reduce((acc, field, i) => {
-        const value = item[i];
-        if (field === "No") {
-          acc[field] = Number(index) + 1;
+  const dataSource = requests?.map((item, index) => {
+    const record = fieldNames.reduce((acc, field, i) => {
+      if (requests) {
+        if (field === "No" || field === "Action") {
+          acc[field] = index + 1;
         } else if (field === "Recipient") {
-          acc[field] = `${item[i - 1]}`;
+          acc[field] = `${item[i].slice(0, 4)}...${item[i].slice(38)}`;
+          acc[`is${field}`] = item[i] === address;
         } else if (field === "Send") {
-          acc[field] = `${(item[i] / 10 ** 18).toFixed(2)} D${item[i + 2]}`;
+          acc[field] = `${(item[i + 1] / 10 ** 18).toFixed(2)} D${item[i + 3]}`;
+          acc[`is${field}`] = item[i] === address;
         } else if (field === "Message") {
-          acc[field] = ` ${item[i + 2]}`;
+          acc[field] = ` ${item[i + 3]}`;
         } else {
-          acc[field] = value;
+          acc[field] = item[i];
         }
-        return acc;
-      }, {});
+      }
+      return acc;
+    }, {});
+    return record;
+  });
 
-      return record;
-    })
-    : [];
+  const handlePay = (index) => {
+    setPayIndex(index);
+    console.log(!isSuccessPay,requests?.[payIndex - 1]?.[5], getLabelByKey(selectedCurrency).slice(1,));
 
+    if (!isSuccessRate && requests?.[payIndex - 1]?.[5] !== getLabelByKey(selectedCurrency).slice(1,)) {
+      writeRate?.()
+      getFXRate();
+    }
+    else if ((isSuccessRate && !isSuccessPay && isFXRateResponseValid && requests?.[payIndex - 1]?.[5] !== getLabelByKey(selectedCurrency).slice(1,)) || (!isSuccessPay && requests?.[payIndex - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,))) {
+      setInterval(getFXRate, 3000);// late response while changing currency
+      writePay?.()
+    }
+    else if (isSuccessPay) {
+      hidePayModal();
+    }
+  }
+  const handleDelete = (index) => {
+    setDeleteIndex(index);
+    writeDeleteRequest?.()
+    // Implement your logic to handle the deletion of the item at the specified index
+  };
 
   return (
     <>
@@ -232,27 +249,35 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
             writeRate?.()
             getFXRate();
           }
-          else if (isSuccessRate && !isSuccessApprove && isFXRateResponseValid) {
+          else if (isSuccessRate && !isSuccessSwap && isFXRateResponseValid) {
             setInterval(getFXRate, 3000);// late response while changing currency
-            writeApprove?.()
-          }
-          else if (isSuccessApprove && !isSuccessSwap && isFXRateResponseValid) {
             writeSwap?.();
           }
         }}
-        confirmLoading={isLoadingSwap || isLoadingApprove || isLoadingRate}
+        confirmLoading={isLoadingSwap || isLoadingRate}
         onCancel={hideRemitIntModal}
-        okText={(!isFXRateResponseValid) ? "Request FX Rate" : ((!isSuccessApprove && isSuccessRate && !isSuccessSwap && isFXRateResponseValid) ? "Approved to Make Transaction" : ((isSuccessApprove && isSuccessRate && !isSuccessSwap) ? "Make Transaction" : "Request FX Rate"))}
+        okText={(!isFXRateResponseValid) ? "Request FX Rate" : ((isSuccessRate && !isSuccessSwap && isFXRateResponseValid) ? "Make Transaction" : "Request FX Rate")}
         cancelText="Cancel"
       >
         <p>To (address)</p>
         <Input placeholder="0x..." value={recipientAddress} onChange={(val) => setRecipientAddress(val.target.value)} required={true} />
         <p>Amount</p>
-        <InputNumber value={swapAmount} onChange={(val) => setSwapAmount(val.target.value)} required={true} />
+        <InputNumber value={swapAmount} onChange={(val) => setSwapAmount(val)} required={true} />
         <p>From Currency</p>
         <Input value={getLabelByKey(selectedCurrency)} readOnly={true} />
         <p>Target Currency</p>
-        <Input placeholder={getLabelByKey(String(selectedCurrency % 2 + 1))} value={toCurrency} onChange={(val) => setToCurrency(val.target.value)} required={true} />
+        <Input placeholder={getLabelByKey(String(selectedCurrency % 2 + 1))}
+          value={toCurrency}
+          onChange={(val) => setToCurrency(val.target.value)}
+          onBlur={() => {
+            if (getLabelByKey(String(selectedCurrency)) === toCurrency) {
+              setToCurrency("");
+            }
+          }}
+          required={true} />
+        {getLabelByKey(String(selectedCurrency)) === toCurrency && (
+          <p style={{ color: 'red' }}>You cannot make cross border transaction using same currency.</p>
+        )}
         {!isSuccessRate && !isFXRateResponseValid ? (
           <p></p>
         ) : (isSuccessRate && isFXRateResponseValid
@@ -274,29 +299,11 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       <Modal
         title="Recent Requests"
         open={payModal}
-        onOk={() => {
-          if (!isSuccessRate && requests?.[4]?.[payIndex-1] !== getLabelByKey(selectedCurrency).slice(1,)) {
-            writeRate?.()
-            getFXRate();
-          }
-          else if (isSuccessRate && !isSuccessApprove && isFXRateResponseValid && requests?.[4]?.[payIndex-1] !== getLabelByKey(selectedCurrency).slice(1,)) {
-            setInterval(getFXRate, 3000);// late response while changing currency
-            writeApprove?.()
-          }
-          else if ((isSuccessApprove && !isSuccessPay && isFXRateResponseValid && requests?.[4]?.[payIndex-1] !== getLabelByKey(selectedCurrency).slice(1,)) || (!isSuccessPay && isFXRateResponseValid && requests?.[4]?.[payIndex-1] === getLabelByKey(selectedCurrency).slice(1,))) {
-            writePay?.()
-          }
-          else if (isSuccessPay) {
-            hidePayModal();
-          }
-        }}
-        confirmLoading={isLoadingApprove || isLoadingPay}
         onCancel={hidePayModal}
-        okText={!isSuccessApprove && requests?.[4]?.[payIndex-1] !== getLabelByKey(selectedCurrency).slice(1,) ?"Approved to Pay" : "Proceed To Pay"} // Change the text based on isSuccessApprove
-        cancelText="Cancel"
+        footer={null}
         width={880}
       >
-        {requests && requests["0"] && (
+        {requests && requests.length > 0 && (
           <>
             <Table
               dataSource={dataSource}
@@ -305,9 +312,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
               pagination={{ position: ["bottomCenter"], pageSize: 3 }}
             />
             <p>Pay by: <strong>{getLabelByKey(selectedCurrency)}</strong></p>
-            <p>Index No: &nbsp;
-              <InputNumber value={payIndex} onChange={(val) => setPayIndex(val)} />
-            </p>
           </>
         )}
       </Modal>
@@ -349,17 +353,17 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           Remit Int.
         </div>
         <div
-          className={`quickOption ${requests && requests["0"]?.length > 0 ? "quickOption" : "quickOption-disabled"}`}
+          className={`quickOption ${requests && requests?.length > 0 ? "quickOption" : "quickOption-disabled"}`}
           onClick={() => {
-            if (requests && requests["0"].length > 0) {
+            if (requests && requests.length > 0) {
               showPayModal();
             }
           }}
         >
           <DollarOutlined style={{ fontSize: "26px" }} />
           Pay
-          {requests && requests["0"] && (
-            <div className={`numReqs ${requests && requests["0"]?.length > 0 ? "numReqs" : "numReqs-disabled"}`}>{requests["0"].length}</div>
+          {requests && requests && (
+            <div className={`numReqs ${requests && requests?.length > 0 ? "numReqs" : "numReqs-disabled"}`}>{requests.length}</div>
           )}
         </div>
         <div

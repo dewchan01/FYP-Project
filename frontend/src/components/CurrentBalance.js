@@ -4,8 +4,9 @@ import { DownOutlined } from "@ant-design/icons";
 import { polygonMumbai } from "@wagmi/chains";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { tokenConfig, getLabelByKey,getContractABIByKey,getContractAddressByKey, getContractOwnerByKey } from "./tokenConfig";
+import MCBDCABI from "../ABI/MCBDC.json";
 
-function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSelectedCurrency }) {
+function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSelectedCurrency,getHistory}) {
   const [transferModal, setTransferModal] = useState(false);
   const [mintModal, setMintModal] = useState(false);
   const [burnModal, setBurnModal] = useState(false);
@@ -13,6 +14,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
   const [mintAmount, setMintAmount] = useState(5);
   const [burnAmount, setBurnAmount] = useState(5);
   const [transferAmount, setTransferAmount] = useState(5);
+  const [message,setMessage] = useState("");
   const items = tokenConfig;
 
   const BalanceDropdown = ({ sgd, myr, selectedCurrency, onCurrencyChange }) => {
@@ -50,10 +52,10 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
 
   const { config: configTransfer } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
-    address: getContractAddressByKey(String(selectedCurrency)),
-    abi: getContractABIByKey(selectedCurrency),
-    functionName: "transfer",
-    args: [transferAddress, String(transferAmount * (1e18))],
+    address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
+    abi: MCBDCABI,
+    functionName: "localTransfer",
+    args: [address,transferAddress, String(transferAmount * (1e18)),getLabelByKey(selectedCurrency).slice(1,),message],
   });
 
   const { write: writeTransfer, data: dataTransfer } = useContractWrite(configTransfer);
@@ -111,6 +113,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
   useEffect(() => {
     if (isSuccessMint || isSuccessTransfer || isSuccessBurn) {
       getBalance();
+      getHistory();
       hideMintModal();
       hideTransferModal();
       hideBurnModal();
@@ -145,13 +148,16 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
           okText="Transfer"
           cancelText="Cancel"
         >
-          <p>Amount ({getLabelByKey(selectedCurrency)})</p>
+          <p>Amount <strong>({getLabelByKey(selectedCurrency)})</strong></p>
           <InputNumber value={transferAmount} onChange={(val) => setTransferAmount(val)} />
           <p>To (address)</p>
           <Input placeholder="0x..." value={transferAddress} onChange={(val) => setTransferAddress(val.target.value)} />
           {transferAddress === address && (
             <p style={{ color: 'red' }}>You cannot transfer token to your own address.</p>
           )}
+          <p>Message</p>
+          <Input placeholder="Send 1 eth..." value={message} onChange={(val) => setMessage(val.target.value)} />
+
         </Modal>
         
         <div className="extraOption" onClick={showTransferModal}>Local Transfer</div>

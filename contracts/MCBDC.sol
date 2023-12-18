@@ -2,10 +2,9 @@
 pragma solidity ^0.8.20;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-contract MCBDC is ChainlinkClient, Ownable {
+contract MCBDC is ChainlinkClient {
     using Chainlink for Chainlink.Request;
 
     struct Attribute {
@@ -22,7 +21,7 @@ contract MCBDC is ChainlinkClient, Ownable {
         address tokenAddress;
         string tokenSymbol;
     }
-
+    address immutable owner;
     string private chainlinkJobId;
     uint256 private chainlinkFee;
     bytes32 private jobId;
@@ -32,6 +31,9 @@ contract MCBDC is ChainlinkClient, Ownable {
     uint256 public fxRateResponseTimestamp;
     uint256 public responseExpiryTime = 180; // Set the expiration time in seconds
 
+    address temp_recipient;
+    uint256 temp_amount;
+
     mapping(address => Attribute[]) public history;
     mapping(address => Attribute[]) public requests;
     mapping(string => TokenInfo) public supportedTokens;
@@ -39,11 +41,12 @@ contract MCBDC is ChainlinkClient, Ownable {
     event CurrencyAdded(string currency, address tokenAddress);
     event RequestVolume(bytes32 indexed requestId, uint256 fxRateResponse);
 
-    constructor() Ownable(msg.sender) {
+    constructor() {
         setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
         setChainlinkOracle(0x40193c8518BB267228Fc409a613bDbD8eC5a97b3);
         jobId = "ca98366cc7314957b8c012c72f05aeeb";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0.1 * 10**18 (Varies by network and job)
+        owner = msg.sender;
     }
 
     function addHistory(
@@ -195,14 +198,13 @@ contract MCBDC is ChainlinkClient, Ownable {
         _balanceOfLink = link.balanceOf(address(this));
     }
 
-    function addNewToken(string memory symbol, address tokenAddress)
-        public
-        onlyOwner
-    {
+    function addNewToken(string memory symbol, address tokenAddress) public {
+        require(msg.sender == owner);
         supportedTokens[symbol] = TokenInfo(tokenAddress, symbol);
     }
 
-    function removeToken(string memory symbol) public onlyOwner {
+    function removeToken(string memory symbol) public {
+        require(msg.sender == owner);
         require(
             supportedTokens[symbol].tokenAddress != address(0),
             "Token not found"
@@ -253,42 +255,10 @@ contract MCBDC is ChainlinkClient, Ownable {
     function getMyRequests(address sender)
         public
         view
-        returns (
-            address[] memory,
-            uint256[] memory,
-            uint256[] memory,
-            string[] memory,
-            string[] memory,
-            string[] memory
-        )
+        returns (Attribute[] memory)
     {
         require(sender == msg.sender, "Not Authorized");
-        Attribute[] storage senderRequests = requests[sender];
-
-        address[] memory _receipient = new address[](senderRequests.length);
-        uint256[] memory _amount = new uint256[](senderRequests.length);
-        uint256[] memory _toAmount = new uint256[](senderRequests.length);
-        string[] memory _fromCurrency = new string[](senderRequests.length);
-        string[] memory _targetCurrency = new string[](senderRequests.length);
-        string[] memory _message = new string[](senderRequests.length);
-
-        for (uint256 i = 0; i < senderRequests.length; i++) {
-            _receipient[i] = senderRequests[i].recipient;
-            _amount[i] = senderRequests[i].amount;
-            _toAmount[i] = senderRequests[i].toAmount;
-            _fromCurrency[i] = senderRequests[i].fromCurrency;
-            _targetCurrency[i] = senderRequests[i].targetCurrency;
-            _message[i] = senderRequests[i].message;
-        }
-
-        return (
-            _receipient,
-            _amount,
-            _toAmount,
-            _fromCurrency,
-            _targetCurrency,
-            _message
-        );
+        return requests[sender];
     }
 
     // Pay a Request, RequestID => Request Index
@@ -320,6 +290,7 @@ contract MCBDC is ChainlinkClient, Ownable {
             );
         } else {
             localTransfer(
+                msg.sender,
                 payableRequest.recipient,
                 payableRequest.toAmount,
                 payableRequest.targetCurrency,
@@ -327,8 +298,7 @@ contract MCBDC is ChainlinkClient, Ownable {
             );
         }
 
-        myRequests[_requestID] = myRequests[myRequests.length - 1];
-        myRequests.pop();
+        deleteRequest(_requestID);
     }
 
     function deleteRequest(uint256 _requestID) public {
@@ -339,18 +309,24 @@ contract MCBDC is ChainlinkClient, Ownable {
     }
 
     function localTransfer(
+        address sender,
         address recipient,
         uint256 amount,
         string memory currency,
         string memory message
     ) public {
         require(
+            msg.sender == sender, "Invalid sender address"
+        );
+        require(
             supportedTokens[currency].tokenAddress != address(0),
             "Local Currency not supported"
         );
+
         (bool successTransfer, ) = supportedTokens[currency].tokenAddress.call(
             abi.encodeWithSignature(
-                "transfer(address,uint256)",
+                "transferFromContract(address,address,uint256)",
+                sender,
                 recipient,
                 amount
             )
@@ -367,6 +343,3 @@ contract MCBDC is ChainlinkClient, Ownable {
         );
     }
 }
-//local transfer btn
-//add delete req btn
-//pay with local transfer -> rate and approve not required

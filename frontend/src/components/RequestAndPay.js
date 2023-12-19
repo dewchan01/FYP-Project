@@ -24,8 +24,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   const [isSuccessSwap, setIsSuccessSwap] = useState(false);
   const [isSuccessRate, setIsSuccessRate] = useState(false);
-  const [shouldPay, setShouldPay] = useState(false);
-
   const items = tokenConfig;
   const filteredTokens = tokenConfig.filter(item => item.key !== selectedCurrency);
 
@@ -138,7 +136,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     setRequestMessage('');
     setRequestAddress('');
   };
-
   useEffect(() => {
     if (isSuccessRate) {
       getFXRate();
@@ -162,7 +159,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest, selectedCurrency])
 
-  
   const columns = [
     {
       title: "No",

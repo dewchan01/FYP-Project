@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { DollarOutlined, SwapOutlined, TransactionOutlined } from "@ant-design/icons";
-import { Modal, Input, InputNumber, Table, Button } from "antd";
+import { DollarOutlined, SwapOutlined, TransactionOutlined, DownOutlined } from "@ant-design/icons";
+import { Modal, Input, InputNumber, Table, Button, Dropdown, Space, Menu } from "antd";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
 import MCBDCABI from "../ABI/MCBDC.json";
-import { getLabelByKey } from "./tokenConfig";
+import { getLabelByKey, tokenConfig } from "./tokenConfig";
 
 //check balanceOfLink
 function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, expiringTime, isFXRateResponseValid, getFXRate, getHistory, getRequests }) {
@@ -13,8 +13,8 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const [requestModal, setRequestModal] = useState(false);
   const [requestCurrency, setRequestCurrency] = useState("");
   const [toCurrency, setToCurrency] = useState("");
-  const [requestAmount, setRequestAmount] = useState(0);
-  const [swapAmount, setSwapAmount] = useState(0);
+  const [requestAmount, setRequestAmount] = useState(1);
+  const [swapAmount, setSwapAmount] = useState(1);
   const [recipientAddress, setRecipientAddress] = useState("");
   const [requestAddress, setRequestAddress] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
@@ -24,9 +24,14 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   const [isSuccessSwap, setIsSuccessSwap] = useState(false);
   const [isSuccessRate, setIsSuccessRate] = useState(false);
+  const [shouldPay, setShouldPay] = useState(false);
+
+  const items = tokenConfig;
+  const filteredTokens = tokenConfig.filter(item => item.key !== selectedCurrency);
 
   requests = requests?.['requests']?.slice();
-  console.log("Requests", requests?.[0]);
+  console.log("Requests", requests);
+
 
   const { config: configPay } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
@@ -81,7 +86,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   const { write: writeSwap, data: dataSwap } = useContractWrite(configSwap);
 
-  const { isLoading: isLoadingPay, isSuccess:isSuccessPay } = useWaitForTransaction({
+  const { isLoading: isLoadingPay, isSuccess: isSuccessPay } = useWaitForTransaction({
     hash: dataPay?.hash,
   })
 
@@ -109,6 +114,10 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   }
   const hideRemitIntModal = () => {
     setRemitIntModal(false);
+    setSwapAmount(1);
+    setSwapMessage('');
+    setRecipientAddress('');
+    setToCurrency('');
   }
 
   const showPayModal = () => {
@@ -116,6 +125,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   };
   const hidePayModal = () => {
     setPayModal(false);
+    setIsSuccessSwap(false);
   };
 
   const showRequestModal = () => {
@@ -123,8 +133,20 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   };
   const hideRequestModal = () => {
     setRequestModal(false);
+    setRequestCurrency('');
+    setRequestAmount(1);
+    setRequestMessage('');
+    setRequestAddress('');
   };
+
   useEffect(() => {
+    if (isSuccessRate) {
+      getFXRate();
+      setIsSuccessSwap(false);
+    }
+    else if (!isFXRateResponseValid) {
+      setIsSuccessRate(false);
+    }
     if (isSuccessPay || isSuccessRequest || isSuccessSwap || isSuccessDeleteRequest) {
       getBalance();
       getHistory();
@@ -136,13 +158,11 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       setIsSuccessRate(false);
       setIsSuccessSwap(false);
     }
-    console.log(isSuccessRate, isSuccessSwap)
-    if (isSuccessRate) {
-      getFXRate();
-    }
+    console.log("isRate?", isSuccessRate, isSuccessSwap)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest])
+  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest, selectedCurrency])
 
+  
   const columns = [
     {
       title: "No",
@@ -171,31 +191,22 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       render: (_, record) => (
         <>
           <Button type="primary" loading={isLoadingPay || isLoadingRate} onClick={() => handlePay(record.No)}>{((!isSuccessRate || !isFXRateResponseValid) && requests?.[record.No - 1]?.[5] !== getLabelByKey(selectedCurrency).slice(1,)) ? "Request FX Rate" : "Pay"}</Button>
-          {/* <Popconfirm
-            title="Delete request"
-            description="Are you sure to delete this request?"
-            onConfirm={ message.success(`Request ${record.No} is deleted!`)}
-            onCancel={message.error('Request is not deleted!')}
-            okText="Yes"
-            cancelText="No"
-          > */}
           &nbsp;
           <Button type="primary" loading={isLoadingDeleteRequest} onClick={() => handleDelete(record.No)}>Delete</Button>
-          {/* </Popconfirm> */}
           {(!isSuccessRate || !isFXRateResponseValid) && requests?.[record.No - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,) ? (
-          <p></p>
-        ) : (isSuccessRate && isFXRateResponseValid
-          ?
-          (
-            <>
-              <p>Rate for {expiringTime / 60}mins {"("}1{getLabelByKey(selectedCurrency)}: {(rate / 1e18).toFixed(6)}{getLabelByKey(String(selectedCurrency % 2 + 1))}{")"}</p>
-              <p>Payable Amount: {(requests?.[record.No - 1]?.[3] / rate).toFixed(2)}{getLabelByKey(selectedCurrency)}</p>
-            </>
-          )
-          : (
-            <p style={{ color: "red" }}>Please request FX Rate!</p>
-          ))
-        }
+            <p></p>
+          ) : (isSuccessRate && isFXRateResponseValid
+            ?
+            (
+              <>
+                <p>Rate for {expiringTime / 60}mins {"("}1{getLabelByKey(selectedCurrency)}: {(rate / 1e18).toFixed(6)}{requests?.[record.No - 1]?.[5]}{")"}</p>
+                <p>Payable Amount: {(requests?.[record.No - 1]?.[3] * rate).toFixed(2)}{getLabelByKey(selectedCurrency)}</p>
+              </>
+            )
+            : (
+              <p style={{ color: "red" }}>Please request FX Rate!</p>
+            ))
+          }
         </>
       ),
     }
@@ -233,8 +244,13 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   const handlePay = (index) => {
     setPayIndex(index);
-    console.log(!isSuccessPay,requests?.[payIndex - 1]?.[5], getLabelByKey(selectedCurrency).slice(1,));
+    const newToCurrency = "D" + requests?.[payIndex - 1]?.[5];
+    setToCurrency(newToCurrency);
+    console.log("SelectedCurrency:", getLabelByKey(selectedCurrency).slice(1,));
+    console.log("To Currency:", toCurrency.slice(1,));
+    console.log(payIndex)
 
+    console.log(!isSuccessPay, requests?.[payIndex - 1]?.[5], getLabelByKey(selectedCurrency).slice(1,));
     if (!isSuccessRate && requests?.[payIndex - 1]?.[5] !== getLabelByKey(selectedCurrency).slice(1,)) {
       writeRate?.()
       getFXRate();
@@ -250,8 +266,33 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const handleDelete = (index) => {
     setDeleteIndex(index);
     writeDeleteRequest?.()
-    // Implement your logic to handle the deletion of the item at the specified index
   };
+
+  const menu = (
+    <Menu onClick={(e) => handleCurrencyChange(e)}>
+      {items.map(item => (
+        <Menu.Item key={item.label}>{item.label}</Menu.Item>
+      ))}
+    </Menu>
+  );
+
+  const filteredmenu = (
+    <Menu onClick={(e) => handleCurrencyChange(e)}>
+      {filteredTokens.map(item => (
+        <Menu.Item key={item.label}>{item.label}</Menu.Item>
+      ))}
+    </Menu>
+  );
+
+  const handleCurrencyChange = (e) => {
+    const newCurrency = e.key;
+    if (remitIntModal || payModal) {
+      setToCurrency(newCurrency);
+    }
+    if (requestModal) {
+      setRequestCurrency(newCurrency);
+    }
+  }
 
   return (
     <>
@@ -280,25 +321,25 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <p>From Currency</p>
         <Input value={getLabelByKey(selectedCurrency)} readOnly={true} />
         <p>Target Currency</p>
-        <Input placeholder={getLabelByKey(String(selectedCurrency % 2 + 1))}
-          value={toCurrency}
-          onChange={(val) => setToCurrency(val.target.value)}
-          onBlur={() => {
-            if (getLabelByKey(String(selectedCurrency)) === toCurrency) {
-              setToCurrency("");
-            }
-          }}
-          required={true} />
-        {getLabelByKey(String(selectedCurrency)) === toCurrency && (
-          <p style={{ color: 'red' }}>You cannot make cross border transaction using same currency.</p>
-        )}
+        <Dropdown overlay={filteredmenu} trigger={['click']}>
+          <a style={{ color: 'black' }} onClick={(e) => e.preventDefault()}>
+            <Space>
+              {(toCurrency === '') && <div>Select target currency</div>}
+              {toCurrency === 'DSGD' && <div>DSGD</div>}
+              {toCurrency === 'DMYR' && <div>DMYR</div>}
+              <div>
+                <DownOutlined />
+              </div>
+            </Space>
+          </a>
+        </Dropdown>
         {!isSuccessRate && !isFXRateResponseValid ? (
           <p></p>
         ) : (isSuccessRate && isFXRateResponseValid
           ?
           (
             <>
-              <p>Rate for {expiringTime / 60}mins {"("}1{getLabelByKey(selectedCurrency)}: {(rate / 1e18).toFixed(6)}{getLabelByKey(String(selectedCurrency % 2 + 1))}{")"}</p>
+              <p>Rate for {expiringTime / 60}mins {"("}1{getLabelByKey(selectedCurrency)}: {(rate / 1e18).toFixed(6)}{toCurrency}{")"}</p>
               <Input value={(swapAmount * rate / 1e18).toFixed(2)} readOnly={true} />
             </>
           )
@@ -351,7 +392,18 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <p>Amount</p>
         <InputNumber value={requestAmount} onChange={(val) => setRequestAmount(val)} />
         <p>Receive Currency</p>
-        <Input placeholder={getLabelByKey(selectedCurrency)} value={requestCurrency} onChange={(val) => setRequestCurrency(val.target.value)} />
+        <Dropdown overlay={menu} trigger={['click']}>
+          <a style={{ color: 'black' }} onClick={(e) => e.preventDefault()}>
+            <Space>
+              {(requestCurrency === '') && <div>Select receive currency</div>}
+              {requestCurrency === 'DSGD' && <div>DSGD</div>}
+              {requestCurrency === 'DMYR' && <div>DMYR</div>}
+              <div>
+                <DownOutlined />
+              </div>
+            </Space>
+          </a>
+        </Dropdown>
         <p>Message</p>
         <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val) => setRequestMessage(val.target.value)} />
       </Modal>

@@ -374,7 +374,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <p>To (address)</p>
         <Input placeholder="0x..." value={recipientAddress} onChange={(val) => setRecipientAddress(val.target.value)} required={true} />
         <p>Amount</p>
-        <InputNumber value={swapAmount} onChange={(val) => setSwapAmount(val)} required={true} />
+        <InputNumber min={0.01} value={swapAmount} onChange={(val) => setSwapAmount(val)} required={true} />
         <p>From Currency</p>
         <Input value={getLabelByKey(selectedCurrency)} readOnly={true} />
         <p>Target Currency</p>
@@ -478,7 +478,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           <p style={{ color: 'red' }}>You cannot request payment from your own address.</p>
         )}
         <p>Amount</p>
-        <InputNumber value={requestAmount} onChange={(val) => setRequestAmount(val)} />
+        <InputNumber min={0.01} value={requestAmount} onChange={(val) => setRequestAmount(val)} />
         <p>Receive Currency</p>
         <Dropdown overlay={menu} trigger={['click']}>
           <a style={{ color: 'black' }} onClick={(e) => e.preventDefault()}>

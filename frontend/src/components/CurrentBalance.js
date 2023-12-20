@@ -149,9 +149,9 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
           cancelText="Cancel"
         >
           <p>Amount <strong>({getLabelByKey(selectedCurrency)})</strong></p>
-          <InputNumber value={transferAmount} onChange={(val) => setTransferAmount(val)} />
+          <InputNumber min={0.01} value={transferAmount} onChange={(val) => setTransferAmount(val)} required={true}/>
           <p>To (address)</p>
-          <Input placeholder="0x..." value={transferAddress} onChange={(val) => setTransferAddress(val.target.value)} />
+          <Input placeholder="0x..." value={transferAddress} onChange={(val) => setTransferAddress(val.target.value)} required={true}/>
           {transferAddress === address && (
             <p style={{ color: 'red' }}>You cannot transfer token to your own address.</p>
           )}

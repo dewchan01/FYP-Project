@@ -66,8 +66,12 @@ contract MCBDC is ChainlinkClient {
         newHistory.fromCurrency = fromCurrency;
         newHistory.targetCurrency = targetCurrency;
         newHistory.message = message;
-        history[sender].push(newHistory);
-        history[recipient].push(newHistory);
+        if (sender != recipient) {
+            history[sender].push(newHistory);
+            history[recipient].push(newHistory);
+        } else {
+            history[sender].push(newHistory);
+        }
     }
 
     function getMyHistory(address user)
@@ -224,7 +228,6 @@ contract MCBDC is ChainlinkClient {
         );
     }
 
-    //Create a Request
     function createRequest(
         address sender,
         uint256 toAmount,

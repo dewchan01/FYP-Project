@@ -3,14 +3,9 @@ pragma solidity ^0.8.20;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-// import "./DSGDToken.sol";
-// import "./DMYRToken.sol";
 
 contract MCBDC is ChainlinkClient {
     using Chainlink for Chainlink.Request;
-
-    // DSGDToken public dsgdToken;
-    // DMYRToken public dmyrToken;
 
     struct Attribute {
         address sender;
@@ -46,15 +41,12 @@ contract MCBDC is ChainlinkClient {
     event CurrencyAdded(string currency, address tokenAddress);
     event RequestVolume(bytes32 indexed requestId, uint256 fxRateResponse);
 
-    // constructor(address _dsgdToken, address _dmyrToken) {
-    constructor(){
+    constructor() {
         setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
         setChainlinkOracle(0x40193c8518BB267228Fc409a613bDbD8eC5a97b3);
         jobId = "ca98366cc7314957b8c012c72f05aeeb";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0.1 * 10**18 (Varies by network and job)
         owner = msg.sender;
-        // dsgdToken = DSGDToken(_dsgdToken);
-        // dmyrToken = DMYRToken(_dmyrToken);
     }
 
     function addHistory(
@@ -337,11 +329,6 @@ contract MCBDC is ChainlinkClient {
                 amount
             )
         );
-        // if(Strings.equal(currency, "SGD")){
-        //     dsgdToken.transferFromContract(sender,recipient,amount);
-        // }else{
-        //     dmyrToken.transferFromContract(sender,recipient,amount);
-        // }
         require(successTransfer, "Local Transaction Failed!");
         addHistory(
             msg.sender,

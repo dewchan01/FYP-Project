@@ -19,9 +19,15 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const [requestAddress, setRequestAddress] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
   const [swapMessage, setSwapMessage] = useState("");
-  const [payIndex, setPayIndex] = useState(1);
+  const [payIndex, setPayIndex] = useState(0);
   const [deleteIndex, setDeleteIndex] = useState(1);
+  const [shouldDelete, setShouldDelete] = useState(false);
+  const [shouldRate, setShouldRate] = useState(false);
+  const [shouldSwap, setShouldSwap] = useState(false);
+  const [shouldPay, setShouldPay] = useState(false);
+  const [okText, setOkText] = useState("Please select requests!");
 
+  const [isSuccessPay, setIsSuccessPay] = useState(false);
   const [isSuccessSwap, setIsSuccessSwap] = useState(false);
   const [isSuccessRate, setIsSuccessRate] = useState(false);
   const items = tokenConfig;
@@ -29,7 +35,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   requests = requests?.['requests']?.slice();
   console.log("Requests", requests);
-
 
   const { config: configPay } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
@@ -84,8 +89,9 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   const { write: writeSwap, data: dataSwap } = useContractWrite(configSwap);
 
-  const { isLoading: isLoadingPay, isSuccess: isSuccessPay } = useWaitForTransaction({
+  const { isLoading: isLoadingPay } = useWaitForTransaction({
     hash: dataPay?.hash,
+    onSuccess: () => setIsSuccessPay(true),
   })
 
   const { isLoading: isLoadingRequest, isSuccess: isSuccessRequest } = useWaitForTransaction({
@@ -120,10 +126,10 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   const showPayModal = () => {
     setPayModal(true);
+    getFXRate();
   };
   const hidePayModal = () => {
     setPayModal(false);
-    setIsSuccessSwap(false);
   };
 
   const showRequestModal = () => {
@@ -136,28 +142,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     setRequestMessage('');
     setRequestAddress('');
   };
-  useEffect(() => {
-    if (isSuccessRate) {
-      getFXRate();
-      setIsSuccessSwap(false);
-    }
-    else if (!isFXRateResponseValid) {
-      setIsSuccessRate(false);
-    }
-    if (isSuccessPay || isSuccessRequest || isSuccessSwap || isSuccessDeleteRequest) {
-      getBalance();
-      getHistory();
-      getRequests();
-      getFXRate();
-      hidePayModal();
-      hideRequestModal();
-      hideRemitIntModal();
-      setIsSuccessRate(false);
-      setIsSuccessSwap(false);
-    }
-    console.log("isRate?", isSuccessRate, isSuccessSwap)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest, selectedCurrency])
 
   const columns = [
     {
@@ -186,23 +170,9 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       key: "Action",
       render: (_, record) => (
         <>
-          <Button type="primary" loading={isLoadingPay || isLoadingRate} onClick={() => handlePay(record.No)}>{((!isSuccessRate || !isFXRateResponseValid) && requests?.[record.No - 1]?.[5] !== getLabelByKey(selectedCurrency).slice(1,)) ? "Request FX Rate" : "Pay"}</Button>
-          &nbsp;
+          {/* <Button type="primary" loading={isLoadingPay || isLoadingRate} onClick={() => handlePay(record.No)}>{((isSuccessRate && isFXRateResponseValid) || requests?.[record.No - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,)) ? "Pay" : "Request FX Rate"}</Button>
+          &nbsp; */}
           <Button type="primary" loading={isLoadingDeleteRequest} onClick={() => handleDelete(record.No)}>Delete</Button>
-          {(!isSuccessRate || !isFXRateResponseValid) && requests?.[record.No - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,) ? (
-            <p></p>
-          ) : (isSuccessRate && isFXRateResponseValid
-            ?
-            (
-              <>
-                <p>Rate for {expiringTime / 60}mins {"("}1{getLabelByKey(selectedCurrency)}: {(rate / 1e18).toFixed(6)}{requests?.[record.No - 1]?.[5]}{")"}</p>
-                <p>Payable Amount: {(requests?.[record.No - 1]?.[3] * rate).toFixed(2)}{getLabelByKey(selectedCurrency)}</p>
-              </>
-            )
-            : (
-              <p style={{ color: "red" }}>Please request FX Rate!</p>
-            ))
-          }
         </>
       ),
     }
@@ -239,29 +209,28 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   });
 
   const handlePay = (index) => {
+    if (index === 0) {
+      setOkText("Select Request");
+      alert("Please select a request first!");
+      return;
+    }
+
     setPayIndex(index);
     const newToCurrency = "D" + requests?.[payIndex - 1]?.[5];
     setToCurrency(newToCurrency);
-    console.log("SelectedCurrency:", getLabelByKey(selectedCurrency).slice(1,));
-    console.log("To Currency:", toCurrency.slice(1,));
-    console.log(payIndex)
-
-    console.log(!isSuccessPay, requests?.[payIndex - 1]?.[5], getLabelByKey(selectedCurrency).slice(1,));
-    if (!isSuccessRate && requests?.[payIndex - 1]?.[5] !== getLabelByKey(selectedCurrency).slice(1,)) {
-      writeRate?.()
-      getFXRate();
+    const sameCurrency = requests?.[payIndex - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,);
+    console.log("temp", sameCurrency)
+    if (!isSuccessRate && !sameCurrency) {
+      setShouldRate(true);
     }
-    else if ((isSuccessRate && !isSuccessPay && isFXRateResponseValid && requests?.[payIndex - 1]?.[5] !== getLabelByKey(selectedCurrency).slice(1,)) || (!isSuccessPay && requests?.[payIndex - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,))) {
-      setInterval(getFXRate, 3000);// late response while changing currency
-      writePay?.()
-    }
-    else if (isSuccessPay) {
-      hidePayModal();
+    if ((isSuccessRate && !isSuccessPay && !sameCurrency) || (!isSuccessPay && sameCurrency)) {
+      setShouldPay(true);
     }
   }
+
   const handleDelete = (index) => {
     setDeleteIndex(index);
-    writeDeleteRequest?.()
+    setShouldDelete(true);
   };
 
   const menu = (
@@ -272,13 +241,23 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     </Menu>
   );
 
-  const filteredmenu = (
+  const filteredMenu = (
     <Menu onClick={(e) => handleCurrencyChange(e)}>
       {filteredTokens.map(item => (
         <Menu.Item key={item.label}>{item.label}</Menu.Item>
       ))}
     </Menu>
   );
+
+  const indexMenu = (
+    <Menu onClick={(e) => handlePayIndexChange(e)}>
+      {requests?.map((item, index) => (
+        <Menu.Item key={index + 1}>{index + 1}</Menu.Item>
+      ))}
+    </Menu>
+
+  );
+
 
   const handleCurrencyChange = (e) => {
     const newCurrency = e.key;
@@ -290,19 +269,99 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     }
   }
 
+  const handlePayIndexChange = (e) => {
+    const newIndex = e.key;
+    setPayIndex(newIndex);
+  }
+
+  useEffect(() => {
+    const sameCurrency = getLabelByKey(selectedCurrency).slice(1,) === toCurrency.slice(1,);
+    const samePayRequestCurrency = requests?.[payIndex - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,);
+    getFXRate();
+
+    if (payIndex !== 0) {
+      const newOkText = (!isSuccessRate && !isFXRateResponseValid && !samePayRequestCurrency)
+        ? "Request FX Rate"
+        : ((isSuccessRate && !isSuccessPay && isFXRateResponseValid) || samePayRequestCurrency)
+          ? "Pay"
+          : "Request FX Rate";
+      setOkText(newOkText);
+    }
+
+    if (shouldRate && !isSuccessRate && !sameCurrency) {
+      writeRate?.()
+    }
+
+    if (isSuccessRate) {
+      getFXRate();
+      setIsSuccessRate(true);
+      setIsSuccessSwap(false);
+      setIsSuccessPay(false);
+      setShouldRate(false);
+    }
+
+    if (shouldDelete) {
+      console.log(deleteIndex);
+      writeDeleteRequest?.();
+      setShouldDelete(false);
+    }
+
+    console.log("Pay?", payIndex, !isSuccessPay, requests?.[payIndex - 1]?.[5], getLabelByKey(selectedCurrency).slice(1,));
+    if (shouldPay) {
+      writePay?.();
+      setShouldRate(false);
+      setShouldPay(false);
+    }
+    if (shouldSwap) {
+      writeSwap?.();
+      setShouldRate(false);
+      setShouldSwap(false);
+    }
+
+    if (isSuccessSwap) {
+      setIsSuccessSwap(true);
+      getBalance();
+      getHistory();
+      getFXRate();
+      hideRemitIntModal();
+      setIsSuccessSwap(false);
+      setIsSuccessRate(false);
+    }
+    if (isSuccessPay) {
+      setIsSuccessPay(true);
+      getBalance();
+      getHistory();
+      getFXRate();
+      getRequests();
+      hidePayModal();
+      setIsSuccessRate(false);
+      setShouldRate(false);
+      setIsSuccessPay(false);
+    }
+    if (isSuccessRequest || isSuccessDeleteRequest) {
+      getRequests();
+      hideRequestModal();
+    }
+    // if (!isFXRateResponseValid) {
+    //   setShouldRate(false);
+    //   setIsSuccessRate(false);
+    // }
+    console.log("isSuccessRate?", isSuccessRate, isFXRateResponseValid, isSuccessPay)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest, selectedCurrency, shouldRate, shouldDelete, shouldSwap, shouldPay, toCurrency, payIndex, isFXRateResponseValid])
+
   return (
     <>
       <Modal
         title="Cross Border Transaction"
         open={remitIntModal}
         onOk={() => {
-          if (!isSuccessRate) {
+          if (!isSuccessSwap && !isSuccessRate) {
             writeRate?.()
             getFXRate();
           }
-          else if (isSuccessRate && !isSuccessSwap && isFXRateResponseValid) {
-            setInterval(getFXRate, 3000);// late response while changing currency
-            writeSwap?.();
+          if (isSuccessRate && !isSuccessSwap && isFXRateResponseValid) {
+            setShouldSwap(true);
           }
         }}
         confirmLoading={isLoadingSwap || isLoadingRate}
@@ -317,7 +376,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <p>From Currency</p>
         <Input value={getLabelByKey(selectedCurrency)} readOnly={true} />
         <p>Target Currency</p>
-        <Dropdown overlay={filteredmenu} trigger={['click']}>
+        <Dropdown overlay={filteredMenu} trigger={['click']}>
           <a style={{ color: 'black' }} onClick={(e) => e.preventDefault()}>
             <Space>
               {(toCurrency === '') && <div>Select target currency</div>}
@@ -351,7 +410,13 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         title="Recent Requests"
         open={payModal}
         onCancel={hidePayModal}
-        footer={null}
+        confirmLoading={isLoadingPay || isLoadingRate}
+        okText={okText}
+        onOk={() => {
+          if (payIndex !== 0) {
+            handlePay(payIndex);
+          }
+        }}
         width={880}
       >
         {requests && requests.length > 0 && (
@@ -362,7 +427,32 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
               columns={columns}
               pagination={{ position: ["bottomCenter"], pageSize: 3 }}
             />
-            <p>Pay by: <strong>{getLabelByKey(selectedCurrency)}</strong></p>
+            <p>Pay by: <strong>{getLabelByKey(selectedCurrency)}</strong>&nbsp;&nbsp;
+              Index No: &nbsp;
+              {/* <InputNumber value={payIndex} onChange={(val) => setPayIndex(val)} /> */}
+              <Space>
+                <Dropdown overlay={indexMenu} trigger={['click']}>
+                  <a style={{ color: "black" }} onClick={(e) => e.preventDefault()}>
+                    {(payIndex === 0) ? "Select request" : payIndex}
+                    &nbsp;<DownOutlined />
+                  </a>
+                </Dropdown>
+              </Space>
+              {(!isSuccessRate || !isFXRateResponseValid) || requests?.[payIndex - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,) ? (
+                <p></p>
+              ) : (isSuccessRate && isFXRateResponseValid
+                ?
+                (
+                  <>
+                    <p>Rate for {expiringTime / 60}mins {"("}1{getLabelByKey(selectedCurrency)}: {(rate / 1e18).toFixed(6)}{requests?.[payIndex - 1]?.[5]}{")"}</p>
+                    <p>Payable Amount: {(requests?.[payIndex - 1]?.[3] / rate).toFixed(2)}{getLabelByKey(selectedCurrency)}</p>
+                  </>
+                )
+                : (
+                  <p style={{ color: "red" }}>Please request FX Rate!</p>
+                ))
+              }
+            </p>
           </>
         )}
       </Modal>

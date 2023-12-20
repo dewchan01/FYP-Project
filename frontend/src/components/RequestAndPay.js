@@ -337,6 +337,8 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       setIsSuccessRate(false);
       setShouldRate(false);
       setIsSuccessPay(false);
+      setPayIndex(0);
+      setOkText("Select Request");
     }
     if (isSuccessRequest || isSuccessDeleteRequest) {
       getRequests();

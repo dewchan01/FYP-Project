@@ -31,9 +31,6 @@ contract MCBDC is ChainlinkClient {
     uint256 public fxRateResponseTimestamp;
     uint256 public responseExpiryTime = 180; // Set the expiration time in seconds
 
-    address temp_recipient;
-    uint256 temp_amount;
-
     mapping(address => Attribute[]) public history;
     mapping(address => Attribute[]) public requests;
     mapping(string => TokenInfo) public supportedTokens;
@@ -50,7 +47,6 @@ contract MCBDC is ChainlinkClient {
     }
 
     function addHistory(
-        address sender,
         address recipient,
         uint256 amount,
         uint256 toAmount,
@@ -59,28 +55,27 @@ contract MCBDC is ChainlinkClient {
         string memory message
     ) public {
         Attribute memory newHistory;
-        newHistory.sender = sender;
+        newHistory.sender = tx.origin;
         newHistory.recipient = recipient;
         newHistory.amount = amount;
         newHistory.toAmount = toAmount;
         newHistory.fromCurrency = fromCurrency;
         newHistory.targetCurrency = targetCurrency;
         newHistory.message = message;
-        if (sender != recipient) {
-            history[sender].push(newHistory);
+        if (tx.origin != recipient) {
+            history[tx.origin].push(newHistory);
             history[recipient].push(newHistory);
         } else {
-            history[sender].push(newHistory);
+            history[tx.origin].push(newHistory);
         }
     }
 
-    function getMyHistory(address user)
+    function getMyHistory()
         public
         view
         returns (Attribute[] memory)
     {
-        // require(user == msg.sender, "Not Authorized!");
-        return history[user];
+        return history[tx.origin];
     }
 
     function swapToken(
@@ -92,7 +87,6 @@ contract MCBDC is ChainlinkClient {
     ) public {
         // Add at least 0.1 link token to this contract
         // Request fx rate in client side
-        address sender = msg.sender;
         require(
             supportedTokens[fromCurrency].tokenAddress != address(0),
             "From token not supported"
@@ -102,6 +96,11 @@ contract MCBDC is ChainlinkClient {
             "To token not supported"
         );
 
+        (,bytes memory balance ) = supportedTokens[fromCurrency].tokenAddress.call(
+            abi.encodeWithSignature("balanceOf(address)", tx.origin)
+        );
+        require(abi.decode(balance, (uint256))>=amount, "Not enough balance");
+
         address fromToken = supportedTokens[fromCurrency].tokenAddress;
         address toToken = supportedTokens[toCurrency].tokenAddress;
 
@@ -109,13 +108,12 @@ contract MCBDC is ChainlinkClient {
         require(isFxRateResponseValid(), "Fx Rate has expired!");
 
         (bool successBurn, ) = fromToken.call(
-            abi.encodeWithSignature("burn(address,uint256)", sender, amount)
+            abi.encodeWithSignature("burn(address,uint256)", tx.origin, amount)
         );
         require(successBurn, "Burn failed");
 
         uint256 amountToMint = (amount * fxRateResponse) / 10**18;
         addHistory(
-            sender,
             recipient,
             amount,
             amountToMint,
@@ -236,7 +234,7 @@ contract MCBDC is ChainlinkClient {
     ) public {
         Attribute memory newRequest;
         newRequest.sender = sender;
-        newRequest.recipient = msg.sender;
+        newRequest.recipient = tx.origin;
         newRequest.toAmount = toAmount;
 
         require(
@@ -251,19 +249,18 @@ contract MCBDC is ChainlinkClient {
         requests[sender].push(newRequest);
     }
 
-    function getMyRequests(address sender)
+    function getMyRequests()
         public
         view
         returns (Attribute[] memory)
     {
-        // require(sender == msg.sender, "Not Authorized");
-        return requests[sender];
+        return requests[tx.origin];
     }
 
     // Pay a Request, RequestID => Request Index
     function payRequest(uint256 _requestID, string memory fromCurrency) public {
-        require(_requestID < requests[msg.sender].length, "No Such Request");
-        Attribute[] storage myRequests = requests[msg.sender];
+        require(_requestID < requests[tx.origin].length, "No Such Request");
+        Attribute[] storage myRequests = requests[tx.origin];
         Attribute storage payableRequest = myRequests[_requestID];
 
         require(
@@ -288,7 +285,6 @@ contract MCBDC is ChainlinkClient {
             );
         } else {
             localTransfer(
-                msg.sender,
                 payableRequest.recipient,
                 payableRequest.toAmount,
                 payableRequest.targetCurrency,
@@ -300,38 +296,38 @@ contract MCBDC is ChainlinkClient {
     }
 
     function deleteRequest(uint256 _requestID) public {
-        require(_requestID < requests[msg.sender].length, "No Such Request");
-        Attribute[] storage myRequests = requests[msg.sender];
+        require(_requestID < requests[tx.origin].length, "No Such Request");
+        Attribute[] storage myRequests = requests[tx.origin];
         myRequests[_requestID] = myRequests[myRequests.length - 1];
         myRequests.pop();
     }
 
     function localTransfer(
-        address sender,
         address recipient,
         uint256 amount,
         string memory currency,
         string memory message
     ) public {
-        // require(
-        //     msg.sender == sender, "Invalid sender address"
-        // );
         require(
             supportedTokens[currency].tokenAddress != address(0),
             "Local Currency not supported"
         );
 
+        (,bytes memory balance) = supportedTokens[currency].tokenAddress.call(
+            abi.encodeWithSignature("balanceOf(address)", tx.origin)
+        );
+        require(abi.decode(balance,(uint256))>=amount, "Not enough balance");
+
         (bool successTransfer, ) = supportedTokens[currency].tokenAddress.call(
             abi.encodeWithSignature(
                 "transferFromContract(address,address,uint256)",
-                sender,
+                tx.origin,
                 recipient,
                 amount
             )
         );
         require(successTransfer, "Local Transaction Failed!");
         addHistory(
-            msg.sender,
             recipient,
             amount,
             amount,
@@ -339,5 +335,9 @@ contract MCBDC is ChainlinkClient {
             currency,
             message
         );
+    }
+
+    function getFxRateInfo() public view returns (uint256,bool,uint256){
+        return (fxRateResponse,isFxRateResponseValid(),responseExpiryTime);
     }
 }

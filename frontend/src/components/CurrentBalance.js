@@ -55,7 +55,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "localTransfer",
-    args: [address,transferAddress, String(transferAmount * (1e18)),getLabelByKey(selectedCurrency).slice(1,),message],
+    args: [transferAddress, String(transferAmount * (1e18)),getLabelByKey(selectedCurrency).slice(1,),message],
   });
 
   const { write: writeTransfer, data: dataTransfer } = useContractWrite(configTransfer);

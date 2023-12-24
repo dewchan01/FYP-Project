@@ -25,6 +25,12 @@ async function main() {
   await mCBDCContract.deployed();
   console.log(`MCBDC is deployed to ${mCBDCContract.address} by ${contract_owner[2].address}`);
 
+  const ECommerce = await ethers.getContractFactory("ECommerce");
+  const ECommerceContract = await ECommerce.connect(contract_owner[2]).deploy(mCBDCContract.address);
+
+  await ECommerceContract.deployed();
+  console.log(`ECommerce is deployed to ${ECommerceContract.address} by ${contract_owner[2].address}`);
+
   // Verify the DSGDToken contract
   if (network.name !== "localhost" && network.name !== "hardhat") {
     await verifyContract(dsgdContract.address, [], "contracts/DSGDToken.sol:DSGDToken");
@@ -38,6 +44,10 @@ async function main() {
   // Verify the mCBDC contract
   if (network.name !== "localhost" && network.name !== "hardhat") {
     await verifyContract(mCBDCContract.address, [], "contracts/MCBDC.sol:MCBDC");
+  }
+  
+  if (network.name !== "localhost" && network.name !== "hardhat") {
+    await verifyContract(ECommerceContract.address, [mCBDCContract.address], "contracts/ECommerce.sol:ECommerce");
   }
 }
 

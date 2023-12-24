@@ -76,6 +76,7 @@ contract ECommerce {
         uint256 _price,
         string memory _description
     ) public {
+        require(sellers[msg.sender].addr!=address(0),"Not seller!");
         require(!products[_productId].isActive);
 
         product memory newProduct = product(
@@ -131,7 +132,8 @@ contract ECommerce {
     function buyProduct(string memory _productId, string memory fromCurrency)
         public
     {
-        require(users[msg.sender].isCreated && products[_productId].isActive, "Product is not found!");
+        require(users[msg.sender].isCreated, "User is not signed up!");
+        require(products[_productId].isActive, "Product is not found!");
         (, address _fromCurrency) = mcbdc.showToken(fromCurrency);
         require(
             _fromCurrency != address(0),

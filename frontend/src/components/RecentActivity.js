@@ -3,7 +3,7 @@ import { Card, Table } from "antd";
 
 function RecentActivity({ history, address }) {
   console.log("history", history);
-  history =history?.slice()?.reverse();
+  history = history?.slice()?.reverse();
   const columns = [
     {
       title: "Sender",
@@ -75,11 +75,14 @@ function RecentActivity({ history, address }) {
   });
 
   return (
-    <Card title="Recent Activity" style={{ width: "100%", minHeight: "663px" }}>
+    <Card title="Recent Activity"
+      style={{
+        width: "100%", minHeight: "663px",
+      }}>
       <Table
         dataSource={dataSource}
         columns={columns}
-        pagination={{ position: ["bottomCenter"], pageSize: 8 }}
+        pagination={{ position: ["bottomCenter"], pageSize: 4 }}
       />
     </Card>
   );

@@ -157,6 +157,25 @@
     {
         "inputs": [
             {
+                "internalType": "address",
+                "name": "_user",
+                "type": "address"
+            }
+        ],
+        "name": "checkValidUser",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "string",
                 "name": "_name",
                 "type": "string"
@@ -192,148 +211,97 @@
     },
     {
         "inputs": [],
-        "name": "getMyOrdersLength",
+        "name": "getAllProducts",
         "outputs": [
             {
-                "internalType": "uint256",
+                "components": [
+                    {
+                        "internalType": "string",
+                        "name": "productId",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "productName",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "Category",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "price",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "priceCurrency",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "description",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "seller",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "isActive",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct ECommerce.product[]",
                 "name": "",
-                "type": "uint256"
+                "type": "tuple[]"
             }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_index",
-                "type": "uint256"
-            }
-        ],
+        "inputs": [],
         "name": "getOrdersPlaced",
         "outputs": [
             {
-                "internalType": "string",
+                "internalType": "string[]",
                 "name": "",
-                "type": "string"
+                "type": "string[]"
             },
             {
-                "internalType": "uint256",
+                "internalType": "uint256[]",
                 "name": "",
-                "type": "uint256"
+                "type": "uint256[]"
             },
             {
-                "internalType": "address",
+                "internalType": "address[]",
                 "name": "",
-                "type": "address"
+                "type": "address[]"
             },
             {
-                "internalType": "string",
+                "internalType": "string[]",
                 "name": "",
-                "type": "string"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getOrdersPlacedLength",
-        "outputs": [
+                "type": "string[]"
+            },
             {
-                "internalType": "uint256",
+                "internalType": "string[]",
                 "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getProductsLength",
-        "outputs": [
+                "type": "string[]"
+            },
             {
-                "internalType": "uint256",
+                "internalType": "string[]",
                 "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
+                "type": "string[]"
+            },
             {
-                "internalType": "uint256",
-                "name": "_purchaseId",
-                "type": "uint256"
-            }
-        ],
-        "name": "getShipmentAddress",
-        "outputs": [
-            {
-                "internalType": "string",
+                "internalType": "bool[]",
                 "name": "",
-                "type": "string"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_purchaseId",
-                "type": "uint256"
-            }
-        ],
-        "name": "getShipmentOrderedBy",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_purchaseId",
-                "type": "uint256"
-            }
-        ],
-        "name": "getShipmentProductId",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_purchaseId",
-                "type": "uint256"
-            }
-        ],
-        "name": "getShipmentStatus",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
+                "type": "bool[]"
             }
         ],
         "stateMutability": "view",
@@ -353,34 +321,28 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_index",
-                "type": "uint256"
-            }
-        ],
+        "inputs": [],
         "name": "myOrders",
         "outputs": [
             {
-                "internalType": "string",
+                "internalType": "string[]",
                 "name": "",
-                "type": "string"
+                "type": "string[]"
             },
             {
-                "internalType": "string",
+                "internalType": "string[]",
                 "name": "",
-                "type": "string"
+                "type": "string[]"
             },
             {
-                "internalType": "uint256",
+                "internalType": "uint256[]",
                 "name": "",
-                "type": "uint256"
+                "type": "uint256[]"
             },
             {
-                "internalType": "string",
+                "internalType": "string[]",
                 "name": "",
-                "type": "string"
+                "type": "string[]"
             }
         ],
         "stateMutability": "view",

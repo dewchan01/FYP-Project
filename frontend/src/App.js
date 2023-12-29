@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import logo from "./logo.svg";
-import { Layout, Button } from "antd";
+import { Layout, Button, Menu } from "antd";
 import CurrencyStatus from "./components/CurrencyStatus";
 import AccountDetails from "./components/AccountDetails";
 import RecentActivity from "./components/RecentActivity";
 import { useConnect, useAccount, useDisconnect } from "wagmi";
 import { MetaMaskConnector } from "wagmi/connectors/metaMask";
+import { useNavigate } from "react-router-dom";
+import NavBar from "./components/NavBar";
 import axios from "axios";
 
 const { Header, Content } = Layout;
@@ -39,6 +41,7 @@ function App() {
     setRequests(null);
     setTokenAddress(null);
     setExpiringTime(0);
+    window.location.href = "/";
   }
 
   function checkAccount() {
@@ -90,7 +93,7 @@ function App() {
       params: { userAddress: address },
     });
     let response;
-    if (res == null) {
+    if (res.data == null) {
       response = {}
     } else {
       response = res.data;
@@ -135,6 +138,8 @@ function App() {
     checkAccount();
   }
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (!isConnected) return;
     getBalance();
@@ -147,38 +152,68 @@ function App() {
   return (
     <div className="App">
       <Layout>
-        <Header className="header">
+        <Header className="header"
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+          }}>
           <div className="headerLeft">
             <img src={logo} alt="logo" className="logo" />
             {isConnected && (
               <>
-                <div
+                <Menu
                   className="menuOption"
-                  style={{ borderBottom: "1.5px solid black" }}
-                >
-                  Summary
-                </div>
-                <div className="menuOption">Activity</div>
-                <div className="menuOption">{`Send & Request`}</div>
-                <div className="menuOption">Wallet</div>
-                <div className="menuOption">Help</div>
+                  mode="horizontal"
+                  defaultSelectedKeys={[window.location.pathname]}
+                  onClick={({ key }) => {
+                    navigate(key);
+                  }
+                  }
+                  items={[
+                    { key: "/", label: "Wallet" },
+                    { key: "/acc", label: "Account" },
+                    { key: "/activity", label: "Activity" },
+                    { key: "/sendAndRequest", label: "Send & Request" },
+                    { key: "/shopping", label: "Shopping" },
+                    { key: "/help", label: "Help" },
+                  ]}
+                />
+
               </>
+
             )}
+
           </div>
           {isConnected ? (
             <Button type={"primary"} onClick={disconnectAndSetNull}>
               Disconnect Wallet
             </Button>
           ) : (
-            <Button type={"primary"} onClick={() => {
-              console.log(requests); connect();
+            <Button type={"primary"} onClick={async () => {
+              try {
+                await connect();
+                console.log("Connected successfully!");
+              } catch (error) {
+                console.error("Connection error:", error);
+              }
             }}>
               Connect Wallet
             </Button>
           )}
         </Header>
+        <div>
+          <NavBar style={{ display: "block" }}
+            sgd={sgd} myr={myr} address={address} getBalance={getBalance}
+            requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid}
+            expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
+            getRequests={getRequests} balance={balance} history={history} />
+        </div>
         <Content className="content">
-          {isConnected ? (
+          {isConnected && window.location.pathname === "/" ? (
             <>
               <div className="firstColumn">
                 <CurrencyStatus
@@ -190,18 +225,22 @@ function App() {
                   address={address}
                   balance={balance}
                 />
+
               </div>
               <div className="secondColumn">
                 <RecentActivity history={history} address={address} />
               </div>
             </>
-          ) : (
+          ) : (!isConnected) ?
             <div>Please Login</div>
-          )}
+            : <div></div>
+          }
         </Content>
       </Layout>
     </div>
   );
 }
+
+
 
 export default App;

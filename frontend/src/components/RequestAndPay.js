@@ -496,14 +496,15 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val) => setRequestMessage(val.target.value)} />
       </Modal>
 
-      <div className="requestAndPay">
+      <div className="requestAndPay" >
         <div
           className="quickOption"
           onClick={() => {
             showRemitIntModal();
           }}
+          // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
         >
-          <TransactionOutlined style={{ fontSize: "26px" }} />
+          <TransactionOutlined style={{ fontSize: "26px"}} />
           Remit Int.
         </div>
         <div
@@ -513,6 +514,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
               showPayModal();
             }
           }}
+          // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
         >
           <DollarOutlined style={{ fontSize: "26px" }} />
           Pay
@@ -525,6 +527,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           onClick={() => {
             showRequestModal();
           }}
+          // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
         >
           <SwapOutlined style={{ fontSize: "26px" }} />
           Request

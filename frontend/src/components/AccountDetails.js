@@ -5,7 +5,9 @@ import matic from "../matic.png";
 
 function AccountDetails({ address, balance }) {
   return (
-    <Card title="Account Details" style={{ width: "100%" }}>
+        <Card title="Account Details" 
+        // style={{ width: "100%", margin:(window.location.pathname === "/acc"? "80% 0 0 -40%" :0)}}
+        >
       <div className="accountDetailRow">
         <UserOutlined style={{ color: "#767676", fontSize: "25px" }} />
         <div>
@@ -44,7 +46,7 @@ function AccountDetails({ address, balance }) {
         />
       </Modal> */}
     </Card>
-  );
-}
+  )
+    }
 
 export default AccountDetails;

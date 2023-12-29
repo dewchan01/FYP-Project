@@ -76,7 +76,7 @@ contract ECommerce {
         uint256 _price,
         string memory _description
     ) public {
-        require(sellers[msg.sender].addr!=address(0),"Not seller!");
+        require(sellers[msg.sender].addr != address(0), "Not seller!");
         require(!products[_productId].isActive);
 
         product memory newProduct = product(
@@ -102,15 +102,9 @@ contract ECommerce {
 
     function deleteProduct(string memory _productId) public {
         require(
-            msg.sender == products[_productId].seller,
-            "Not authorized to delete product"
+            msg.sender == products[_productId].seller && products[_productId].isActive,
+            "No product is found!"
         );
-        require(
-            products[_productId].isActive,
-            "Product does not exist or is already deleted"
-        );
-
-        // Find the index of the product
         uint256 indexToDelete;
         for (uint256 i = 0; i < allProducts.length; i++) {
             if (Strings.equal(allProducts[i].productId, _productId)) {
@@ -118,14 +112,8 @@ contract ECommerce {
                 break;
             }
         }
-
-        require(indexToDelete < allProducts.length, "Product not found");
-
-        // Swap with the last product in the array
         allProducts[indexToDelete] = allProducts[allProducts.length - 1];
-
         products[_productId].isActive = false;
-
         allProducts.pop();
     }
 
@@ -139,44 +127,32 @@ contract ECommerce {
             _fromCurrency != address(0),
             "Paying Currency is not supported!"
         );
+
+        string memory message = string(
+            abi.encodePacked(
+                Strings.toHexString(uint160(msg.sender), 20),
+                " buy ",
+                _productId,
+                " from ",
+                Strings.toHexString(uint160(products[_productId].seller), 20)
+            )
+        );
         if (Strings.equal(fromCurrency, products[_productId].priceCurrency)) {
             mcbdc.localTransfer(
                 products[_productId].seller,
                 products[_productId].price,
                 fromCurrency,
-                string(
-                    abi.encodePacked(
-                        Strings.toHexString(uint160(msg.sender), 20),
-                        " buy ",
-                        _productId,
-                        " from ",
-                        Strings.toHexString(
-                            uint160(products[_productId].seller),
-                            20
-                        )
-                    )
-                )
+                message
             );
         } else {
-            (uint256 rate,bool isFxRateValid,) = mcbdc.getFxRateInfo();
-            require(isFxRateValid,"FX Rate is expired!");
+            (uint256 rate, bool isFxRateValid, ) = mcbdc.getFxRateInfo();
+            require(isFxRateValid, "FX Rate is expired!");
             mcbdc.swapToken(
-                products[_productId].price*1e18/rate,
+                (products[_productId].price * 1e18) / rate,
                 products[_productId].seller,
                 fromCurrency,
                 products[_productId].priceCurrency,
-                string(
-                    abi.encodePacked(
-                        Strings.toHexString(uint160(msg.sender), 20),
-                        " buy ",
-                        _productId,
-                        " from ",
-                        Strings.toHexString(
-                            uint160(products[_productId].seller),
-                            20
-                        )
-                    )
-                )
+                message
             );
         }
         purchaseId = id++;
@@ -306,88 +282,89 @@ contract ECommerce {
             .shipmentStatus = "Order Canceled By Buyer, Payment Refunded";
     }
 
-    //getters
-    function getOrdersPlacedLength() public view returns (uint256) {
-        return sellerOrders[msg.sender].length;
+    function getAllProducts() public view returns (product[] memory) {
+        return allProducts;
     }
 
-    function getProductsLength() public view returns (uint256) {
-        return allProducts.length;
-    }
-
-    function getMyOrdersLength() public view returns (uint256) {
-        return userOrders[msg.sender].length;
-    }
-
-    function myOrders(uint256 _index)
+    function myOrders()
         public
         view
         returns (
-            string memory,
-            string memory,
-            uint256,
-            string memory
+            string[] memory,
+            string[] memory,
+            uint256[] memory,
+            string[] memory
         )
     {
-        return (
-            userOrders[msg.sender][_index].productId,
-            userOrders[msg.sender][_index].orderStatus,
-            userOrders[msg.sender][_index].purchaseId,
-            sellerShipments[
-                products[userOrders[msg.sender][_index].productId].seller
-            ][userOrders[msg.sender][_index].purchaseId].shipmentStatus
-        );
+        uint256 length = userOrders[msg.sender].length;
+
+        string[] memory productIds = new string[](length);
+        string[] memory orderStatuses = new string[](length);
+        uint256[] memory purchaseIds = new uint256[](length);
+        string[] memory shipmentStatuses = new string[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            productIds[i] = userOrders[msg.sender][i].productId;
+            orderStatuses[i] = userOrders[msg.sender][i].orderStatus;
+            purchaseIds[i] = userOrders[msg.sender][i].purchaseId;
+            shipmentStatuses[i] = sellerShipments[
+                products[productIds[i]].seller
+            ][purchaseIds[i]].shipmentStatus;
+        }
+
+        return (productIds, orderStatuses, purchaseIds, shipmentStatuses);
     }
 
-    function getShipmentProductId(uint256 _purchaseId)
-        public
-        view
-        returns (string memory)
-    {
-        return (sellerShipments[msg.sender][_purchaseId].productId);
-    }
-
-    function getShipmentStatus(uint256 _purchaseId)
-        public
-        view
-        returns (string memory)
-    {
-        return (sellerShipments[msg.sender][_purchaseId].shipmentStatus);
-    }
-
-    function getShipmentOrderedBy(uint256 _purchaseId)
-        public
-        view
-        returns (address)
-    {
-        return (sellerShipments[msg.sender][_purchaseId].orderedBy);
-    }
-
-    function getShipmentAddress(uint256 _purchaseId)
-        public
-        view
-        returns (string memory)
-    {
-        return (sellerShipments[msg.sender][_purchaseId].deliveryAddress);
-    }
-
-    function getOrdersPlaced(uint256 _index)
+    function getOrdersPlaced()
         public
         view
         returns (
-            string memory,
-            uint256,
-            address,
-            string memory
+            string[] memory,
+            uint256[] memory,
+            address[] memory,
+            string[] memory,
+            string[] memory,
+            string[] memory,
+            bool[] memory
         )
     {
+        uint256 length = sellerOrders[msg.sender].length;
+
+        string[] memory productIds = new string[](length);
+        uint256[] memory purchaseIds = new uint256[](length);
+        address[] memory orderedBys = new address[](length);
+        string[] memory shipmentStatuses = new string[](length);
+        string[] memory deliveryAddresses = new string[](length);
+        string[] memory payByCurrencies = new string[](length);
+        bool[] memory areCanceled = new bool[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            productIds[i] = sellerOrders[msg.sender][i].productId;
+            purchaseIds[i] = sellerOrders[msg.sender][i].purchaseId;
+            orderedBys[i] = sellerOrders[msg.sender][i].orderedBy;
+            shipmentStatuses[i] = sellerShipments[msg.sender][purchaseIds[i]]
+                .shipmentStatus;
+            deliveryAddresses[i] = sellerShipments[msg.sender][purchaseIds[i]]
+                .deliveryAddress;
+            payByCurrencies[i] = sellerShipments[msg.sender][purchaseIds[i]]
+                .payByCurrency;
+            areCanceled[i] = sellerShipments[msg.sender][purchaseIds[i]]
+                .isCanceled;
+        }
+
         return (
-            sellerOrders[msg.sender][_index].productId,
-            sellerOrders[msg.sender][_index].purchaseId,
-            sellerOrders[msg.sender][_index].orderedBy,
-            sellerShipments[msg.sender][
-                sellerOrders[msg.sender][_index].purchaseId
-            ].shipmentStatus
+            productIds,
+            purchaseIds,
+            orderedBys,
+            shipmentStatuses,
+            deliveryAddresses,
+            payByCurrencies,
+            areCanceled
         );
     }
+
+    function checkValidUser(address _user) public view returns(bool) {
+        bool isValidUser = users[_user].isCreated;
+        return (isValidUser);
+    } 
 }

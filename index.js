@@ -126,26 +126,18 @@ app.get("/showTokenAddress", async (req, res) => {
 
 app.get("/allProducts", async (req, res) => {
   try {
-    const allProductsLength = await EcommerceContract.methods.getProductsLength().call();
-    const allProducts = [];
-
-    for (let i = 0; i < allProductsLength; i++) {
-      const product = await EcommerceContract.methods.allProducts(i).call();
-      const productData = {
-        index: i,
-        productId: product[0],
-        productName: product[1],
-        category: product[2],
-        price: product[3],
-        priceCurrency: product[4],
-        description: product[5],
-        seller: product[6],
-        isActive: product[7],
-      };
-      allProducts.push(productData);
-    }
-
-    return res.status(200).json(allProducts);
+    const allProducts = await EcommerceContract.methods.getAllProducts().call();
+    const allProductsInfo = allProducts.map(array=>({
+      productId:array[0],
+      productName:array[1],
+      category:array[2],
+      price:array[3],
+      priceCurrency:array[4],
+      description:array[5],
+      seller:array[6],
+      isActive:array[7]
+    }));
+    return res.status(200).json(allProductsInfo);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -153,23 +145,16 @@ app.get("/allProducts", async (req, res) => {
 })
 
 app.get("/myOrders", async (req, res) => {
+  const { userAddress } = req.query;
   try {
-    const myOrdersLength = await EcommerceContract.methods.getMyOrdersLength().call();
-    const allOrders = [];
-
-    for (let i = 0; i < myOrdersLength; i++) {
-      const order = await EcommerceContract.methods.myOrders(i).call();
-      const orderData = {
-        index: i,
-        productId: order[0],
-        orderStatus: order[1],
-        purchaseId: order[2],
-        shipmentStatus: order[3],
-      };
-      allOrders.push(orderData);
-    }
-
-    return res.status(200).json(allProducts);
+    const allOrders = await EcommerceContract.methods.myOrders().call({from: userAddress});
+    const allOrdersData = Object.keys(allOrders[0]).map((index) => ({
+      productId: allOrders[0][index],
+      orderStatus: allOrders[1][index],
+      purchaseId: allOrders[2][index],
+      shipmentStatus: allOrders[3][index],
+    }));
+    return res.status(200).json(allOrdersData);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -177,44 +162,41 @@ app.get("/myOrders", async (req, res) => {
 })
 
 app.get("/ordersPlaced", async (req, res) => {
+  const { userAddress } = req.query;
   try {
-    const ordersPlacedLength = await EcommerceContract.methods.getOrdersPlacedLength().call();
-    const allOrdersPlaced = [];
-
-    for (let i = 0; i < ordersPlacedLength; i++) {
-      const orderPlaced = await EcommerceContract.methods.getOrdersPlacedLength(i).call();
-      const orderPlacedData = {
-        index: i,
-        productId: orderPlaced[0],
-        orderStatus: orderPlaced[1],
-        purchaseId: orderPlaced[2],
-        shipmentStatus: orderPlaced[3],
-      };
-      allOrdersPlaced.push(orderPlacedData);
-    }
-    return res.status(200).json(allProducts);
+    const allOrdersPlaced = await EcommerceContract.methods.getOrdersPlaced().call({from: userAddress});
+    const allOrdersPlacedData = Object.keys(allOrdersPlaced[0]).map((index) => ({
+      productId: allOrdersPlaced["0"][index],
+      purchaseId: allOrdersPlaced["1"][index],
+      orderedBy:allOrdersPlaced["2"][index],
+      shipmentStatus: allOrdersPlaced["3"][index],
+      deliveryAddress:allOrdersPlaced["4"][index],
+      payByCurrency: allOrdersPlaced["5"][index],
+      isCanceled:allOrdersPlaced['6'][index]
+  }))
+    return res.status(200).json(allOrdersPlacedData);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
 })
 
-app.get("/seller/shipmentInfo", async (req, res) => {
+app.get("/isValidUser", async (req, res) => {
+  const { userAddress } = req.query;
   try {
-    const { purchaseId } = req.query;
-    const shipmentProductId = await EcommerceContract.methods.getShipmentAddress(purchaseId).call();
-    const shipmentStatus = await EcommerceContract.methods.getShipmentStatus(purchaseId).call();
-    const shipmentOrderedBy = await EcommerceContract.methods.getShipmentOrderedBy(purchaseId).call();
-    const shipmentAddress = await EcommerceContract.methods.getShipmentAddress(purchaseId).call();
+    const isValidUser = await EcommerceContract.methods.checkValidUser(userAddress).call();
+    return res.status(200).json(isValidUser);
+  } catch (error) {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+})
 
-    const dataArray = {
-      productId: shipmentProductId,
-      status: shipmentStatus,
-      orderedBy: shipmentOrderedBy,
-      address: shipmentAddress
-    };
-
-    return res.status(200).json(dataArray);
+app.get("/isValidSeller", async (req, res) => {
+  const { userAddress } = req.query;
+  try {
+    const sellerInfo = await EcommerceContract.methods.sellers(userAddress).call();
+    const isValidSeller = (sellerInfo['1']!=='0x0000000000000000000000000000000000000000');
+    return res.status(200).json(isValidSeller);
   } catch (error) {
     return res.status(500).json({ error: "Internal server error" });
   }

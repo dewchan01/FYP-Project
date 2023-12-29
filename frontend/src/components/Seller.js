@@ -2,7 +2,7 @@ import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from
 import ECommerceABI from "../ABI/ECommerce.json";
 import { polygonMumbai } from "@wagmi/chains";
 import React, { useEffect, useState } from "react";
-import { Form, Input, Button, Modal, Table, InputNumber } from "antd";
+import { Form, Input, Button, Modal, Table, InputNumber, Divider } from "antd";
 import axios from "axios";
 import { Space } from 'antd';
 
@@ -20,6 +20,7 @@ function Seller({ isValidSeller, address }) {
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
+    const [allProducts, setAllProducts] = useState([]);
 
     const handleOpenAddModal = () => {
         setIsAddModalVisible(true);
@@ -185,7 +186,7 @@ function Seller({ isValidSeller, address }) {
 
         const handleUpdateProduct = () => {
             // Perform any validation or additional logic here if needed
-            onUpdateShipment(purchaseId,shipmentDetails);
+            onUpdateShipment(purchaseId, shipmentDetails);
             onClose(); // Close the modal after adding the product
         };
 
@@ -286,6 +287,14 @@ function Seller({ isValidSeller, address }) {
         setOrdersPlaced(res.data || []);
     }
 
+    async function showAllProducts() {
+        const res = await axios.get("http://localhost:3001/allProducts");
+        const filteredProducts = res.data.filter(product => product.seller === address);
+        console.log(filteredProducts);
+        setAllProducts(filteredProducts || []);
+        // console.log(res.data);
+    }
+
     const columns = [
         {
             title: 'Product Id',
@@ -329,8 +338,52 @@ function Seller({ isValidSeller, address }) {
         }
     ];
 
+    const myProductsColumn = [
+        {
+            title: 'Product Id',
+            dataIndex: 'productId',
+            key: 'productId',
+        },
+        {
+            title: 'Product Name',
+            dataIndex: 'productName',
+            key: 'productName',
+        },
+        {
+            title: 'Category',
+            dataIndex: 'category',
+            key: 'category',
+        },
+        {
+            title: 'Price',
+            key: 'price',
+            dataIndex: 'price',
+        },
+        {
+            title: 'Price Currency',
+            key: 'priceCurrency',
+            dataIndex: 'priceCurrency',
+        },
+        {
+            title: 'Description',
+            key: 'description',
+            dataIndex: 'description',
+        },
+        {
+            title: 'Available',
+            key: 'isActive',
+            dataIndex: 'isActive',
+            render: (_, record) => (
+                <Space size="middle">
+                    {record.isActive ? "Yes" : "No"}
+                </Space>
+            )
+        }
+    ]
+
 
     useEffect(() => {
+        showAllProducts();
         getOrdersPlaced();
         if (!isSuccessAddProduct && productId.length > 0) {
             writeAddProduct?.();
@@ -351,14 +404,7 @@ function Seller({ isValidSeller, address }) {
         isValidSeller ?
             <>
                 &nbsp;
-                <Button type="primary" onClick={handleOpenAddModal}>
-                    Add Product
-                </Button>
-                <AddProductModal
-                    visible={isAddModalVisible}
-                    onClose={handleCloseAddModal}
-                    onAddProduct={handleAddProduct}
-                />&nbsp;
+
                 <Button type="primary" onClick={handleOpenUpdateModal}>
                     Update Shipment
                 </Button>
@@ -366,6 +412,24 @@ function Seller({ isValidSeller, address }) {
                     visible={isUpdateModalVisible}
                     onClose={handleCloseUpdateModal}
                     onUpdateShipment={handleUpdateShipment}
+                />
+
+
+                <div style={{ width: '84.9vw' }} >
+                    <Divider>Orders Placed</Divider>
+                    <Table columns={columns}
+                        dataSource={ordersPlaced}
+                        pagination={{ position: ["bottomCenter"], pageSize: 3 }}
+                    />
+                </div>
+                &nbsp;
+                <Button type="primary" onClick={handleOpenAddModal}>
+                    Add Product
+                </Button>
+                <AddProductModal
+                    visible={isAddModalVisible}
+                    onClose={handleCloseAddModal}
+                    onAddProduct={handleAddProduct}
                 />&nbsp;
                 <Button type="primary" onClick={handleOpenDeleteModal} danger={true}>
                     Delete Product
@@ -375,29 +439,31 @@ function Seller({ isValidSeller, address }) {
                     onClose={handleCloseDeleteModal}
                     onDeleteProduct={handleDeleteProduct}
                 />
-
                 <div style={{ width: '84.9vw' }} >
-                    <Table columns={columns}
-                        dataSource={ordersPlaced}
-                        pagination={{ position: ["bottomCenter"], pageSize: 8 }}
+                    <Divider>My Products</Divider>
+                    <Table columns={myProductsColumn}
+                        dataSource={allProducts}
+                        pagination={{ position: ["bottomCenter"], pageSize: 3 }}
                     />
                 </div>
             </>
 
-            : <Form>
-                <p>You are not a seller! Please sign up as a seller.</p>
-                <Form layout="vertical">
-                    <Form.Item label="Seller Name">
-                        <Input
-                            value={sellerName}
-                            onChange={(e) => setSellerName(e.target.value)}
-                        />
-                    </Form.Item>
-                    <br></br>
-                    <Button type="primary" onClick={handleSellerSignUp} loading={isLoadingSellerSignUp}>Sign Up</Button>
-
+            :
+            <div style={{ margin: "2% 0 0 5%", minWidth: "60vw" }}>
+                <Form>
+                    <p>You are not a seller! Please sign up as a seller.</p>
+                    <Form layout="vertical">
+                        <Form.Item label="Seller Name">
+                            <Input
+                                value={sellerName}
+                                onChange={(e) => setSellerName(e.target.value)}
+                            />
+                        </Form.Item>
+                        <br></br>
+                        <Button type="primary" onClick={handleSellerSignUp} loading={isLoadingSellerSignUp}>Sign Up</Button>
+                    </Form>
                 </Form>
-            </Form>
+            </div>
     )
 }
 

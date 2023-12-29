@@ -17,7 +17,7 @@ function Products({ isValidUser, myr, sgd }) {
     async function showAllProducts() {
         const res = await axios.get("http://localhost:3001/allProducts");
         setAllProducts(res.data || []);
-        console.log(res.data);
+        // console.log(res.data);
     }
     const handleBuyProduct = async (productId) => {
         if (!isValidUser) {

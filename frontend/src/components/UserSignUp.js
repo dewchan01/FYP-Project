@@ -42,6 +42,7 @@ function UserSignUp({ address }) {
             alert("Account created successfully!");
         }
         checkValidUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccessCreateAccount, form, isValidUser]);
 
     const handleFormValuesChange = (_, allValues) => {

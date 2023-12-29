@@ -6,7 +6,42 @@ import { Form, Input, Button, Modal, Table, InputNumber, Divider } from "antd";
 import axios from "axios";
 import { Space } from 'antd';
 
-function Seller({ isValidSeller, address }) {
+// When you declare the modal components (AddProductModal, DeleteProductModal, UpdateShipmentModal) within the functional component, 
+// they are created on every render. If any of these modal components use state variables (productId, productName, etc.) or 
+// depend on props, their creation can trigger re-renders, leading to unexpected behavior.
+
+const DeleteProductModal = ({ deleteModal, hideDeleteModal, isLoadingDeleteProduct, productId, writeDeleteProduct, setProductId,deleteProductForm }) => {
+    return (
+        <Modal
+            title="Delete Product"
+            open={deleteModal}
+            onCancel={hideDeleteModal}
+            okText="Delete Product"
+            cancelText="Cancel"
+            confirmLoading={isLoadingDeleteProduct}
+            onOk={() => {
+                if (productId.length > 0) {
+                    writeDeleteProduct?.();
+                }
+            }}
+        >
+            <Form name="Delete Product" layout="vertical" form={deleteProductForm}>
+                <Form.Item label="Product ID">
+                    <Input
+                        value={productId}
+                        onChange={(e) => setProductId(e.target.value)}
+                    />
+                </Form.Item>
+
+            </Form>
+        </Modal>
+    );
+};
+
+function Seller({ isValidSeller, address,checkValidSeller }) {
+    const [addProductForm] = Form.useForm();
+    const [updateShipmentForm] = Form.useForm();
+    const [deleteProductForm] = Form.useForm();
     const [productId, setProductId] = useState("");
     const [purchaseId, setPurchaseId] = useState("");
     const [shipmentDetails, setShipmentDetails] = useState("");
@@ -17,216 +52,107 @@ function Seller({ isValidSeller, address }) {
     const [description, setDescription] = useState("");
     const [ordersPlaced, setOrdersPlaced] = useState([]);
     const [sellerName, setSellerName] = useState("");
-    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-    const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-    const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
+    const [addModal, setAddModal] = useState(false);
+    const [deleteModal, setDeleteModal] = useState(false);
+    const [updateModal, setUpdateModal] = useState(false);
     const [allProducts, setAllProducts] = useState([]);
 
-    const handleOpenAddModal = () => {
-        setIsAddModalVisible(true);
-    };
-
-    const handleCloseAddModal = () => {
-        setIsAddModalVisible(false);
-    };
-
-    const handleOpenDeleteModal = () => {
-        setIsDeleteModalVisible(true);
-    };
-
-    const handleCloseDeleteModal = () => {
-        setIsDeleteModalVisible(false);
-    };
-
-    const handleOpenUpdateModal = () => {
-        setIsUpdateModalVisible(true);
-    };
-
-    const handleCloseUpdateModal = () => {
-        setIsUpdateModalVisible(false);
-    };
-
-    const handleAddProduct = (
-        productId,
-        productName,
-        category,
-        price,
-        priceCurrency,
-        description) => {
-        setProductId(productId);
-        setProductName(productName);
-        setCategory(category);
-        setPrice(price);
-        setPriceCurrency(priceCurrency);
-        setDescription(description);
-    }
-
-    const AddProductModal = ({ visible, onClose, onAddProduct }) => {
-        const [productId, setProductId] = useState('');
-        const [productName, setProductName] = useState('');
-        const [category, setCategory] = useState('');
-        const [price, setPrice] = useState('');
-        const [priceCurrency, setPriceCurrency] = useState('');
-        const [description, setDescription] = useState('');
-
-        const handleAddProduct = () => {
-            // Perform any validation or additional logic here if needed
-            onAddProduct(
-                productId,
-                productName,
-                category,
-                price,
-                priceCurrency,
-                description,
-            );
-            onClose(); // Close the modal after adding the product
-        };
-
-        return (
-            <Modal
-                title="Add Product"
-                visible={visible}
-                onCancel={onClose}
-                footer={[
-                    <Button key="cancel" onClick={onClose}>
-                        Cancel
-                    </Button>,
-                    <Button isLoading={isLoadingAddProduct} key="add" type="primary" onClick={handleAddProduct}>
-                        Add Product
-                    </Button>,
-                ]}
-            >
-                <Form layout="vertical">
-                    <Form.Item label="Product ID">
-                        <Input
-                            value={productId}
-                            onChange={(e) => setProductId(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item label="Product Name">
-                        <Input
-                            value={productName}
-                            onChange={(e) => setProductName(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item label="Category">
-                        <Input
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item label="Price">
-                        <InputNumber
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item label="Price Currency">
-                        <Input
-                            value={priceCurrency}
-                            onChange={(e) => setPriceCurrency(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item label="Description">
-                        <Input
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                    </Form.Item>
-                </Form>
-            </Modal>
-        );
-    };
-    const handleDeleteProduct = (productId) => {
-        setProductId(productId);
-    }
-
-    const DeleteProductModal = ({ visible, onClose, onDeleteProduct }) => {
-        const [productId, setProductId] = useState('');
-
-        const handleDeleteProduct = () => {
-            // Perform any validation or additional logic here if needed
-            onDeleteProduct(productId);
-            onClose(); // Close the modal after adding the product
-        };
-
-        return (
-            <Modal
-                title="Delete Product"
-                visible={visible}
-                onCancel={onClose}
-                footer={[
-                    <Button key="cancel" onClick={onClose}>
-                        Cancel
-                    </Button>,
-                    <Button loading={isLoadingDeleteProduct} key="add" type="primary" onClick={handleDeleteProduct}>
-                        Delete Product
-                    </Button>,
-                ]}
-            >
-                <Form layout="vertical">
-                    <Form.Item label="Product ID">
-                        <Input
-                            value={productId}
-                            onChange={(e) => setProductId(e.target.value)}
-                        />
-                    </Form.Item>
-
-                </Form>
-            </Modal>
-        );
-    };
-    const handleUpdateShipment = (purchaseId, shipmentDetails) => {
-        setPurchaseId(purchaseId);
-        setShipmentDetails(shipmentDetails);
-    }
-    const UpdateShipmentModal = ({ visible, onClose, onUpdateShipment }) => {
-        const [shipmentDetails, setShipmentDetails] = useState('');
-        const [purchaseId, setPurchaseId] = useState('');
-
-        const handleUpdateProduct = () => {
-            // Perform any validation or additional logic here if needed
-            onUpdateShipment(purchaseId, shipmentDetails);
-            onClose(); // Close the modal after adding the product
-        };
-
-        return (
-            <Modal
-                title="Update Shipment"
-                visible={visible}
-                onCancel={onClose}
-                footer={[
-                    <Button key="cancel" onClick={onClose}>
-                        Cancel
-                    </Button>,
-                    <Button loading={isLoadingUpdateShipment} key="add" type="primary" onClick={handleUpdateProduct}>
-                        Update Shipment
-                    </Button>,
-                ]}
-            >
-                <Form layout="vertical">
-                    <Form.Item label="Purchase ID">
-                        <Input
-                            value={purchaseId}
-                            onChange={(e) => setPurchaseId(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item label="Shipment Details">
-                        <Input
-                            value={shipmentDetails}
-                            onChange={(e) => setShipmentDetails(e.target.value)}
-                        />
-                    </Form.Item>
-
-                </Form>
-            </Modal>
-        );
-    };
+    // const AddProductModal = () => {
+    //     return (
+    //         <Modal
+    //             title="Add Product"
+    //             open={addModal}
+    //             onCancel={hideAddModal}
+    //             okText="Add Product"
+    //             cancelText="Cancel"
+    //             confirmLoading={isLoadingAddProduct}
+    //             onOk={() => {
+    //                 console.log(productId);
+    //                 if (productId.length > 0) {
+    //                     writeAddProduct?.();
+    //                 }
+    //             }}
+    //         >
+    //             <Form name="Add Product" layout="vertical" >
+    //                 <Form.Item label="Product ID">
+    //                     <Input
+    //                         value={productId}
+    //                         onChange={(e) =>
+    //                             setProductId(e.target.value)}
+    //                     />
+    //                 </Form.Item>
+    //                 <Form.Item label="Product Name">
+    //                     <Input
+    //                         value={productName}
+    //                         onChange={(e) => setProductName(e.target.value)}
+    //                     />
+    //                 </Form.Item>
+    //                 <Form.Item label="Category">
+    //                     <Input
+    //                         value={category}
+    //                         onChange={(e) => setCategory(e.target.value)}
+    //                     />
+    //                 </Form.Item>
+    //                 <Form.Item label="Price">
+    //                     <InputNumber
+    //                         value={price}
+    //                         onChange={(e) => setPrice(e)}
+    //                     />
+    //                 </Form.Item>
+    //                 <Form.Item label="Price Currency">
+    //                     <Input
+    //                         value={priceCurrency}
+    //                         onChange={(e) => setPriceCurrency(e.target.value)}
+    //                     />
+    //                 </Form.Item>
+    //                 <Form.Item label="Description">
+    //                     <Input
+    //                         value={description}
+    //                         onChange={(e) => setDescription(e.target.value)}
+    //                     />
+    //                 </Form.Item>
+    //             </Form>
+    //         </Modal>
+    //     );
+    // };
 
 
-    const handleSellerSignUp = () => {
-        setSellerName(sellerName);
-    }
+
+    // const UpdateShipmentModal = () => {
+    //     return (
+    //         <Modal
+    //             title="Update Shipment"
+    //             open={updateModal}
+    //             onCancel={hideUpdateModal}
+    //             okText="Update Shipment"
+    //             cancelText="Cancel"
+    //             confirmLoading={isLoadingUpdateShipment}
+    //             onOk={() => {
+    //                 if (purchaseId.length > 0) {
+    //                     writeUpdateShipment?.();
+    //                 }
+    //             }}
+
+    //         >
+    //             <Form name="Update Shipment" layout="vertical">
+    //                 <Form.Item label="Purchase ID">
+    //                     <Input
+    //                         value={purchaseId}
+    //                         onChange={(e) => setPurchaseId(e.target.value)}
+    //                     />
+    //                 </Form.Item>
+    //                 <Form.Item label="Shipment Details">
+    //                     <Input
+    //                         value={shipmentDetails}
+    //                         onChange={(e) => setShipmentDetails(e.target.value)}
+    //                     />
+    //                 </Form.Item>
+
+    //             </Form>
+    //         </Modal>
+    //     );
+    // };
+
     const { config: configSellerSignUp } = usePrepareContractWrite({
         chainId: polygonMumbai.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
@@ -245,7 +171,7 @@ function Seller({ isValidSeller, address }) {
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "addProduct",
-        args: [productId, productName, category, priceCurrency, price, description],
+        args: [productId, productName, category, priceCurrency.slice(1,), String(Number(price * 1e18)), description],
     })
 
     const { write: writeAddProduct, data: dataAddProduct } = useContractWrite(configAddProduct);
@@ -290,7 +216,6 @@ function Seller({ isValidSeller, address }) {
     async function showAllProducts() {
         const res = await axios.get("http://localhost:3001/allProducts");
         const filteredProducts = res.data.filter(product => product.seller === address);
-        console.log(filteredProducts);
         setAllProducts(filteredProducts || []);
         // console.log(res.data);
     }
@@ -325,6 +250,12 @@ function Seller({ isValidSeller, address }) {
             title: 'Pay By Currency',
             key: 'payByCurrency',
             dataIndex: 'payByCurrency',
+            render: (_, record) => (
+                <>
+                    D{record.payByCurrency}
+                </>
+
+            )
         },
         {
             title: 'Status',
@@ -358,11 +289,21 @@ function Seller({ isValidSeller, address }) {
             title: 'Price',
             key: 'price',
             dataIndex: 'price',
+            render: (_, record) => (
+                <Space size="middle">
+                    {record.price / 1e18}
+                </Space>
+            )
         },
         {
             title: 'Price Currency',
             key: 'priceCurrency',
             dataIndex: 'priceCurrency',
+            render: (_, record) => (
+                <>
+                    D{record.priceCurrency}
+                </>
+            )
         },
         {
             title: 'Description',
@@ -381,39 +322,90 @@ function Seller({ isValidSeller, address }) {
         }
     ]
 
+    const showAddModal = () => {
+        setAddModal(true);
+    };
+
+    const hideAddModal = () => {
+        setAddModal(false);
+    };
+
+    const showDeleteModal = () => {
+        setDeleteModal(true);
+    };
+
+    const hideDeleteModal = () => {
+        setDeleteModal(false);
+    };
+
+    const showUpdateModal = () => {
+        setUpdateModal(true);
+    };
+
+    const hideUpdateModal = () => {
+        setUpdateModal(false);
+    };
 
     useEffect(() => {
-        showAllProducts();
-        getOrdersPlaced();
-        if (!isSuccessAddProduct && productId.length > 0) {
-            writeAddProduct?.();
+        if (ordersPlaced.length === 0 && allProducts.length === 0) {
+            getOrdersPlaced();
+            showAllProducts();
+            checkValidSeller();
         }
-        if (!isSuccessDeleteProduct && productId.length > 0) {
-            writeDeleteProduct?.();
+        console.log(isSuccessUpdateShipment)
+        if (isSuccessDeleteProduct || isSuccessSellerSignUp || isSuccessUpdateShipment || isSuccessAddProduct) {
+            deleteProductForm.resetFields();
+            updateShipmentForm.resetFields();
+            addProductForm.resetFields();
+            hideAddModal();
+            hideDeleteModal();
+            hideUpdateModal();
+            checkValidSeller();
+            getOrdersPlaced();
+            showAllProducts();
+            setSellerName("");
         }
-        if (!isSuccessSellerSignUp && sellerName.length > 0) {
-            writeSellerSignUp?.();
-        }
-        if (!isSuccessUpdateShipment && purchaseId.length > 0) {
-            writeUpdateShipment?.();
-        }
-        getOrdersPlaced();
-    }, [isSuccessAddProduct, isSuccessDeleteProduct, isSuccessSellerSignUp, isSuccessUpdateShipment, productId, sellerName, purchaseId])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [deleteProductForm,updateShipmentForm,addProductForm, isSuccessAddProduct, isSuccessSellerSignUp, isSuccessDeleteProduct, isSuccessUpdateShipment]);
 
     return (
         isValidSeller ?
             <>
                 &nbsp;
-
-                <Button type="primary" onClick={handleOpenUpdateModal}>
+                <Button type="primary" onClick={showUpdateModal}>
                     Update Shipment
                 </Button>
-                <UpdateShipmentModal
-                    visible={isUpdateModalVisible}
-                    onClose={handleCloseUpdateModal}
-                    onUpdateShipment={handleUpdateShipment}
-                />
+                {/* <UpdateShipmentModal /> */}
+                <Modal
+                    title="Update Shipment"
+                    open={updateModal}
+                    onCancel={hideUpdateModal}
+                    okText="Update Shipment"
+                    cancelText="Cancel"
+                    confirmLoading={isLoadingUpdateShipment}
+                    onOk={() => {
+                        if (purchaseId.length > 0) {
+                            writeUpdateShipment?.();
+                        }
+                    }}
 
+                >
+                    <Form name="Update Shipment" layout="vertical" form={updateShipmentForm}>
+                        <Form.Item label="Purchase ID">
+                            <Input
+                                value={purchaseId}
+                                onChange={(e) => setPurchaseId(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item label="Shipment Details">
+                            <Input
+                                value={shipmentDetails}
+                                onChange={(e) => setShipmentDetails(e.target.value)}
+                            />
+                        </Form.Item>
+
+                    </Form>
+                </Modal>
 
                 <div style={{ width: '84.9vw' }} >
                     <Divider>Orders Placed</Divider>
@@ -422,23 +414,80 @@ function Seller({ isValidSeller, address }) {
                         pagination={{ position: ["bottomCenter"], pageSize: 3 }}
                     />
                 </div>
+
                 &nbsp;
-                <Button type="primary" onClick={handleOpenAddModal}>
+                <Button type="primary" onClick={showAddModal}>
                     Add Product
                 </Button>
-                <AddProductModal
-                    visible={isAddModalVisible}
-                    onClose={handleCloseAddModal}
-                    onAddProduct={handleAddProduct}
-                />&nbsp;
-                <Button type="primary" onClick={handleOpenDeleteModal} danger={true}>
+                {/* <AddProductModal /> */}
+                <Modal
+                    title="Add Product"
+                    open={addModal}
+                    onCancel={hideAddModal}
+                    okText="Add Product"
+                    cancelText="Cancel"
+                    confirmLoading={isLoadingAddProduct}
+                    onOk={() => {
+                        console.log(productId);
+                        if (productId.length > 0) {
+                            writeAddProduct?.();
+                        }
+                    }}
+                >
+                    <Form name="Add Product" layout="vertical" form={addProductForm}>
+                        <Form.Item label="Product ID">
+                            <Input
+                                value={productId}
+                                onChange={(e) =>
+                                    setProductId(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item label="Product Name">
+                            <Input
+                                value={productName}
+                                onChange={(e) => setProductName(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item label="Category">
+                            <Input
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item label="Price">
+                            <InputNumber
+                                value={price}
+                                onChange={(e) => setPrice(e)}
+                            />
+                        </Form.Item>
+                        <Form.Item label="Price Currency">
+                            <Input
+                                value={priceCurrency}
+                                onChange={(e) => setPriceCurrency(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item label="Description">
+                            <Input
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
+                        </Form.Item>
+                    </Form>
+                </Modal>
+
+                &nbsp;
+                <Button type="primary" onClick={showDeleteModal} danger={true}>
                     Delete Product
                 </Button>
                 <DeleteProductModal
-                    visible={isDeleteModalVisible}
-                    onClose={handleCloseDeleteModal}
-                    onDeleteProduct={handleDeleteProduct}
-                />
+                    deleteModal={deleteModal}
+                    hideDeleteModal={hideDeleteModal}
+                    isLoadingDeleteProduct={isLoadingDeleteProduct}
+                    productId={productId}
+                    writeDeleteProduct={writeDeleteProduct}
+                    setProductId={setProductId}
+                    deleteProductForm={deleteProductForm} />
+
                 <div style={{ width: '84.9vw' }} >
                     <Divider>My Products</Divider>
                     <Table columns={myProductsColumn}
@@ -447,10 +496,8 @@ function Seller({ isValidSeller, address }) {
                     />
                 </div>
             </>
-
-            :
-            <div style={{ margin: "2% 0 0 5%", minWidth: "60vw" }}>
-                <Form>
+            : <div style={{ margin: "2% 0 0 5%", minWidth: "60vw" }}>
+                <Form name="Sign Up" >
                     <p>You are not a seller! Please sign up as a seller.</p>
                     <Form layout="vertical">
                         <Form.Item label="Seller Name">
@@ -460,7 +507,12 @@ function Seller({ isValidSeller, address }) {
                             />
                         </Form.Item>
                         <br></br>
-                        <Button type="primary" onClick={handleSellerSignUp} loading={isLoadingSellerSignUp}>Sign Up</Button>
+                        <Button type="primary" onClick={() => {
+                            if (sellerName.length > 0) {
+                                writeSellerSignUp?.();
+                            }
+                        }}
+                            loading={isLoadingSellerSignUp}>Sign Up</Button>
                     </Form>
                 </Form>
             </div>

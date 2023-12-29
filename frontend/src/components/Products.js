@@ -78,6 +78,7 @@ function Products({ isValidUser, myr, sgd }) {
         if (isSuccessBuy) {
         alert("Purchase Successfully!");
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccessBuy, productId]);
 
     return (

@@ -12,7 +12,7 @@ import Seller from "./Seller";
 import UserSignUp from "./UserSignUp";
 import { useState } from "react";
 
-function SiderPanel({address,isValidUser,sgd,myr, isValidSeller}) {
+function SiderPanel({address,isValidUser,sgd,myr,checkValidSeller,isValidSeller}) {
     const { Sider } = Layout;
     const ItemContent = ({ title }) => {
         let contentComponent;
@@ -25,7 +25,7 @@ function SiderPanel({address,isValidUser,sgd,myr, isValidSeller}) {
                 contentComponent = <Orders address={address}/>;
                 break;
             case 'Seller':
-                contentComponent = <Seller address={address} isValidSeller={isValidSeller}/>;
+                contentComponent = <Seller address={address} checkValidSeller={checkValidSeller} isValidSeller={isValidSeller}/>;
                 break;
             case 'Sign Up':
                 contentComponent = <UserSignUp address={address} isValidUser={isValidUser}/>;
@@ -63,8 +63,8 @@ function SiderPanel({address,isValidUser,sgd,myr, isValidSeller}) {
     return (
         <>
             <Layout style={{ minHeight: '100vh'}}>
-                <Sider width={"14vw"}>
-                    <Menu mode="vertical" theme="dark" defaultSelectedKeys={['1']}>
+                <Sider width={"14vw"} theme='light'>
+                    <Menu mode="vertical" theme="light" defaultSelectedKeys={['1']}>
                         {items.map((item) => (
                             <Menu.Item key={item.key} icon={item.icon} onClick={() => handleMenuItemClick(item.title)}>
                                 <Link>{item.title}</Link>

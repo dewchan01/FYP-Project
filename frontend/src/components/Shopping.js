@@ -31,11 +31,12 @@ function Shopping({address,sgd,myr}) {
     useEffect(() => {
         checkValidUser();
         checkValidSeller();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     },[isValidUser,isValidSeller])
 
     return (
         <React.Fragment>
-            <SiderPanel address={address} isValidUser={isValidUser} sgd={sgd} myr={myr} isValidSeller={isValidSeller}/>
+            <SiderPanel address={address} isValidUser={isValidUser} sgd={sgd} myr={myr} checkValidSeller={checkValidSeller} isValidSeller={isValidSeller}/>
             {/* <Layout className="site-layout">
                 <Routes>
                     <Route

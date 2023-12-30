@@ -3,10 +3,10 @@ import { Card, Modal, InputNumber, Input, Dropdown, Space, Menu } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { polygonMumbai } from "@wagmi/chains";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
-import { tokenConfig, getLabelByKey,getContractABIByKey,getContractAddressByKey, getContractOwnerByKey } from "./tokenConfig";
+import { tokenConfig, getLabelByKey, getContractABIByKey, getContractAddressByKey, getContractOwnerByKey } from "./tokenConfig";
 import MCBDCABI from "../ABI/MCBDC.json";
 
-function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSelectedCurrency,getHistory}) {
+function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSelectedCurrency, getHistory }) {
   const [transferModal, setTransferModal] = useState(false);
   const [mintModal, setMintModal] = useState(false);
   const [burnModal, setBurnModal] = useState(false);
@@ -14,7 +14,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
   const [mintAmount, setMintAmount] = useState(5);
   const [burnAmount, setBurnAmount] = useState(5);
   const [transferAmount, setTransferAmount] = useState(5);
-  const [message,setMessage] = useState("");
+  const [message, setMessage] = useState("");
   const items = tokenConfig;
 
   const BalanceDropdown = ({ sgd, myr, selectedCurrency, onCurrencyChange }) => {
@@ -35,10 +35,10 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
         <a style={{ color: "black" }} onClick={(e) => e.preventDefault()}>
           <Space>
             {selectedCurrency === '1' && (
-              <div style={{ lineHeight: "70px" }}>{(sgd!=="..."?Number(sgd).toFixed(2):sgd)} </div>
+              <div style={{ lineHeight: "70px" }}>{(sgd !== "..." ? Number(sgd).toFixed(2) : sgd)} </div>
             )}
             {selectedCurrency === '2' && (
-              <div style={{ lineHeight: "70px" }}>{(myr!=="..."?Number(myr).toFixed(2):myr)} </div>
+              <div style={{ lineHeight: "70px" }}>{(myr !== "..." ? Number(myr).toFixed(2) : myr)} </div>
             )}
             <div style={{ fontSize: "20px" }}>
               {selectedCurrency === '1' ? 'DSGD' : 'DMYR'}
@@ -55,7 +55,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "localTransfer",
-    args: [transferAddress, String(transferAmount * (1e18)),getLabelByKey(selectedCurrency).slice(1,),message],
+    args: [transferAddress, String(transferAmount * (1e18)), getLabelByKey(selectedCurrency).slice(1,), message],
   });
 
   const { write: writeTransfer, data: dataTransfer } = useContractWrite(configTransfer);
@@ -111,6 +111,8 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
   };
 
   useEffect(() => {
+    getBalance();
+    getHistory();
     if (isSuccessMint || isSuccessTransfer || isSuccessBurn) {
       getBalance();
       getHistory();
@@ -119,7 +121,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
       hideBurnModal();
       //prompt tx is successful
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccessMint, isSuccessTransfer, isSuccessBurn])
 
 
@@ -149,9 +151,9 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
           cancelText="Cancel"
         >
           <p>Amount <strong>({getLabelByKey(selectedCurrency)})</strong></p>
-          <InputNumber min={0.01} value={transferAmount} onChange={(val) => setTransferAmount(val)} required={true}/>
+          <InputNumber min={0.01} value={transferAmount} onChange={(val) => setTransferAmount(val)} required={true} />
           <p>To (address)</p>
-          <Input placeholder="0x..." value={transferAddress} onChange={(val) => setTransferAddress(val.target.value)} required={true}/>
+          <Input placeholder="0x..." value={transferAddress} onChange={(val) => setTransferAddress(val.target.value)} required={true} />
           {transferAddress === address && (
             <p style={{ color: 'red' }}>You cannot transfer token to your own address.</p>
           )}
@@ -159,7 +161,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
           <Input placeholder="Send 1 eth..." value={message} onChange={(val) => setMessage(val.target.value)} />
 
         </Modal>
-        
+
         <div className="extraOption" onClick={showTransferModal}>Local Transfer</div>
         {address === getContractOwnerByKey(selectedCurrency) && (
           <>

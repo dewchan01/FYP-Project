@@ -12,26 +12,27 @@ import Seller from "./Seller";
 import UserSignUp from "./UserSignUp";
 import { useState } from "react";
 
-function SiderPanel({address,isValidUser,sgd,myr,checkValidSeller,isValidSeller}) {
+function SiderPanel({address,isValidUser,sgd,myr,checkValidSeller,isValidSeller,getBalance}) {
     const { Sider } = Layout;
-    const ItemContent = ({ title }) => {
+
+    const ItemContent = ({ title,getBalance }) => {
         let contentComponent;
 
         switch (title) {
             case 'Products':
-                contentComponent = <Products isValidUser={isValidUser} sgd={sgd} myr={myr}/>;
+                contentComponent = <Products isValidUser={isValidUser} sgd={sgd} myr={myr} getBalance={getBalance}/>;
                 break;
             case 'Orders':
                 contentComponent = <Orders address={address}/>;
                 break;
             case 'Seller':
-                contentComponent = <Seller address={address} checkValidSeller={checkValidSeller} isValidSeller={isValidSeller}/>;
+                contentComponent = <Seller address={address} checkValidSeller={checkValidSeller} isValidSeller={isValidSeller} />;
                 break;
             case 'Sign Up':
                 contentComponent = <UserSignUp address={address} isValidUser={isValidUser}/>;
                 break;
             default:
-                contentComponent = <Products  isValidUser={isValidUser} sgd={sgd} myr={myr}/>;
+                contentComponent = <Products isValidUser={isValidUser} sgd={sgd} myr={myr}  getBalance={getBalance}/>;
         }
         return <div>{contentComponent}</div>;
 
@@ -72,7 +73,7 @@ function SiderPanel({address,isValidUser,sgd,myr,checkValidSeller,isValidSeller}
                         ))}
                     </Menu>
                 </Sider>
-                <ItemContent title={title} />
+                <ItemContent title={title} getBalance={getBalance}/>
             </Layout>
         </>
     );

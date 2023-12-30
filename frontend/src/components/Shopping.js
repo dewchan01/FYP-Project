@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import SiderPanel from "./SiderPanel";
 
-function Shopping({address,sgd,myr}) {
+function Shopping({address,sgd,myr,getFXRate,getBalance}) {
+
     const [isValidUser, setIsValidUser] = useState(false);
     const [isValidSeller, setIsValidSeller] = useState(false);
     
@@ -36,7 +37,14 @@ function Shopping({address,sgd,myr}) {
 
     return (
         <React.Fragment>
-            <SiderPanel address={address} isValidUser={isValidUser} sgd={sgd} myr={myr} checkValidSeller={checkValidSeller} isValidSeller={isValidSeller}/>
+            <SiderPanel address={address} 
+            isValidUser={isValidUser} 
+            sgd={sgd} 
+            myr={myr} 
+            checkValidSeller={checkValidSeller} 
+            isValidSeller={isValidSeller} 
+            getFXRate={getFXRate} 
+            getBalance={getBalance}/>
             {/* <Layout className="site-layout">
                 <Routes>
                     <Route

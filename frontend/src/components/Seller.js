@@ -26,7 +26,7 @@ const DeleteProductModal = ({ deleteModal, hideDeleteModal, isLoadingDeleteProdu
             }}
         >
             <Form name="Delete Product" layout="vertical" form={deleteProductForm}>
-                <Form.Item label="Product ID">
+                <Form.Item name="productId" label="Product ID">
                     <Input
                         value={productId}
                         onChange={(e) => setProductId(e.target.value)}
@@ -391,13 +391,13 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
 
                 >
                     <Form name="Update Shipment" layout="vertical" form={updateShipmentForm}>
-                        <Form.Item label="Purchase ID">
+                        <Form.Item name="purchaseId" label="Purchase ID">
                             <Input
                                 value={purchaseId}
                                 onChange={(e) => setPurchaseId(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item label="Shipment Details">
+                        <Form.Item name="shipmentDetails" label="Shipment Details">
                             <Input
                                 value={shipmentDetails}
                                 onChange={(e) => setShipmentDetails(e.target.value)}
@@ -435,38 +435,38 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
                     }}
                 >
                     <Form name="Add Product" layout="vertical" form={addProductForm}>
-                        <Form.Item label="Product ID">
+                        <Form.Item name="productId" label="Product ID">
                             <Input
                                 value={productId}
                                 onChange={(e) =>
                                     setProductId(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item label="Product Name">
+                        <Form.Item name="productName" label="Product Name">
                             <Input
                                 value={productName}
                                 onChange={(e) => setProductName(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item label="Category">
+                        <Form.Item name="category" label="Category">
                             <Input
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item label="Price">
+                        <Form.Item name="price" label="Price">
                             <InputNumber
                                 value={price}
                                 onChange={(e) => setPrice(e)}
                             />
                         </Form.Item>
-                        <Form.Item label="Price Currency">
+                        <Form.Item name="priceCurrency" label="Price Currency">
                             <Input
                                 value={priceCurrency}
                                 onChange={(e) => setPriceCurrency(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item label="Description">
+                        <Form.Item name="description" label="Description">
                             <Input
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}

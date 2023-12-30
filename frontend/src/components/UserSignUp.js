@@ -55,7 +55,7 @@ function UserSignUp({ address }) {
     return (
         <div style={{ margin: "2% 0 0 5%" }}>
         {(!isValidUser) ?
-                <Card title="User Sign Up" style={{ width: 1200 }}>
+                <Card title="User Sign Up" style={{ width: "70vw" }}>
                     <Form
                         form={form}
                         labelCol={{ flex: '200px' }}
@@ -65,7 +65,7 @@ function UserSignUp({ address }) {
                         size="large"
                         onFinish={writeCreateAccount}
                         onValuesChange={handleFormValuesChange}
-                        style={{ width: 1100 }}
+                        style={{ width: "65vw" }}
                     >
                         <Form.Item
                             name="buyerName"
@@ -95,7 +95,7 @@ function UserSignUp({ address }) {
                         </Form.Item>
                     </Form>
                 </Card>
-            : <Card title="User Sign Up" style={{ width: 1200 }}>
+            : <Card title="User Sign Up" style={{ width: "70vw"  }}>
                 <Form            
                     layout="horizontal"
                     size="large"

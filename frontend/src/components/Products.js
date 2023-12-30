@@ -55,7 +55,7 @@ function Products({ isValidUser, myr, sgd,getBalance }) {
         return (
             <Select
                 value={selectedCurrency}
-                style={{ width: 1200 }}
+                style={{ width: "80vw" }}
                 onChange={handleChange}
                 suffixIcon={<DownOutlined />}
             >

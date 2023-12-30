@@ -84,7 +84,7 @@ function Orders({ address }) {
 
             <Table columns={columns}
                 dataSource={myOrders}
-                pagination={{ position: ["bottomCenter"], pageSize: 4 }}
+                pagination={{ position: ["bottomCenter"], pageSize: 9 }}
             />
         </div>
     )

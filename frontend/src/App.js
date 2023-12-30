@@ -232,7 +232,7 @@ function App() {
               </div>
             </>
           ) : (!isConnected) ?
-            <div>Please Login</div>
+            <div style={{fontWeight:"bold",fontSize:"1.5rem"}}>Please Connect Your MetaMask Wallet</div>
             : <div></div>
           }
         </Content>

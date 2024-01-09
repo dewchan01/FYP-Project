@@ -1,27 +1,32 @@
+// import multer from 'multer';
 const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
 
 const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
-const app = express();
-const port = 3001;
 
-const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL); // Replace with your Alchemy API key
+const app = express();
+app.use(express.json());
+const port = 3001;
+const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
 const DMYRTokenAddress = process.env.DMYRTOKEN_CONTRACT_ADDRESS;
 const MCBDCContractAddress = process.env.MCBDC_CONTRACT_ADDRESS;
 const EcommerceContractAddress = process.env.ECOMMERCE_CONTRACT_ADDRESS;
+const VoucherContractAddress = process.env.VOUCHER_CONTRACT_ADDRESS;
 
 const DSGDTokenContractABI = require("./artifacts/contracts/DSGDToken.sol/DSGDToken.json").abi;
 const DMYRTokenContractABI = require("./artifacts/contracts/DMYRToken.sol/DMYRToken.json").abi;
 const MCBDCContractABI = require("./artifacts/contracts/MCBDC.sol/MCBDC.json").abi;
 const EcommerceContractABI = require("./artifacts/contracts/Ecommerce.sol/Ecommerce.json").abi;
+const VoucherContractABI = require("./artifacts/contracts/Voucher.sol/VoucherContract.json").abi;
 
 const MCBDCContract = new web3.eth.Contract(MCBDCContractABI, MCBDCContractAddress);
 const DMYRTokenContract = new web3.eth.Contract(DMYRTokenContractABI, DMYRTokenAddress);
 const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenAddress);
 const EcommerceContract = new web3.eth.Contract(EcommerceContractABI, EcommerceContractAddress);
+const VoucherContract = new web3.eth.Contract(VoucherContractABI, VoucherContractAddress);
 
 app.use((_, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -58,7 +63,7 @@ app.get("/getHistory", async (req, res) => {
   const { userAddress } = req.query;
   console.log(userAddress);
   // Fetch transaction history using your smart contract ABI (modify based on your contract)
-  const history = await MCBDCContract.methods.getMyHistory().call({from: userAddress});
+  const history = await MCBDCContract.methods.getMyHistory().call({ from: userAddress });
 
   const jsonResponse = {
     history: history
@@ -70,7 +75,7 @@ app.get("/getHistory", async (req, res) => {
 app.get("/getRequests", async (req, res) => {
   const { userAddress } = req.query;
   // Fetch user requests using your smart contract ABI (modify based on your contract)
-  const requests = await MCBDCContract.methods.getMyRequests().call({from: userAddress});
+  const requests = await MCBDCContract.methods.getMyRequests().call({ from: userAddress });
 
   const jsonResponseRequests = requests;
   const jsonResponse = {
@@ -127,15 +132,15 @@ app.get("/showTokenAddress", async (req, res) => {
 app.get("/allProducts", async (req, res) => {
   try {
     const allProducts = await EcommerceContract.methods.getAllProducts().call();
-    const allProductsInfo = allProducts.map(array=>({
-      productId:array[0],
-      productName:array[1],
-      category:array[2],
-      price:array[3],
-      priceCurrency:array[4],
-      description:array[5],
-      seller:array[6],
-      isActive:array[7]
+    const allProductsInfo = allProducts.map(array => ({
+      productId: array[0],
+      productName: array[1],
+      category: array[2],
+      price: array[3],
+      priceCurrency: array[4],
+      description: array[5],
+      seller: array[6],
+      isActive: array[7]
     }));
     return res.status(200).json(allProductsInfo);
   } catch (error) {
@@ -147,7 +152,7 @@ app.get("/allProducts", async (req, res) => {
 app.get("/myOrders", async (req, res) => {
   const { userAddress } = req.query;
   try {
-    const allOrders = await EcommerceContract.methods.myOrders().call({from: userAddress});
+    const allOrders = await EcommerceContract.methods.myOrders().call({ from: userAddress });
     const allOrdersData = Object.keys(allOrders[0]).map((index) => ({
       productId: allOrders[0][index],
       orderStatus: allOrders[1][index],
@@ -164,16 +169,16 @@ app.get("/myOrders", async (req, res) => {
 app.get("/ordersPlaced", async (req, res) => {
   const { userAddress } = req.query;
   try {
-    const allOrdersPlaced = await EcommerceContract.methods.getOrdersPlaced().call({from: userAddress});
+    const allOrdersPlaced = await EcommerceContract.methods.getOrdersPlaced().call({ from: userAddress });
     const allOrdersPlacedData = Object.keys(allOrdersPlaced[0]).map((index) => ({
       productId: allOrdersPlaced["0"][index],
       purchaseId: allOrdersPlaced["1"][index],
-      orderedBy:allOrdersPlaced["2"][index],
+      orderedBy: allOrdersPlaced["2"][index],
       shipmentStatus: allOrdersPlaced["3"][index],
-      deliveryAddress:allOrdersPlaced["4"][index],
+      deliveryAddress: allOrdersPlaced["4"][index],
       payByCurrency: allOrdersPlaced["5"][index],
-      isCanceled:allOrdersPlaced['6'][index]
-  }))
+      isCanceled: allOrdersPlaced['6'][index]
+    }))
     return res.status(200).json(allOrdersPlacedData);
   } catch (error) {
     console.error(error);
@@ -195,13 +200,121 @@ app.get("/isValidSeller", async (req, res) => {
   const { userAddress } = req.query;
   try {
     const sellerInfo = await EcommerceContract.methods.sellers(userAddress).call();
-    const isValidSeller = (sellerInfo['1']!=='0x0000000000000000000000000000000000000000');
+    const isValidSeller = (sellerInfo['1'] !== '0x0000000000000000000000000000000000000000');
     return res.status(200).json(isValidSeller);
   } catch (error) {
     return res.status(500).json({ error: "Internal server error" });
   }
 })
+app.get("/getVoucherInfo",async (req,res)=>{
+  const { voucherId } = req.query;
+  try{
+    const voucher = await VoucherContract.methods.getVoucherInfo(voucherId).call();
+    const voucherInfo = {
+      campaignId: voucher[0],
+      voucherId: voucher[1],
+      suitableProductIds: voucher[2],
+      expirationDate: voucher[3],
+      minSpend: voucher[4],
+      value: voucher[5],
+      valueCurrency: voucher[6],
+      amount: voucher[7],
+      isActive: voucher[8],
+      isMintable: voucher[9],
+      organizer: voucher[10],
+      uri: voucher[11],
+    };
+    return res.status(200).json(voucherInfo);
 
+  }catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+}})
+
+app.get("/getAllVouchers", async (req, res) => {
+  try {
+    const voucherLength = await VoucherContract.methods.checkVoucherId().call();
+    const allVouchersInfo = [];
+
+    for (let i = 0; i < voucherLength; i++) {
+      const voucher = await VoucherContract.methods.getVoucherInfo(i).call();
+
+      // Map voucher data to the desired format
+      const voucherInfo = {
+        campaignId: voucher[0],
+        voucherId: voucher[1],
+        suitableProductIds: voucher[2],
+        expirationDate: voucher[3],
+        minSpend: voucher[4],
+        value: voucher[5],
+        valueCurrency: voucher[6],
+        amount: voucher[7],
+        isActive: voucher[8],
+        isMintable: voucher[9],
+        organizer: voucher[10],
+        uri: voucher[11],
+      };
+
+      allVouchersInfo.push(voucherInfo);
+    }
+
+    return res.status(200).json(allVouchersInfo);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+})
+
+app.get("/getExpiredVouchers", async (req, res) => {
+  try {
+    const vouchers = await VoucherContract.methods.getExpiredVouchers().call();
+    const allExpiredVoucherIds = [];
+
+    for (let i = 0; i < vouchers.length; i++) {
+        allExpiredVoucherIds.push(vouchers[i]);
+      }
+    return res.status(200).json(allExpiredVoucherIds);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+})
+
+app.get("/getClaimedList", async (req, res) => {
+  const { userAddress } = req.query;
+  const voucherLength = await VoucherContract.methods.checkVoucherId().call();
+  const allClaimedVoucherIds = [];
+  try {
+    for (let i = 0; i < voucherLength; i++) {
+      const isVoucherClaimed = await VoucherContract.methods.claimedList(userAddress, i).call();
+      if (isVoucherClaimed) {
+        allClaimedVoucherIds.push(i.toString());
+      }
+    }
+    return res.status(200).json(allClaimedVoucherIds);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+})
+
+app.get("/getBalanceOfVoucher", async (req, res) => {
+  const { userAddress } = req.query;
+  const voucherLength = await VoucherContract.methods._voucherId().call();
+  const balancesOfVouchers = [];
+  try {
+    for (let i = 0; i < voucherLength; i++) {
+      const balanceOfVoucher = await VoucherContract.methods.balanceOf(userAddress, i).call();
+      balancesOfVouchers.push(balanceOfVoucher);
+    }
+    console.log(balancesOfVouchers);
+    return res.status(200).json(balancesOfVouchers);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+
+})
 app.listen(port, () => {
   console.log(`Listening for API Calls on port ${port}`);
 });

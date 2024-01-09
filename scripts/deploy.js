@@ -25,29 +25,25 @@ async function main() {
   await mCBDCContract.deployed();
   console.log(`MCBDC is deployed to ${mCBDCContract.address} by ${contract_owner[2].address}`);
 
+  const Voucher = await ethers.getContractFactory("VoucherContract");
+  const VoucherContract= await Voucher.connect(contract_owner[3]).deploy(mCBDCContract.address);
+
+  await VoucherContract.deployed();
+  console.log(`VoucherContract is deployed to ${VoucherContract.address} by ${contract_owner[3].address}`);
+
   const ECommerce = await ethers.getContractFactory("ECommerce");
-  const ECommerceContract = await ECommerce.connect(contract_owner[2]).deploy(mCBDCContract.address);
+  const ECommerceContract = await ECommerce.connect(contract_owner[3]).deploy(mCBDCContract.address,VoucherContract.address);
 
   await ECommerceContract.deployed();
-  console.log(`ECommerce is deployed to ${ECommerceContract.address} by ${contract_owner[2].address}`);
+  console.log(`ECommerce is deployed to ${ECommerceContract.address} by ${contract_owner[3].address}`);
 
   // Verify the DSGDToken contract
   if (network.name !== "localhost" && network.name !== "hardhat") {
     await verifyContract(dsgdContract.address, [], "contracts/DSGDToken.sol:DSGDToken");
-  }
-
-  // Verify the DMYRToken contract
-  if (network.name !== "localhost" && network.name !== "hardhat") {
     await verifyContract(dmyrContract.address, [], "contracts/DMYRToken.sol:DMYRToken");
-  }
-
-  // Verify the mCBDC contract
-  if (network.name !== "localhost" && network.name !== "hardhat") {
     await verifyContract(mCBDCContract.address, [], "contracts/MCBDC.sol:MCBDC");
-  }
-  
-  if (network.name !== "localhost" && network.name !== "hardhat") {
-    await verifyContract(ECommerceContract.address, [mCBDCContract.address], "contracts/ECommerce.sol:ECommerce");
+    await verifyContract(VoucherContract.address, [mCBDCContract.address], "contracts/Voucher.sol:VoucherContract");
+    await verifyContract(ECommerceContract.address, [mCBDCContract.address,VoucherContract.address], "contracts/ECommerce.sol:ECommerce");
   }
 }
 

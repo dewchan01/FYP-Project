@@ -407,7 +407,7 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
                     </Form>
                 </Modal>
 
-                <div style={{ width: '84.9vw' }} >
+                <div style={{ width: '85vw' }} >
                     <Divider>Orders Placed</Divider>
                     <Table columns={columns}
                         dataSource={ordersPlaced}
@@ -488,7 +488,7 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
                     setProductId={setProductId}
                     deleteProductForm={deleteProductForm} />
 
-                <div style={{ width: '84.9vw' }} >
+                <div style={{ width: '85vw' }} >
                     <Divider>My Products</Divider>
                     <Table columns={myProductsColumn}
                         dataSource={allProducts}

@@ -80,7 +80,7 @@ function Orders({ address }) {
     }, [productId, purchaseId, isSuccessCancelOrder])
 
     return (
-        <div style={{ width: '84.9vw' }} >
+        <div style={{ width: '85vw' }} >
 
             <Table columns={columns}
                 dataSource={myOrders}

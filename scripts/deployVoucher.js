@@ -6,15 +6,15 @@ async function main() {
   let contract_owner = await ethers.getSigners();
 
   // Deploy the mCBDC contract
-  const ECommerce = await ethers.getContractFactory("ECommerce");
-  const ECommerceContract = await ECommerce.connect(contract_owner[3]).deploy(process.env.MCBDC_CONTRACT_ADDRESS,process.env.VOUCHER_CONTRACT_ADDRESS);
+  const Voucher = await ethers.getContractFactory("VoucherContract");
+  const VoucherContract= await Voucher.connect(contract_owner[3]).deploy(process.env.MCBDC_CONTRACT_ADDRESS);
 
-  await ECommerceContract.deployed();
-  console.log(`ECommerce is deployed to ${ECommerceContract.address} by ${contract_owner[3].address}`);
+  await VoucherContract.deployed();
+  console.log(`VoucherContract is deployed to ${VoucherContract.address} by ${contract_owner[3].address}`);
 
   // Verify the ECommerceContract contract
   if (network.name !== "localhost" && network.name !== "hardhat") {
-    await verifyContract(ECommerceContract.address, [process.env.MCBDC_CONTRACT_ADDRESS,process.env.VOUCHER_CONTRACT_ADDRESS], "contracts/ECommerce.sol:ECommerce");
+    await verifyContract(VoucherContract.address, [process.env.VOUCHER_CONTRACT_ADDRESS], "contracts/Voucher.sol:VoucherContract");
   }
 }
 

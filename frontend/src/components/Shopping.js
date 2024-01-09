@@ -3,10 +3,11 @@ import axios from 'axios';
 import SiderPanel from "./SiderPanel";
 
 function Shopping({address,sgd,myr,getFXRate,getBalance}) {
-
+    console.log("Address",address)
     const [isValidUser, setIsValidUser] = useState(false);
     const [isValidSeller, setIsValidSeller] = useState(false);
-    
+    const [balanceOfVouchers, setBalanceOfVouchers] = useState([]);
+    const [expiredVouchers, setExpiredVouchers] = useState([]);
 
     async function checkValidUser() {
         const res = await axios.get(`http://localhost:3001/isValidUser`, {
@@ -29,9 +30,24 @@ function Shopping({address,sgd,myr,getFXRate,getBalance}) {
 
     }
 
+    // getMyVoucher & getExpiredVoucher
+    async function getBalanceOfVoucher() {
+        const res = await axios.get("http://localhost:3001/getBalanceOfVoucher", {
+            params: { userAddress: address },
+        });
+        setBalanceOfVouchers(res.data || []);
+    }
+
+    async function getExpiredVoucher() {
+        const res = await axios.get("http://localhost:3001/getExpiredVouchers");
+        setExpiredVouchers(res.data || []);
+    }
+
     useEffect(() => {
         checkValidUser();
         checkValidSeller();
+        getBalanceOfVoucher();
+        getExpiredVoucher();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[isValidUser,isValidSeller])
 
@@ -44,7 +60,13 @@ function Shopping({address,sgd,myr,getFXRate,getBalance}) {
             checkValidSeller={checkValidSeller} 
             isValidSeller={isValidSeller} 
             getFXRate={getFXRate} 
-            getBalance={getBalance}/>
+            getBalance={getBalance}
+            balanceOfVouchers={balanceOfVouchers}
+            expiredVouchers={expiredVouchers}
+            getExpiredVoucher={getExpiredVoucher}
+            getBalanceOfVoucher={getBalanceOfVoucher}
+            />
+            
             {/* <Layout className="site-layout">
                 <Routes>
                     <Route

@@ -3,6 +3,7 @@ import CurrencyStatus from "./CurrencyStatus";
 import AccountDetails from "./AccountDetails";
 import RecentActivity from "./RecentActivity";
 import Shopping from "./Shopping";
+import Help from "./Help";
 
 function NavBar({ sgd, myr, address, getBalance,
   requests, rate, isFXRateResponseValid,
@@ -25,11 +26,12 @@ function NavBar({ sgd, myr, address, getBalance,
           requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid}
           expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
           getRequests={getRequests} />}>
-            
-          </Route>
+        </Route>
+        <Route path='/help' element={<Help />}></Route>
+        <Route path="*" element={<div style={{ fontWeight: "bold", fontSize: "1.5rem", textAlign: "center", backgroundColor: "white" }}>404 Not Found</div>}></Route>
       </Routes >
     </div >
-    );
+  );
 }
 
 export default NavBar;

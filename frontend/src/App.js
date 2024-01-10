@@ -162,7 +162,7 @@ function App() {
             alignItems: 'center',
           }}>
           <div className="headerLeft">
-            <img src={logo} alt="logo" className="logo" />
+            <a href="/" style={{ display: "flex", alignItems: "center" }} ><img src={logo} alt="logo" className="logo" /></a>
             {isConnected && (
               <>
                 <Menu

@@ -14,6 +14,7 @@ contract MCBDC is ChainlinkClient {
         uint256 toAmount;
         string fromCurrency;
         string targetCurrency;
+        uint256 time;
         string message;
     }
 
@@ -61,6 +62,7 @@ contract MCBDC is ChainlinkClient {
         newHistory.toAmount = toAmount;
         newHistory.fromCurrency = fromCurrency;
         newHistory.targetCurrency = targetCurrency;
+        newHistory.time = block.timestamp;
         newHistory.message = message;
         if (tx.origin != recipient) {
             history[tx.origin].push(newHistory);
@@ -70,11 +72,7 @@ contract MCBDC is ChainlinkClient {
         }
     }
 
-    function getMyHistory()
-        public
-        view
-        returns (Attribute[] memory)
-    {
+    function getMyHistory() public view returns (Attribute[] memory) {
         return history[tx.origin];
     }
 
@@ -96,10 +94,10 @@ contract MCBDC is ChainlinkClient {
             "To token not supported"
         );
 
-        (,bytes memory balance ) = supportedTokens[fromCurrency].tokenAddress.call(
-            abi.encodeWithSignature("balanceOf(address)", tx.origin)
-        );
-        require(abi.decode(balance, (uint256))>=amount, "Not enough balance");
+        (, bytes memory balance) = supportedTokens[fromCurrency]
+            .tokenAddress
+            .call(abi.encodeWithSignature("balanceOf(address)", tx.origin));
+        require(abi.decode(balance, (uint256)) >= amount, "Not enough balance");
 
         address fromToken = supportedTokens[fromCurrency].tokenAddress;
         address toToken = supportedTokens[toCurrency].tokenAddress;
@@ -211,21 +209,6 @@ contract MCBDC is ChainlinkClient {
         delete supportedTokens[symbol];
     }
 
-    function showToken(string memory token)
-        public
-        view
-        returns (string memory, address)
-    {
-        require(
-            supportedTokens[token].tokenAddress != address(0),
-            "Token not found"
-        );
-        return (
-            supportedTokens[token].tokenSymbol,
-            supportedTokens[token].tokenAddress
-        );
-    }
-
     function createRequest(
         address sender,
         uint256 toAmount,
@@ -249,11 +232,7 @@ contract MCBDC is ChainlinkClient {
         requests[sender].push(newRequest);
     }
 
-    function getMyRequests()
-        public
-        view
-        returns (Attribute[] memory)
-    {
+    function getMyRequests() public view returns (Attribute[] memory) {
         return requests[tx.origin];
     }
 
@@ -288,10 +267,11 @@ contract MCBDC is ChainlinkClient {
                 payableRequest.recipient,
                 payableRequest.toAmount,
                 payableRequest.targetCurrency,
-                payableRequest.message
+                payableRequest.message,
+                false,
+                address(0)
             );
         }
-
         deleteRequest(_requestID);
     }
 
@@ -306,38 +286,45 @@ contract MCBDC is ChainlinkClient {
         address recipient,
         uint256 amount,
         string memory currency,
-        string memory message
+        string memory message,
+        bool useTransferFrom,
+        address senderForTransferFrom
     ) public {
         require(
             supportedTokens[currency].tokenAddress != address(0),
             "Local Currency not supported"
         );
 
-        (,bytes memory balance) = supportedTokens[currency].tokenAddress.call(
+        (, bytes memory balance) = supportedTokens[currency].tokenAddress.call(
             abi.encodeWithSignature("balanceOf(address)", tx.origin)
         );
-        require(abi.decode(balance,(uint256))>=amount, "Not enough balance");
+        require(abi.decode(balance, (uint256)) >= amount, "Not enough balance");
 
+        string memory signature = useTransferFrom
+            ? "transferFrom(address,address,uint256)"
+            : "transferFromContract(address,address,uint256)";
         (bool successTransfer, ) = supportedTokens[currency].tokenAddress.call(
             abi.encodeWithSignature(
-                "transferFromContract(address,address,uint256)",
-                tx.origin,
+                signature,
+                useTransferFrom ? senderForTransferFrom : tx.origin,
                 recipient,
                 amount
             )
         );
+
         require(successTransfer, "Local Transaction Failed!");
-        addHistory(
-            recipient,
-            amount,
-            amount,
-            currency,
-            currency,
-            message
-        );
+        addHistory(recipient, amount, amount, currency, currency, message);
     }
 
-    function getFxRateInfo() public view returns (uint256,bool,uint256){
-        return (fxRateResponse,isFxRateResponseValid(),responseExpiryTime);
+    function getFxRateInfo()
+        public
+        view
+        returns (
+            uint256,
+            bool,
+            uint256
+        )
+    {
+        return (fxRateResponse, isFxRateResponseValid(), responseExpiryTime);
     }
 }

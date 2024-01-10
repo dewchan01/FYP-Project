@@ -98,11 +98,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "recipient",
         "type": "address"
       },
@@ -248,13 +243,30 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "getFxRateInfo",
+    "outputs": [
       {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getMyHistory",
     "outputs": [
       {
@@ -290,6 +302,11 @@
             "type": "string"
           },
           {
+            "internalType": "uint256",
+            "name": "time",
+            "type": "uint256"
+          },
+          {
             "internalType": "string",
             "name": "message",
             "type": "string"
@@ -304,13 +321,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
+    "inputs": [],
     "name": "getMyRequests",
     "outputs": [
       {
@@ -344,6 +355,11 @@
             "internalType": "string",
             "name": "targetCurrency",
             "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "time",
+            "type": "uint256"
           },
           {
             "internalType": "string",
@@ -405,6 +421,11 @@
         "type": "string"
       },
       {
+        "internalType": "uint256",
+        "name": "time",
+        "type": "uint256"
+      },
+      {
         "internalType": "string",
         "name": "message",
         "type": "string"
@@ -430,11 +451,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "recipient",
         "type": "address"
       },
@@ -452,6 +468,16 @@
         "internalType": "string",
         "name": "message",
         "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "useTransferFrom",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "senderForTransferFrom",
+        "type": "address"
       }
     ],
     "name": "localTransfer",
@@ -560,6 +586,11 @@
         "type": "string"
       },
       {
+        "internalType": "uint256",
+        "name": "time",
+        "type": "uint256"
+      },
+      {
         "internalType": "string",
         "name": "message",
         "type": "string"
@@ -576,30 +607,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "token",
-        "type": "string"
-      }
-    ],
-    "name": "showToken",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",

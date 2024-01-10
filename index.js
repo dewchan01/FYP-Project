@@ -219,10 +219,8 @@ app.get("/getVoucherInfo",async (req,res)=>{
       value: voucher[5],
       valueCurrency: voucher[6],
       amount: voucher[7],
-      isActive: voucher[8],
-      isMintable: voucher[9],
-      organizer: voucher[10],
-      uri: voucher[11],
+      organizer: voucher[8],
+      uri: voucher[9],
     };
     return res.status(200).json(voucherInfo);
 
@@ -249,10 +247,8 @@ app.get("/getAllVouchers", async (req, res) => {
         value: voucher[5],
         valueCurrency: voucher[6],
         amount: voucher[7],
-        isActive: voucher[8],
-        isMintable: voucher[9],
-        organizer: voucher[10],
-        uri: voucher[11],
+        organizer: voucher[8],
+        uri: voucher[9],
       };
 
       allVouchersInfo.push(voucherInfo);

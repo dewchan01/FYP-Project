@@ -484,6 +484,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
                     grid={{ gutter: 8, column: 4 }}
                     dataSource={allVouchers}
                     renderItem={(voucher) => {
+                        console.log(voucher)
                         const remainingDays = Math.ceil(Math.max(0, (new Date(voucher.expirationDate * 1000) - new Date()) / (1000 * 60 * 60 * 24)));
                         return (
                             <List.Item>

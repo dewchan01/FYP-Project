@@ -2,15 +2,18 @@
 pragma solidity ^0.8.20;
 
 import "./MCBDC.sol";
+import "./Voucher.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract ECommerce {
     address public owner;
     MCBDC public mcbdc;
+    VoucherContract public voucherContract;
 
-    constructor(address _mcbdc) {
+    constructor(address _mcbdc, address _voucherContract) {
         owner = msg.sender;
         mcbdc = MCBDC(_mcbdc);
+        voucherContract = VoucherContract(_voucherContract);
     }
 
     uint256 id;
@@ -102,7 +105,8 @@ contract ECommerce {
 
     function deleteProduct(string memory _productId) public {
         require(
-            msg.sender == products[_productId].seller && products[_productId].isActive,
+            msg.sender == products[_productId].seller &&
+                products[_productId].isActive,
             "No product is found!"
         );
         uint256 indexToDelete;
@@ -117,38 +121,48 @@ contract ECommerce {
         allProducts.pop();
     }
 
-    function buyProduct(string memory _productId, string memory fromCurrency)
-        public
-    {
+    function buyProduct(
+        string memory _productId,
+        string memory fromCurrency,
+        uint256[] memory _voucherCodes
+    ) public {
         require(users[msg.sender].isCreated, "User is not signed up!");
         require(products[_productId].isActive, "Product is not found!");
-        (, address _fromCurrency) = mcbdc.showToken(fromCurrency);
-        require(
-            _fromCurrency != address(0),
-            "Paying Currency is not supported!"
-        );
+        uint256 discountedPrice = products[_productId].price;
+        if (_voucherCodes.length > 0) {
+            discountedPrice = voucherContract.redeemVouchers(
+                _voucherCodes,
+                _productId,
+                products[_productId].price,
+                products[_productId].priceCurrency,
+                products[_productId].seller
+            );
+        }
+       
 
         string memory message = string(
             abi.encodePacked(
-                Strings.toHexString(uint160(msg.sender), 20),
-                " buy ",
+                // Strings.toHexString(uint160(msg.sender), 20),
+                "buy ",
                 _productId,
-                " from ",
-                Strings.toHexString(uint160(products[_productId].seller), 20)
+                " from"
+                // Strings.toHexString(uint160(products[_productId].seller), 20)
             )
         );
         if (Strings.equal(fromCurrency, products[_productId].priceCurrency)) {
             mcbdc.localTransfer(
                 products[_productId].seller,
-                products[_productId].price,
+                discountedPrice,
                 fromCurrency,
-                message
+                message,
+                false,
+                address(0)
             );
         } else {
             (uint256 rate, bool isFxRateValid, ) = mcbdc.getFxRateInfo();
             require(isFxRateValid, "FX Rate is expired!");
             mcbdc.swapToken(
-                (products[_productId].price * 1e18) / rate,
+                (discountedPrice * 1e18) / rate,
                 products[_productId].seller,
                 fromCurrency,
                 products[_productId].priceCurrency,
@@ -241,19 +255,21 @@ contract ECommerce {
                 products[_productId].priceCurrency,
                 string(
                     abi.encodePacked(
-                        Strings.toHexString(uint160(msg.sender), 20),
-                        " refund ",
+                        // Strings.toHexString(uint160(msg.sender), 20),
+                        "refund ",
                         _productId,
-                        " to ",
-                        Strings.toHexString(
-                            uint160(
-                                sellerShipments[msg.sender][_purchaseId]
-                                    .orderedBy
-                            ),
-                            20
-                        )
+                        " to"
+                        // Strings.toHexString(
+                        //     uint160(
+                        //         sellerShipments[msg.sender][_purchaseId]
+                        //             .orderedBy
+                        //     ),
+                        //     20
+                        // )
                     )
-                )
+                ),
+                false,
+                address(0)
             );
         } else {
             mcbdc.swapToken(
@@ -263,17 +279,17 @@ contract ECommerce {
                 sellerShipments[msg.sender][_purchaseId].payByCurrency,
                 string(
                     abi.encodePacked(
-                        Strings.toHexString(uint160(msg.sender), 20),
-                        " refund ",
+                        // Strings.toHexString(uint160(msg.sender), 20),
+                        "refund ",
                         _productId,
-                        " to ",
-                        Strings.toHexString(
-                            uint160(
-                                sellerShipments[msg.sender][_purchaseId]
-                                    .orderedBy
-                            ),
-                            20
-                        )
+                        " to"
+                        // Strings.toHexString(
+                        //     uint160(
+                        //         sellerShipments[msg.sender][_purchaseId]
+                        //             .orderedBy
+                        //     ),
+                        //     20
+                        // )
                     )
                 )
             );
@@ -363,8 +379,8 @@ contract ECommerce {
         );
     }
 
-    function checkValidUser(address _user) public view returns(bool) {
+    function checkValidUser(address _user) public view returns (bool) {
         bool isValidUser = users[_user].isCreated;
         return (isValidUser);
-    } 
+    }
 }

@@ -5,26 +5,15 @@
                 "internalType": "address",
                 "name": "_mcbdc",
                 "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_voucherContract",
+                "type": "address"
             }
         ],
         "stateMutability": "nonpayable",
         "type": "constructor"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "length",
-                "type": "uint256"
-            }
-        ],
-        "name": "StringsInsufficientHexLength",
-        "type": "error"
     },
     {
         "inputs": [
@@ -129,6 +118,11 @@
                 "internalType": "string",
                 "name": "fromCurrency",
                 "type": "string"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "_voucherCodes",
+                "type": "uint256[]"
             }
         ],
         "name": "buyProduct",
@@ -432,6 +426,19 @@
         "name": "updateShipment",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "voucherContract",
+        "outputs": [
+            {
+                "internalType": "contract VoucherContract",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     }
 ]

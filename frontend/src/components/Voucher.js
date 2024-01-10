@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
-import { List, Card, Button, Modal, Form, Input, InputNumber, Select, Space, BackTop } from "antd";
+import { List, Card, Button, Modal, Form, Input, InputNumber, Select, Space, BackTop, DatePicker } from "antd";
+import {LoginOutlined} from "@ant-design/icons"
 import axios from "axios";
 import VoucherABI from "../ABI/VoucherContract.json"
 import { NFTStorage, Blob } from "nft.storage";
 import { getContractABIByKey, getContractAddressByKey } from "./tokenConfig";
 
-function Voucher({ address, isValidUser }) {
+function Voucher({ address, isValidUser,myr,sgd }) {
     const { Option } = Select;
     const [createVoucherForm] = Form.useForm();
     const [updateAllowanceForm] = Form.useForm();
@@ -15,7 +16,7 @@ function Voucher({ address, isValidUser }) {
     const [allVouchers, setAllVouchers] = useState([]);
     const [campaignId, setCampaignId] = useState("");
     const [suitableProductIds, setSuitableProductIds] = useState([]);
-    const [expirationDate, setExpirationDate] = useState(null);
+    const [expirationDate, setExpirationDate] = useState("");
     const [expirationUTCDate, setExpirationUTCDate] = useState("");
     const [minSpend, setMinSpend] = useState("");
     const [value, setValue] = useState("");
@@ -33,6 +34,7 @@ function Voucher({ address, isValidUser }) {
     const [balanceOfAllVouchers, setBalanceOfAllVouchers] = useState([]);
     const [claimedList, setClaimedList] = useState([]);
     const client = new NFTStorage({ token: process.env.REACT_APP_NFT_STORAGE_TOKEN })
+    const [buttonDisabled, setButtonDisabled] = useState(true);
 
     async function showAllVouchers() {
         const res = await axios.get("http://localhost:3001/getAllVouchers");
@@ -55,8 +57,17 @@ function Voucher({ address, isValidUser }) {
     }
 
     async function requestCID() {
+        console.log("Remember to check balance!")
+        if (!campaignId || suitableProductIds.length === 0 || !expirationDate || !minSpend || !value || !valueCurrency || !amount) {
+            alert('One or more properties in voucher info is empty');
+            return;
+        }
+        if((valueCurrency==='SGD' && sgd<value*amount/1e18) || (valueCurrency==='MYR' && myr<value*amount/1e18)){
+            alert('Insufficient Balance');
+            return;
+        }
         try {
-            setIsCidLoading(true);  // Set loading state
+            setIsCidLoading(true); 
             const VoucherInfo = new Blob([JSON.stringify({
                 campaignId,
                 voucherId: allVouchers.length,
@@ -171,6 +182,7 @@ function Voucher({ address, isValidUser }) {
     }
 
     const handleConvertToUTC = (date) => {
+        console.log("DATE",date)
         const localTimestamp = new Date(new Date(date)).getTime() - new Date(date).getTimezoneOffset() * 60000;
         const utcTimestamp = Math.floor(localTimestamp / 1000) + (new Date().getTimezoneOffset() * 60);
         setExpirationDate(date);
@@ -180,6 +192,7 @@ function Voucher({ address, isValidUser }) {
     useEffect(() => {
         console.log("CLAIMED:", claimedList)
         console.log("UTC", expirationUTCDate)
+        console.log("VALUE", value)
         if (allProducts.length === 0) {
             balanceOf();
             showAllVouchers();
@@ -209,14 +222,14 @@ function Voucher({ address, isValidUser }) {
             setCid("");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSuccessClaimVoucher, isSuccessCreateVoucher, isSuccessBurnVoucher, isSuccessUpdateAllowance, allProducts, voucherId, cid, valueCurrency, shouldClaim, createVoucherForm, allowanceCurrency, updateAllowanceForm])
+    }, [isSuccessClaimVoucher, isSuccessCreateVoucher, isSuccessBurnVoucher, isSuccessUpdateAllowance, allProducts, voucherId, cid, valueCurrency, shouldClaim, createVoucherForm, allowanceCurrency, updateAllowanceForm,expirationUTCDate,suitableProductIds])
     return (
         <>
             <div style={{ margin: "20px 0 0 20px" }}>
-                <p>Claim your voucher or <a onClick={showCreateModal}>create your own voucher</a> &nbsp;
+                <p><LoginOutlined /> Sign Up as user to claim your voucher or <a onClick={showCreateModal}>create your own voucher</a> &nbsp;
                     {address === process.env.REACT_APP_VOUCHER_CONTRACT_OWNER ?
                         <>
-                            <Button type="primary" danger={true} loading={isLoadingBurnVoucher} onClick={writeBurnVoucher}>Burn Voucher</Button>&nbsp;
+                            <Button type="primary" danger={true} loading={isLoadingBurnVoucher} onClick={writeBurnVoucher}>Burn Expired Voucher</Button>&nbsp;
                             <Button onClick={showUpdateAllowanceModal}>Update Allowance</Button>
 
                         </>
@@ -229,17 +242,37 @@ function Voucher({ address, isValidUser }) {
                     cancelText="Cancel"
                     confirmLoading={isLoadingUpdateAllowance}
                     onOk={() => { writeUpdateAllowance() }}
+                    okButtonProps={{ disabled: buttonDisabled }}
+                    closable={false}
+                    cancelButtonProps={{ disabled: isLoadingUpdateAllowance }}
                 >
-                    <Form name="Update Allowance" layout="vertical" form={updateAllowanceForm}>
-                        <Form.Item name="Allowance" label="Allowance">
+                    <Form name="Update Allowance" layout="vertical" form={updateAllowanceForm}
+                        onFieldsChange={() => {
+                            setButtonDisabled(
+                                updateAllowanceForm.getFieldsError().some((field) => field.errors.length > 0)
+                            )
+                        }
+                        }>
+                        <Form.Item name="Allowance" label="Allowance"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input the allowance!"
+                                }
+                            ]}>
                             <InputNumber
+                                min="0"
                                 value={allowance}
                                 onChange={(value) => setAllowance(value)}
-                                required={true}
-                                min="0"
                             />
                         </Form.Item>
-                        <Form.Item name="Currency" label="Currency">
+                        <Form.Item name="Currency" label="Currency"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input the currency allowance!"
+                                }
+                            ]}>
                             <Space
                                 style={{
                                     width: '20%',
@@ -270,22 +303,45 @@ function Voucher({ address, isValidUser }) {
                         if (cid.length === 0) {
                             await requestCID(); // await here to wait for the CID before proceeding
                         } else {
-                            writeCreateVoucher();
+                            console.log(campaignId, suitableProductIds, expirationUTCDate, String(Number(minSpend * 1e18)), String(Number(value * 1e18)), valueCurrency.slice(1,), amount, cid)
+                            writeCreateVoucher?.();
                         }
                     }
                     }
+                    okButtonProps={{ disabled: buttonDisabled }}
+                    closable={false}
+                    cancelButtonProps={{ disabled: isLoadingCreateVoucher || isCidLoading || isCidAvailable }}
                 >
-                    <Form name="Create Voucher" layout="vertical" form={createVoucherForm}>
-                        <Form.Item label="Campaign Name">
+                    <Form name="Create Voucher" layout="vertical" form={createVoucherForm}
+                        onFieldsChange={() => {
+                            setButtonDisabled(
+                                createVoucherForm.getFieldsError().some((field) => field.errors.length > 0)
+                            )
+                        }}>
+                        <Form.Item
+                            label="Campaign Name"
+                            name="Campaign Name"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input the campaign name!"
+                                }
+                            ]}>
                             <Input
+                                id="Campaign Name"
                                 placeholder="CAM-01"
                                 value={campaignId}
-                                required={true}
                                 onChange={(e) =>
                                     setCampaignId(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item label="Suitable Product IDs">
+                        <Form.Item label="Suitable Product IDs" name="Suitable Product IDs"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input at least one product Id!"
+                                }
+                            ]}>
                             <Space
                                 style={{
                                     width: '100%',
@@ -299,44 +355,83 @@ function Voucher({ address, isValidUser }) {
                                         width: '100%',
                                     }}
                                     placeholder="Please select product ID"
-                                    required={true}
                                     onChange={(selectedValues) => setSuitableProductIds((prevIds) => [...prevIds, ...selectedValues.map(value => value.trim())])}
                                     options={allProducts.map(product => ({ label: product.productId, value: product.productId }))}
                                 />
                             </Space>
                         </Form.Item>
-                        <Form.Item label="Expiry Date">
+                        <Form.Item label="Expiry Date" name="Expiry Date"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input the expiration date!"
+                                }
+                            ]}>
+                            <DatePicker
+                                showTime={{
+                                    format: 'HH:mm:ss',
+                                }}
+                                format="YYYY-MM-DD HH:mm:ss"
+                                label="Expiry Date" name="Expiry Date"
+                                value={expirationDate}
+                                onChange={
+                                    (e) => {
+                                        handleConvertToUTC(e)
+                                    }}
+                                disabledDate={d => !d || d.isBefore(new Date())}
+                            />
+                    
+                            {/* 
                             <Input
+                                id="Expiry Date"
                                 type="datetime-local"
                                 value={expirationDate}
-                                required={true}
+                                min={new Date().getDate()}
                                 onChange={(e) => {
                                     handleConvertToUTC(e.target.value);
                                 }}
-                            />
+                            /> */}
                         </Form.Item>
-                        <Form.Item label="Min Spend">
+                        <Form.Item label="Min Spend" name="Min Spend"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input the minimum spending!"
+                                }
+                            ]}>
                             <InputNumber
                                 min="0"
                                 placeholder="0"
+                                step="0.01"
                                 value={minSpend}
-                                required={true}
                                 onChange={(e) => setMinSpend(e)}
                             />
                         </Form.Item>
 
 
-                        <Form.Item label="Value"
+                        <Form.Item label="Value" name="Value"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input the value of voucher!"
+                                }
+                            ]}
                         >
                             <InputNumber
                                 value={value}
-                                min="1"
+                                min="0.01"
+                                step="0.01"
                                 placeholder="1"
-                                required={true}
                                 onChange={(e) => setValue(e)}
                             />
                         </Form.Item>
-                        <Form.Item label="Value Currency">
+                        <Form.Item label="Value Currency" name="Value Currency"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input the currency of voucher value!"
+                                }
+                            ]}>
                             <Select
                                 placeholder="Select currency"
                                 onChange={(value) => onValueCurrencyChange(value)}
@@ -346,25 +441,36 @@ function Voucher({ address, isValidUser }) {
                                 <Option value="MYR">DMYR</Option>
                             </Select>
                         </Form.Item>
-                        <Form.Item label="Amount">
+                        <Form.Item label="Amount" name="Amount"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input the distributed amount of voucher!"
+                                }
+                            ]}>
                             <InputNumber
                                 min="1"
-                                step={1}
+                                step="1"
                                 placeholder="1"
                                 value={amount}
-                                required={true}
                                 onChange={(e) => setAmount(e)}
                             />
                         </Form.Item>
-                        {isCidAvailable && <><p>Cid </p>
+                        {isCidAvailable && <><p>Cid</p>
                             <Input
                                 value={cid}
                                 readOnly={true}
-                                required={true}
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: "Store voucher failed! Please check with administrator!"
+                                    }
+                                ]}
                             />
                         </>
                         }
                     </Form>
+
                 </Modal>
 
                 {allVouchers.length === 0 && <p>Loading vouchers...</p>}

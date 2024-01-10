@@ -2,7 +2,7 @@ import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from
 import ECommerceABI from "../ABI/ECommerce.json";
 import { polygonMumbai } from "@wagmi/chains";
 import React, { useEffect, useState } from "react";
-import { Form, Input, Button, Modal, Table, InputNumber, Divider } from "antd";
+import { Form, Input, Button, Modal, Table, InputNumber, Divider,Select } from "antd";
 import axios from "axios";
 import { Space } from 'antd';
 
@@ -10,7 +10,7 @@ import { Space } from 'antd';
 // they are created on every render. If any of these modal components use state variables (productId, productName, etc.) or 
 // depend on props, their creation can trigger re-renders, leading to unexpected behavior.
 
-const DeleteProductModal = ({ deleteModal, hideDeleteModal, isLoadingDeleteProduct, productId, writeDeleteProduct, setProductId,deleteProductForm }) => {
+const DeleteProductModal = ({ deleteModal, hideDeleteModal, isLoadingDeleteProduct, productId, writeDeleteProduct, setProductId, deleteProductForm, buttonDisabled, setButtonDisabled }) => {
     return (
         <Modal
             title="Delete Product"
@@ -24,10 +24,23 @@ const DeleteProductModal = ({ deleteModal, hideDeleteModal, isLoadingDeleteProdu
                     writeDeleteProduct?.();
                 }
             }}
+            okButtonProps={{ disabled: buttonDisabled }}
+            cancelButtonProps={{ disabled: isLoadingDeleteProduct }}
+            closable={false}
         >
-            <Form name="Delete Product" layout="vertical" form={deleteProductForm}>
-                <Form.Item name="productId" label="Product ID">
+            <Form name="Delete Product" layout="vertical" form={deleteProductForm}
+                onFieldsChange={() =>
+                    setButtonDisabled(
+                        deleteProductForm.getFieldsError().some((field) => field.errors.length > 0)
+                    )
+                }>
+                <Form.Item name="productId" label="Product ID"
+                    rules={[{
+                        required: true,
+                        message: 'Please input Product ID!',
+                    }]}>
                     <Input
+                        placeholder="SCSG1"
                         value={productId}
                         onChange={(e) => setProductId(e.target.value)}
                     />
@@ -38,7 +51,8 @@ const DeleteProductModal = ({ deleteModal, hideDeleteModal, isLoadingDeleteProdu
     );
 };
 
-function Seller({ isValidSeller, address,checkValidSeller }) {
+function Seller({ isValidSeller, address, checkValidSeller }) {
+    const { Option } = Select;
     const [addProductForm] = Form.useForm();
     const [updateShipmentForm] = Form.useForm();
     const [deleteProductForm] = Form.useForm();
@@ -56,6 +70,7 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
     const [deleteModal, setDeleteModal] = useState(false);
     const [updateModal, setUpdateModal] = useState(false);
     const [allProducts, setAllProducts] = useState([]);
+    const [buttonDisabled, setButtonDisabled] = useState(true);
 
     // const AddProductModal = () => {
     //     return (
@@ -366,7 +381,7 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
             setSellerName("");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [deleteProductForm,updateShipmentForm,addProductForm, isSuccessAddProduct, isSuccessSellerSignUp, isSuccessDeleteProduct, isSuccessUpdateShipment]);
+    }, [deleteProductForm, updateShipmentForm, addProductForm, isSuccessAddProduct, isSuccessSellerSignUp, isSuccessDeleteProduct, isSuccessUpdateShipment]);
 
     return (
         isValidSeller ?
@@ -384,21 +399,42 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
                     cancelText="Cancel"
                     confirmLoading={isLoadingUpdateShipment}
                     onOk={() => {
-                        if (purchaseId.length > 0) {
-                            writeUpdateShipment?.();
+                        if (!(purchaseId.length > 0) || !(shipmentDetails.length > 0)) {
+                            alert("Please enter all the fields!");
+                            return;
                         }
+                        writeUpdateShipment?.();
                     }}
+                    okButtonProps={{ disabled: buttonDisabled }}
+                    cancelButtonProps={{ disabled: isLoadingUpdateShipment }}
+                    closable={false}
 
                 >
-                    <Form name="Update Shipment" layout="vertical" form={updateShipmentForm}>
-                        <Form.Item name="purchaseId" label="Purchase ID">
+                    <Form name="Update Shipment" layout="vertical"
+                        form={updateShipmentForm}
+                        onFieldsChange={() =>
+                            setButtonDisabled(
+                                updateShipmentForm.getFieldsError().some((field) => field.errors.length > 0)
+                            )
+                        }>
+                        <Form.Item name="purchaseId" label="Purchase ID"
+                            rules={[{
+                                required: true,
+                                message: "Please enter purchase id!",
+                            }]}>
                             <Input
+                                placeholder="0"
                                 value={purchaseId}
                                 onChange={(e) => setPurchaseId(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item name="shipmentDetails" label="Shipment Details">
+                        <Form.Item name="shipmentDetails" label="Shipment Details"
+                            rules={[{
+                                required: true,
+                                message: "Please enter shipment details!",
+                            }]}>
                             <Input
+                                placeholder="Shipping"
                                 value={shipmentDetails}
                                 onChange={(e) => setShipmentDetails(e.target.value)}
                             />
@@ -429,45 +465,97 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
                     confirmLoading={isLoadingAddProduct}
                     onOk={() => {
                         console.log(productId);
-                        if (productId.length > 0) {
-                            writeAddProduct?.();
+                        if (productId.length === 0 || productName.length === 0 || category.length === 0 || price.length === 0 || priceCurrency === '' || description.length === 0) {
+                            alert("Please enter all the fields!");
+                            return;
                         }
-                    }}
+                        writeAddProduct?.();
+                    }
+                    }
+                    okButtonProps={{ disabled: buttonDisabled }}
+                    cancelButtonProps={{ disabled: isLoadingAddProduct }}
+                    closable={false}
                 >
-                    <Form name="Add Product" layout="vertical" form={addProductForm}>
-                        <Form.Item name="productId" label="Product ID">
+                    <Form name="Add Product" layout="vertical" form={addProductForm}
+                        onFieldsChange={() =>
+                            setButtonDisabled(
+                                addProductForm.getFieldsError().some((field) => field.errors.length > 0)
+                            )
+                        }>
+                        <Form.Item name="productId" label="Product ID"
+                            rules={[{
+                                required: true,
+                                message: "Please enter product id!",
+                            }]}>
                             <Input
+                                placeholder="SCSG1"
                                 value={productId}
                                 onChange={(e) =>
                                     setProductId(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item name="productName" label="Product Name">
+                        <Form.Item name="productName" label="Product Name"
+                            rules={[{
+                                required: true,
+                                message: "Please enter product name!",
+                            }]}>
                             <Input
+                                placeholder="Merlion keychain..."
                                 value={productName}
                                 onChange={(e) => setProductName(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item name="category" label="Category">
+                        <Form.Item name="category" label="Category"
+                            rules={[{
+                                required: true,
+                                message: "Please enter product category!",
+                            }]}>
                             <Input
                                 value={category}
+                                placeholder="Souvenir..."
                                 onChange={(e) => setCategory(e.target.value)}
                             />
                         </Form.Item>
-                        <Form.Item name="price" label="Price">
+                        <Form.Item name="price" label="Price"
+                            rules={[{
+                                required: true,
+                                message: "Please enter product price!",
+                            }]}>
                             <InputNumber
+                                placeholder="0"
+                                min="0.01"
+                                step="0.01"
                                 value={price}
                                 onChange={(e) => setPrice(e)}
                             />
                         </Form.Item>
-                        <Form.Item name="priceCurrency" label="Price Currency">
-                            <Input
+                        <Form.Item name="priceCurrency" label="Price Currency"
+                            rules={[{
+                                required: true,
+                                message: "Please enter product price currency!",
+                            }]}>
+                            <Select
+                                placeholder="Select currency"
+                                onChange={(value) => setPriceCurrency(value)}
+                                allowClear
+                            >
+                                <Option value="DSGD">DSGD</Option>
+                                <Option value="DMYR">DMYR</Option>
+                            </Select>
+                        </Form.Item>
+                            {/* <Input
+                                placeholder="DSGD"//CHECK
                                 value={priceCurrency}
                                 onChange={(e) => setPriceCurrency(e.target.value)}
-                            />
-                        </Form.Item>
-                        <Form.Item name="description" label="Description">
+                            /> */}
+                        {/* </Form.Item> */}
+                        <Form.Item name="description" label="Description"
+                            rules={[{
+                                required: true,
+                                message: "Please enter product description!",
+                            }]}>
                             <Input
+                                placeholder="Keychain..."
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                             />
@@ -486,13 +574,15 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
                     productId={productId}
                     writeDeleteProduct={writeDeleteProduct}
                     setProductId={setProductId}
-                    deleteProductForm={deleteProductForm} />
+                    deleteProductForm={deleteProductForm}
+                    buttonDisabled={buttonDisabled}
+                    setButtonDisabled={setButtonDisabled} />
 
                 <div style={{ width: '85vw' }} >
                     <Divider>My Products</Divider>
                     <Table columns={myProductsColumn}
                         dataSource={allProducts}
-                        pagination={{ position: ["bottomCenter"], pageSize: 3 }}
+                        pagination={{ position: ["bottomCenter"], pageSize: 2 }}
                     />
                 </div>
             </>
@@ -512,6 +602,7 @@ function Seller({ isValidSeller, address,checkValidSeller }) {
                                 writeSellerSignUp?.();
                             }
                         }}
+                            disabled={sellerName.length === 0}
                             loading={isLoadingSellerSignUp}>Sign Up</Button>
                     </Form>
                 </Form>

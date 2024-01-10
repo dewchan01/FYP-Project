@@ -96,7 +96,7 @@ return (
     <Table
       dataSource={dataSource}
       columns={columns}
-      pagination={{ position: ["bottomCenter"], pageSize: 8 }}
+      pagination={{ position: ["bottomCenter"], pageSize: 5 }}
     />
   </Card>
 );

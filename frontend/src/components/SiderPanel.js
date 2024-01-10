@@ -35,7 +35,7 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
             case 'Sign Up':
                 contentComponent = <UserSignUp address={address} isValidUser={isValidUser} />;
                 break;
-            case 'Voucher':
+            case 'Vouchers':
                 contentComponent = <Voucher address={address} isValidUser={isValidUser} sgd={sgd} myr={myr}
                     getBalance={getBalance} expiredVouchers={expiredVouchers} getExpiredVoucher={getExpiredVoucher} />;
                 break;
@@ -55,7 +55,7 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
         // ]),
         getItem('Orders', '2', <OrderedListOutlined />),
         getItem('Seller', '3', <TeamOutlined />),
-        getItem('Voucher', '5', <TagOutlined />),
+        getItem('Vouchers', '5', <TagOutlined />),
         getItem('Sign Up', '4', <LoginOutlined />),
     ];
 

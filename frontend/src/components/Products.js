@@ -223,36 +223,38 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
                     console.log("Product: ", product)
                     handleBuyProduct(product);
                 }}
+                cancelButtonProps={{ disabled: (isLoadingBuy || isLoadingRate || isSuccessRate)  }}
+                closable={false}
             >
-                <p style={{ fontSize: "smaller" }}>Product ID: {product?.productId} /
-                    Category: {product?.category}</p>
-                <p style={{ fontWeight: "bold", textAlign: "center", fontSize: "large" }}>{product?.productName}</p>
-                <p style={{ fontStyle: "italic" }}>{product?.description}</p>
-                <p>Seller: {product?.seller}</p>
-                <p style={{ fontSize: "larger", fontWeight: "", textAlign: "center", border: "1px solid black", borderRadius: "5px" }}>{product?.price / 1e18} D{product?.priceCurrency}
-                    {isSuccessRate && isFXRateAvailable ? <p>Converted Price: {product?.price / rate} {getLabelByKey(selectedCurrency)}</p> : null}
-                </p>
-                <p>Vouchers:&nbsp;
-                    <Space
+            <p style={{ fontSize: "smaller" }}>Product ID: {product?.productId} /
+                Category: {product?.category}</p>
+            <p style={{ fontWeight: "bold", textAlign: "center", fontSize: "large" }}>{product?.productName}</p>
+            <p style={{ fontStyle: "italic" }}>{product?.description}</p>
+            <p>Seller: {product?.seller}</p>
+            <p style={{ fontSize: "larger", fontWeight: "", textAlign: "center", border: "1px solid black", borderRadius: "5px" }}>{product?.price / 1e18} D{product?.priceCurrency}
+                {isSuccessRate && isFXRateAvailable ? <p>Converted Price: {product?.price / rate} {getLabelByKey(selectedCurrency)}</p> : null}
+            </p>
+            <p>Vouchers:&nbsp;
+                <Space
+                    style={{
+                        width: '40%',
+                    }}
+                    direction="vertical"
+                >
+                    <Select
+                        mode="multiple"
+                        allowClear
                         style={{
-                            width: '40%',
+                            width: '100%',
                         }}
-                        direction="vertical"
-                    >
-                        <Select
-                            mode="multiple"
-                            allowClear
-                            style={{
-                                width: '100%',
-                            }}
-                            placeholder="Please select vouchers"
-                            required={true}
-                            onChange={(selectedValues) => setSelectedVouchers((prevIds) => [...prevIds, ...selectedValues])}
-                            options={allowedVouchers.map(voucher => ({ label: voucher, value: voucher }))}
-                        />
-                    </Space>
-                </p>
-            </Modal>
+                        placeholder="Please select vouchers"
+                        required={true}
+                        onChange={(selectedValues) => setSelectedVouchers((prevIds) => [...prevIds, ...selectedValues])}
+                        options={allowedVouchers.map(voucher => ({ label: voucher, value: voucher }))}
+                    />
+                </Space>
+            </p>
+        </Modal >
             <div>
                 <BackTop />
             </div>

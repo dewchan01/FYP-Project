@@ -11,6 +11,7 @@ function UserSignUp({ address }) {
     const [email, setEmail] = useState("");
     const [deliveryAddress, setDeliveryAddress] = useState("");
     const [isValidUser, setIsValidUser] = useState(false);
+    const [buttonDisabled, setButtonDisabled] = useState(true);
 
     const { config: configCreateAccount } = usePrepareContractWrite({
         chainId: polygonMumbai.id,
@@ -65,6 +66,11 @@ function UserSignUp({ address }) {
                         size="large"
                         onFinish={writeCreateAccount}
                         onValuesChange={handleFormValuesChange}
+                        onFieldsChange={() =>
+                            setButtonDisabled(
+                              form.getFieldsError().some((field) => field.errors.length > 0)
+                            )
+                          }
                         style={{ width: "65vw" }}
                     >
                         <Form.Item
@@ -89,7 +95,7 @@ function UserSignUp({ address }) {
                             <Input.TextArea />
                         </Form.Item>
                         <Form.Item>
-                            <Button type="primary" htmlType="submit" loading={isLoadingCreateAccount}>
+                            <Button type="primary" disabled={buttonDisabled} htmlType="submit" loading={isLoadingCreateAccount}>
                                 Sign Up
                             </Button>
                         </Form.Item>

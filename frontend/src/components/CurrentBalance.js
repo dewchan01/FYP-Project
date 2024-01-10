@@ -11,9 +11,9 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
   const [mintModal, setMintModal] = useState(false);
   const [burnModal, setBurnModal] = useState(false);
   const [transferAddress, setTransferAddress] = useState("");
-  const [mintAmount, setMintAmount] = useState(5);
-  const [burnAmount, setBurnAmount] = useState(5);
-  const [transferAmount, setTransferAmount] = useState(5);
+  const [mintAmount, setMintAmount] = useState(null);
+  const [burnAmount, setBurnAmount] = useState(null);
+  const [transferAmount, setTransferAmount] = useState(null);
   const [message, setMessage] = useState("");
   const items = tokenConfig;
 
@@ -55,7 +55,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "localTransfer",
-    args: [transferAddress, String(transferAmount * (1e18)), getLabelByKey(selectedCurrency).slice(1,), message,false,"0x0000000000000000000000000000000000000000"],
+    args: [transferAddress, String(transferAmount * (1e18)), getLabelByKey(selectedCurrency).slice(1,), message, false, "0x0000000000000000000000000000000000000000"],
   });
 
   const { write: writeTransfer, data: dataTransfer } = useContractWrite(configTransfer);
@@ -70,11 +70,13 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
 
   const { write: writeMint, data: dataMint } = useContractWrite(configMint);
 
+  console.log(address, String(burnAmount), getContractAddressByKey(selectedCurrency))
   const { config: configBurn } = usePrepareContractWrite({
-    chainId: getContractAddressByKey(selectedCurrency),
+    chainId: polygonMumbai.id,
+    address: getContractAddressByKey(selectedCurrency),
     abi: getContractABIByKey(selectedCurrency),
     functionName: "burn",
-    args: [String(burnAmount * (1e18))],
+    args: [address, String(burnAmount * (1e18))],
   });
 
   const { write: writeBurn, data: dataBurn } = useContractWrite(configBurn);
@@ -140,25 +142,30 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
           title="Transfer Tokens"
           open={transferModal}
           onOk={() => {
-            if (transferAmount > 0 && address !== transferAddress && transferAmount <= (selectedCurrency === '1' ? sgd : myr)) {
-              writeTransfer?.();
+            if (transferAmount <= 0  || transferAmount > (selectedCurrency === '1' ? sgd : myr) || address==="" || transferAmount===null|| message.length>0) {
+              alert("Please fill up the input fields!")
+              return;
             }
+            writeTransfer?.();
           }
           }
           confirmLoading={isLoadingTransfer}
           onCancel={hideTransferModal}
           okText="Transfer"
           cancelText="Cancel"
+          cancelButtonProps={{ disabled: isLoadingTransfer }}
+          closable={false}
+          okButtonProps={{ disabled: address.length===0 || transferAmount===null || message.length===0 || address === transferAddress }}
         >
           <p>Amount <strong>({getLabelByKey(selectedCurrency)})</strong></p>
-          <InputNumber min={0.01} value={transferAmount} onChange={(val) => setTransferAmount(val)} required={true} />
+          <InputNumber placeholder="0.01" min={0.01} value={transferAmount} onChange={(val) => setTransferAmount(val)} required={true} />
           <p>To (address)</p>
           <Input placeholder="0x..." value={transferAddress} onChange={(val) => setTransferAddress(val.target.value)} required={true} />
           {transferAddress === address && (
             <p style={{ color: 'red' }}>You cannot transfer token to your own address.</p>
           )}
           <p>Message</p>
-          <Input placeholder="Send 1 eth..." value={message} onChange={(val) => setMessage(val.target.value)} />
+          <Input required={true} placeholder="Send 1 DSGD..." value={message} onChange={(val) => setMessage(val.target.value)} />
 
         </Modal>
 
@@ -181,9 +188,12 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
               okText="Mint"
               confirmLoading={isLoadingMint}
               cancelText="Cancel"
+              closable={false}
+              cancelButtonProps={{ disabled: isLoadingMint }}
+              okButtonProps={{ disabled: mintAmount <= 0 }}
             >
               <p>Amount ({getLabelByKey(selectedCurrency)})</p>
-              <InputNumber value={mintAmount} onChange={(val) => setMintAmount(val)} />
+              <InputNumber min={0.01} placeholder={0.01} value={mintAmount} onChange={(val) => setMintAmount(val)} />
             </Modal>
 
             <div className="extraOption" onClick={() => {
@@ -192,19 +202,25 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
             <Modal
               title="Burn Tokens"
               open={burnModal}
-              onOk={() => {
-                if (burnAmount <= (selectedCurrency === '1' ? sgd : myr)) {
-                  writeBurn?.();
-                }
-              }
-              }
               onCancel={hideBurnModal}
               okText="Burn"
               confirmLoading={isLoadingBurn}
               cancelText="Cancel"
+              onOk={() => {
+                if (burnAmount > (selectedCurrency === '1' ? sgd : myr)) {
+                  alert("Insufficient balance");
+                  return;
+                }
+                console.log(burnAmount);
+                writeBurn();
+              }
+              }
+              closable={false}
+              cancelButtonProps={{ disabled: isLoadingBurn }}
+              okButtonProps={{ disabled: burnAmount <= 0 }}
             >
               <p>Amount ({getLabelByKey(selectedCurrency)})</p>
-              <InputNumber value={burnAmount} onChange={(val) => setBurnAmount(val)} />
+              <InputNumber min={0.01} placeholder={0.01} step={0.01} value={burnAmount} onChange={(val) => setBurnAmount(val)} />
             </Modal>
           </>
         )}

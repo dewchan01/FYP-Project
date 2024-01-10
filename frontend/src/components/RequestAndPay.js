@@ -13,8 +13,8 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const [requestModal, setRequestModal] = useState(false);
   const [requestCurrency, setRequestCurrency] = useState("");
   const [toCurrency, setToCurrency] = useState("");
-  const [requestAmount, setRequestAmount] = useState(1);
-  const [swapAmount, setSwapAmount] = useState(1);
+  const [requestAmount, setRequestAmount] = useState(null);
+  const [swapAmount, setSwapAmount] = useState(null);
   const [recipientAddress, setRecipientAddress] = useState("");
   const [requestAddress, setRequestAddress] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
@@ -118,7 +118,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   }
   const hideRemitIntModal = () => {
     setRemitIntModal(false);
-    setSwapAmount(1);
+    setSwapAmount(null);
     setSwapMessage('');
     setRecipientAddress('');
     setToCurrency('');
@@ -138,7 +138,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const hideRequestModal = () => {
     setRequestModal(false);
     setRequestCurrency('');
-    setRequestAmount(1);
+    setRequestAmount(null);
     setRequestMessage('');
     setRequestAddress('');
   };
@@ -172,7 +172,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <>
           {/* <Button type="primary" loading={isLoadingPay || isLoadingRate} onClick={() => handlePay(record.No)}>{((isSuccessRate && isFXRateResponseValid) || requests?.[record.No - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,)) ? "Pay" : "Request FX Rate"}</Button>
           &nbsp; */}
-          <Button type="primary" loading={isLoadingDeleteRequest} onClick={() => handleDelete(record.No)}>Delete</Button>
+          <Button type="primary" disabled={isLoadingPay||isLoadingRate} loading={isLoadingDeleteRequest} onClick={() => handleDelete(record.No)}>Delete</Button>
         </>
       ),
     }
@@ -198,7 +198,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           acc[field] = `${(item[i + 1] / 10 ** 18).toFixed(2)} D${item[i + 3]}`;
           acc[`is${field}`] = item[i] === address;
         } else if (field === "Message") {
-          acc[field] = ` ${item[i + 3]}`;
+          acc[field] = ` ${item[i + 4]}`;
         } else {
           acc[field] = item[i];
         }
@@ -294,6 +294,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
     if (isSuccessRate) {
       getFXRate();
+      getFXRate();
       setIsSuccessRate(true);
       setIsSuccessSwap(false);
       setIsSuccessPay(false);
@@ -370,16 +371,19 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         onCancel={hideRemitIntModal}
         okText={(!isFXRateResponseValid) ? "Request FX Rate" : ((isSuccessRate && !isSuccessSwap && isFXRateResponseValid) ? "Make Transaction" : "Request FX Rate")}
         cancelText="Cancel"
+        closable={false}
+        cancelButtonProps={{disabled:isLoadingSwap||isLoadingRate||isSuccessRate}}
+        okButtonProps={{disabled:recipientAddress===""||swapAmount===""||swapMessage==="" || toCurrency===""}}
       >
-        <p>To (address)</p>
-        <Input placeholder="0x..." value={recipientAddress} onChange={(val) => setRecipientAddress(val.target.value)} required={true} />
-        <p>Amount</p>
-        <InputNumber min={0.01} value={swapAmount} onChange={(val) => setSwapAmount(val)} required={true} />
-        <p>From Currency</p>
+        <p><span style={{color:"red"}}>*</span>To (address)</p>
+        <Input placeholder="0x..." value={recipientAddress} onChange={(val) => setRecipientAddress(val.target.value)} />
+        <p><span style={{color:"red"}}>*</span>Amount</p>
+        <InputNumber min={0.01} placeholder={0.01} step={0.01} value={swapAmount} onChange={(val) => setSwapAmount(val)}/>
+        <p><span style={{color:"red"}}>*</span>From Currency</p>
         <Input value={getLabelByKey(selectedCurrency)} readOnly={true} />
-        <p>Target Currency</p>
+        <p><span style={{color:"red"}}>*</span>Target Currency</p>
         <Dropdown overlay={filteredMenu} trigger={['click']}>
-          <a style={{ color: 'black' }} onClick={(e) => e.preventDefault()}>
+          <a style={{ color: 'black',fontSize:'smaller',marginLeft:"5px"  }} onClick={(e) => e.preventDefault()}>
             <Space>
               {(toCurrency === '') && <div>Select target currency</div>}
               {toCurrency === 'DSGD' && <div>DSGD</div>}
@@ -404,7 +408,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
             <p style={{ color: "red" }}>Please request FX Rate!</p>
           ))
         }
-        <p>Message</p>
+        <p><span style={{color:"red"}}>*</span>Message</p>
         <Input placeholder="Lunch Bill..." value={swapMessage} onChange={(val) => setSwapMessage(val.target.value)} />
       </Modal>
 
@@ -420,6 +424,9 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           }
         }}
         width={880}
+        closable={false}
+        cancelButtonProps={{disabled:isLoadingPay||isLoadingRate||isSuccessRate|| isLoadingDeleteRequest}}
+        okButtonProps={{disabled:payIndex===0}}
       >
         {requests && requests.length > 0 && (
           <>
@@ -430,11 +437,11 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
               pagination={{ position: ["bottomCenter"], pageSize: 3 }}
             />
             <p>Pay by: <strong>{getLabelByKey(selectedCurrency)}</strong>&nbsp;&nbsp;
-              Index No: &nbsp;
+            <span style={{color:"red"}}>*</span>Index No: &nbsp;
               {/* <InputNumber value={payIndex} onChange={(val) => setPayIndex(val)} /> */}
               <Space>
                 <Dropdown overlay={indexMenu} trigger={['click']}>
-                  <a style={{ color: "black" }} onClick={(e) => e.preventDefault()}>
+                  <a style={{ color: "black",fontSize:'smaller',marginLeft:"5px"  }} onClick={(e) => e.preventDefault()}>
                     {(payIndex === 0) ? "Select request" : payIndex}
                     &nbsp;<DownOutlined />
                   </a>
@@ -464,6 +471,8 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         open={requestModal}
         onOk={() => {
           if (requestAddress !== address) { // Check if requestAddress is not equal to userAddress
+            console.log(requestMessage)
+
             writeRequest?.();
           }
         }}
@@ -471,17 +480,20 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         onCancel={hideRequestModal}
         okText="Proceed To Request"
         cancelText="Cancel"
+        closable={false}
+        cancelButtonProps={{disabled:isLoadingRequest}}
+        okButtonProps={{disabled:requestAddress===address||requestAmount===0||requestCurrency===""||requestMessage===""|| requestAddress===""}}
       >
-        <p>From (address)</p>
+        <p><span style={{color:"red"}}>*</span>From (address)</p>
         <Input placeholder="0x..." value={requestAddress} onChange={(val) => setRequestAddress(val.target.value)} />
         {requestAddress === address && (
           <p style={{ color: 'red' }}>You cannot request payment from your own address.</p>
         )}
-        <p>Amount</p>
-        <InputNumber min={0.01} value={requestAmount} onChange={(val) => setRequestAmount(val)} />
-        <p>Receive Currency</p>
+        <p><span style={{color:"red"}}>*</span>Amount</p>
+        <InputNumber placeholder={0.01} min={0.01} value={requestAmount} onChange={(val) => setRequestAmount(val)} />
+        <p><span style={{color:"red"}}>*</span>Receive Currency</p>
         <Dropdown overlay={menu} trigger={['click']}>
-          <a style={{ color: 'black' }} onClick={(e) => e.preventDefault()}>
+          <a style={{ color: 'black',fontSize:'smaller',marginLeft:"5px" }} onClick={(e) => e.preventDefault()}>
             <Space>
               {(requestCurrency === '') && <div>Select receive currency</div>}
               {requestCurrency === 'DSGD' && <div>DSGD</div>}
@@ -492,7 +504,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
             </Space>
           </a>
         </Dropdown>
-        <p>Message</p>
+        <p><span style={{color:"red"}}>*</span>Message</p>
         <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val) => setRequestMessage(val.target.value)} />
       </Modal>
 

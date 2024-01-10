@@ -210,8 +210,13 @@ function Voucher({ address, isValidUser,myr,sgd }) {
             alert("Allowance update successfully!");
             updateAllowanceForm.resetFields();
         }
-
-        if (isSuccessClaimVoucher || isSuccessCreateVoucher || isSuccessBurnVoucher) {
+        if(isSuccessBurnVoucher){
+            balanceOf();
+            showAllVouchers();
+            getClaimedList();
+            alert("Burn successfully!");
+        }
+        if (isSuccessClaimVoucher || isSuccessCreateVoucher ) {
             createVoucherForm.resetFields();
             hideCreateModal();
             balanceOf();

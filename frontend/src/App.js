@@ -232,7 +232,9 @@ function App() {
               </div>
             </>
           ) : (!isConnected) ?
-            <div style={{fontWeight:"bold",fontSize:"1.5rem"}}>Please Connect Your MetaMask Wallet</div>
+            <div><p style={{fontWeight:"bold",fontSize:"1.5rem"}}>Please Connect Your MetaMask Wallet !</p>
+            <p><br />Disclamer: E-Commerce Contract in <a target="blank" href="https://medium.datadriveninvestor.com/creating-shopping-smartcontract-f7f80add48c4">this article</a> is taken to improve in this wallet app. <br />
+            </p>All rights of other resources are reserved to <a target="blank" href="https://github.com/dewchan01">this developer</a>.</div>
             : <div></div>
           }
         </Content>

@@ -115,7 +115,7 @@ function Help() {
                     <Paragraph>
                         If you encounter any issues, please check the following:
                         <ul>
-                            <li>Issue 1: Laggy, please be patient and wait for the request from contract</li>
+                            <li>Issue 1: Laggy, please be patient and wait for the request from contract, don't refresh the window if contract writing is undergoing</li>
                             <li>Issue 2: Buggy, use Effect sometimes would not rerender due to clashing of state of various variable,
                                 please check the console for more details and try to click other components for rerendering
                             </li>

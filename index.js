@@ -38,8 +38,10 @@ app.get("/getBalance", async (req, res) => {
     const { userAddress } = req.query;
 
     // Get the balance
-    const nativeBalance = await web3.eth.getBalance(userAddress);
+    console.log("balanceInEth");
 
+    const nativeBalance = await web3.eth.getBalance(userAddress);
+    console.log(nativeBalance);
     // Fetch native balance
     const balanceInEth = web3.utils.fromWei(nativeBalance, "ether");
     const DSGDbalance = await DSGDTokenContract.methods.balanceOf(userAddress).call();
@@ -60,51 +62,71 @@ app.get("/getBalance", async (req, res) => {
 });
 
 app.get("/getHistory", async (req, res) => {
-  const { userAddress } = req.query;
-  console.log(userAddress);
-  // Fetch transaction history using your smart contract ABI (modify based on your contract)
-  const history = await MCBDCContract.methods.getMyHistory().call({ from: userAddress });
+  try {
+    const { userAddress } = req.query;
+    console.log(userAddress);
+    // Fetch transaction history using your smart contract ABI (modify based on your contract)
+    const history = await MCBDCContract.methods.getMyHistory().call({ from: userAddress });
 
-  const jsonResponse = {
-    history: history
-  };
-  console.log(jsonResponse);
-  return res.status(200).json(jsonResponse);
+    const jsonResponse = {
+      history: history
+    };
+    console.log(jsonResponse);
+    return res.status(200).json(jsonResponse);
+  } catch (error) {
+    console.error("Error fetching history:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 app.get("/getRequests", async (req, res) => {
-  const { userAddress } = req.query;
-  // Fetch user requests using your smart contract ABI (modify based on your contract)
-  const requests = await MCBDCContract.methods.getMyRequests().call({ from: userAddress });
+  try {
+    const { userAddress } = req.query;
+    // Fetch user requests using your smart contract ABI (modify based on your contract)
+    const requests = await MCBDCContract.methods.getMyRequests().call({ from: userAddress });
 
-  const jsonResponseRequests = requests;
-  const jsonResponse = {
-    requests: jsonResponseRequests, // Modify this to include user requests
-  };
-  console.log(jsonResponse);
-  return res.status(200).json(jsonResponse);
+    const jsonResponseRequests = requests;
+    const jsonResponse = {
+      requests: jsonResponseRequests, // Modify this to include user requests
+    };
+    console.log(jsonResponse);
+    return res.status(200).json(jsonResponse);
+  } catch (error) {
+    console.error("Error fetching requests:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 app.get("/getBalanceOfLink", async (req, res) => {
-  const balanceOfLink = await MCBDCContract.methods._balanceOfLink().call();
-  const jsonResponse = {
-    balanceOfLink: balanceOfLink, // Modify this to include user requests
-  };
-  console.log(jsonResponse);
-  return res.status(200).json(jsonResponse);
+  try {
+    const balanceOfLink = await MCBDCContract.methods._balanceOfLink().call();
+    const jsonResponse = {
+      balanceOfLink: balanceOfLink, // Modify this to include user requests
+    };
+    console.log(jsonResponse);
+    return res.status(200).json(jsonResponse);
+  } catch (error) {
+    console.error("Error fetching balance of link:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 })
 
 app.get("/getFXRate", async (req, res) => {
-  const rate = await MCBDCContract.methods.fxRateResponse().call();
-  const expiringTime = await MCBDCContract.methods.responseExpiryTime().call();
-  const checkAvailableRequests = await MCBDCContract.methods.isFxRateResponseValid().call();
-  const jsonResponse = {
-    rate: rate,
-    expiringTime: expiringTime,
-    availableStatus: checkAvailableRequests,
-  };
-  console.log(jsonResponse);
-  return res.status(200).json(jsonResponse);
+  try {
+    const rate = await MCBDCContract.methods.fxRateResponse().call();
+    const expiringTime = await MCBDCContract.methods.responseExpiryTime().call();
+    const checkAvailableRequests = await MCBDCContract.methods.isFxRateResponseValid().call();
+    const jsonResponse = {
+      rate: rate,
+      expiringTime: expiringTime,
+      availableStatus: checkAvailableRequests,
+    };
+    console.log(jsonResponse);
+    return res.status(200).json(jsonResponse);
+  } catch (error) {
+    console.error("Error fetching Fx Rate:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 })
 
 app.get("/showTokenAddress", async (req, res) => {
@@ -206,9 +228,9 @@ app.get("/isValidSeller", async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 })
-app.get("/getVoucherInfo",async (req,res)=>{
+app.get("/getVoucherInfo", async (req, res) => {
   const { voucherId } = req.query;
-  try{
+  try {
     const voucher = await VoucherContract.methods.getVoucherInfo(voucherId).call();
     const voucherInfo = {
       campaignId: voucher[0],
@@ -224,10 +246,11 @@ app.get("/getVoucherInfo",async (req,res)=>{
     };
     return res.status(200).json(voucherInfo);
 
-  }catch (error) {
+  } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
-}})
+  }
+})
 
 app.get("/getAllVouchers", async (req, res) => {
   try {
@@ -267,8 +290,8 @@ app.get("/getExpiredVouchers", async (req, res) => {
     const allExpiredVoucherIds = [];
 
     for (let i = 0; i < vouchers.length; i++) {
-        allExpiredVoucherIds.push(vouchers[i]);
-      }
+      allExpiredVoucherIds.push(vouchers[i]);
+    }
     return res.status(200).json(allExpiredVoucherIds);
   } catch (error) {
     console.error(error);

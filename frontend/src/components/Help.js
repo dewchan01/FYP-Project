@@ -40,7 +40,7 @@ function Help() {
                     <List.Item>
                         <List.Item.Meta
                             avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
-                            title={<a href="https://ant.design">{item.title}</a>}
+                            title={<a target="blank" href={`https://mumbai.polygonscan.com/address/${item.address}`}>{item.title}</a>}
                             description={item.address}
                         />
                     </List.Item>
@@ -51,9 +51,9 @@ function Help() {
                     <Paragraph>
                         To get started, create contract and set up the environment for cross-border transaction:
                         <ol>
-                            <li>Account 1: Create mCBDC</li>
-                            <li>Account 2: Create DSGD</li>
-                            <li>Account 3: Create DMYR</li>
+                            <li>Account 1: Deploy MCBDC Contract</li>
+                            <li>Account 2: Deploy DSGD Contract</li>
+                            <li>Account 3: Deploy DMYR Contract</li>
                             <li>Account 1: Add new tokens SGD and MYR to mCBDC</li>
                             <li>Account 2: Set mCBDC as allowed contract in DSGD</li>
                             <li>Account 3: Set mCBDC as allowed contract in DMYR</li>
@@ -68,44 +68,46 @@ function Help() {
                 <Panel header="How to Get Started for Requesting Payment and Pay by Another Currency ?" key="2">
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction is set up:
-                            <ol>
-                                <li>Recipient: Create request</li>
-                                <li>Sender: Get request</li>
-                                <li>Sender: Apply fromCurrency and targetCurrency to get the Fx rate, which lasts for 3 minutes</li>
-                                <li>Sender: Pay the request by providing params (fromCurrency, 0), where 0 is the index of the requests received</li>
-                                <li>Sender: Get the request again to double-check the payment</li>
-                                <li>Sender & Recipient: Check history whether if the payment is made successfully</li>
-                            </ol>
+                        <ol>
+                            <li>Recipient: Create request</li>
+                            <li>Sender: Get request</li>
+                            <li>Sender: Apply fromCurrency and targetCurrency to get the Fx rate, which lasts for 3 minutes</li>
+                            <li>Sender: Pay the request by providing params (fromCurrency, 0), where 0 is the index of the requests received</li>
+                            <li>Sender: Get the request again to double-check the payment</li>
+                            <li>Sender & Recipient: Check history whether if the payment is made successfully</li>
+                        </ol>
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Selling Product and Creating Voucher ?" key="3">
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction is set up:
-                            <ol>
-                                <li>Seller: Sign up as a seller</li>
-                                <li>Seller: Add Product to platform to sell product</li>
-                                <li>Seller: Ensure that your wallet has sufficient balance to create voucher</li>
-                                <li>Seller: Create voucher that includes your product Id in suitable product Ids array, thus it can be used</li>
-                                <li>Seller: Check the voucher details to ensure the price Currency for product, voucher and paying method is the same</li>
-                                <li>Seller: Request CID to compose IPFS during storing of voucher details to NFT Storage</li>
-                                <li>Seller: Submit the creation of voucher and autopay the funds to platform owner to manage</li>
-                                <li>Seller: Verify the voucher details being uploaded to IPFS to correct by clicking the hyperlink on title of voucher</li>
-                                <li>Platform Owner: Increase the allowance for MCBDC Contract to reimburse the discount price to seller</li>
-                            </ol>
+                        <ol>
+                            <li>Account 6: Deploy Voucher Contract</li>
+                            <li>Account 6: Deploy E-Commerce Contract</li>
+                            <li>Seller: Sign up as a seller</li>
+                            <li>Seller: Add Product to platform to sell product</li>
+                            <li>Seller: Ensure that your wallet has sufficient balance to create voucher</li>
+                            <li>Seller: Create voucher that includes your product Id in suitable product Ids array, thus it can be used</li>
+                            <li>Seller: Check the voucher details to ensure the price Currency for product, voucher and paying method is the same</li>
+                            <li>Seller: Request CID to compose IPFS during storing of voucher details to NFT Storage</li>
+                            <li>Seller: Submit the creation of voucher and autopay the funds to platform owner to manage</li>
+                            <li>Seller: Verify the voucher details being uploaded to IPFS to correct by clicking the hyperlink on title of voucher</li>
+                            <li>Platform Owner: Increase the allowance for MCBDC Contract to reimburse the discount price to seller</li>
+                        </ol>
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Buying Product with Voucher ?" key="4">
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction, e-commerce platform is set up:
-                            <ol>
-                                <li>User: Sign up as a user</li>
-                                <li>User: Claim only 1 voucher at the voucher tab and check whether the claim word has changed to claimed</li>
-                                <li>User: Ensure that your wallet has sufficient balance to buy product with voucher</li>
-                                <li>User: Include the voucher Ids that available for buying the product</li>
-                                <li>User: Discounted price of fund will be transferred to seller</li>
-                                <li>Platform Owner: Reimburse voucher value to seller</li>
-                                <li>User: Check your order at the order tab to confirm your order is successful</li>
-                            </ol>
+                        <ol>
+                            <li>User: Sign up as a user</li>
+                            <li>User: Claim only 1 voucher at the voucher tab and check whether the claim word has changed to claimed</li>
+                            <li>User: Ensure that your wallet has sufficient balance to buy product with voucher</li>
+                            <li>User: Include the voucher Ids that available for buying the product</li>
+                            <li>User: Discounted price of fund will be transferred to seller</li>
+                            <li>Platform Owner: Reimburse voucher value to seller</li>
+                            <li>User: Check your order at the order tab to confirm your order is successful</li>
+                        </ol>
                     </Paragraph>
                 </Panel>
 
@@ -123,13 +125,12 @@ function Help() {
                 </Panel>
             </Collapse>
             <Paragraph>
-                If you still have questions or need further assistance, feel free to reach out to us via email.
+                If you still have questions or need further assistance, feel free to reach out to us via email.&nbsp;
+                <Button type="primary" href="mailto:deweichan@gmail.com" style={{ color: 'white' }}>
+                    Email Us
+                </Button>
             </Paragraph>
-
-            <Button type="primary" href="mailto:deweichan@gmail.com">
-                Email Us
-            </Button>
-        </div >
+        </div>
     );
 }
 

@@ -41,7 +41,7 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
 
     const handleBuyProduct = async (product) => {
         if (!isValidUser) {
-            alert("Please login first!");
+            alert("Please sign up first!");
             return;
         }
         setProductId(product.productId);

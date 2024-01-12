@@ -40,7 +40,8 @@ function UserSignUp({ address }) {
     useEffect(() => {
         if (isSuccessCreateAccount) {
             form.resetFields();
-            alert("Account created successfully!");
+            alert("Account created successfully! Please connect again!");
+            window.location.href="/";
         }
         checkValidUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps

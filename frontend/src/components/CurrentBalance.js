@@ -142,7 +142,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
           title="Transfer Tokens"
           open={transferModal}
           onOk={() => {
-            if (transferAmount <= 0  || transferAmount > (selectedCurrency === '1' ? sgd : myr) || address==="" || transferAmount===null|| message.length>0) {
+            if (transferAmount <= 0  || transferAmount > (selectedCurrency === '1' ? sgd : myr) || address==="" || transferAmount===null|| message.length<=0) {
               alert("Please fill up the input fields!")
               return;
             }

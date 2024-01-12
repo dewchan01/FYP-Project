@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import logo from "./logo.svg";
-import { Layout, Button, Menu } from "antd";
+import { Layout, Button, Menu, Alert } from "antd";
 import CurrencyStatus from "./components/CurrencyStatus";
 import AccountDetails from "./components/AccountDetails";
 import RecentActivity from "./components/RecentActivity";
@@ -233,8 +233,15 @@ function App() {
             </>
           ) : (!isConnected) ?
             <div><p style={{fontWeight:"bold",fontSize:"1.5rem"}}>Please Connect Your MetaMask Wallet !</p>
-            <p><br />Disclamer: E-Commerce Contract in <a target="blank" href="https://medium.datadriveninvestor.com/creating-shopping-smartcontract-f7f80add48c4">this article</a> is taken to improve in this wallet app. <br />
-            </p>All rights of other resources are reserved to <a target="blank" href="https://github.com/dewchan01">this developer</a>.</div>
+            <Alert showIcon type="warning" message="Please take note this wallet app does not give any warranties and will not be liable for any loss, direct or indirect through continued use of this feature."></Alert>
+            <p><br />Disclamers: 
+            <ol>
+              <li>E-Commerce Contract in <a target="blank" href="https://medium.datadriveninvestor.com/creating-shopping-smartcontract-f7f80add48c4">this article</a> is improved in this wallet app.</li>
+              <li>The structure of Voucher Contract is improved from <a href="https://github.com/opengovsg/cbdc-smart-contracts/tree/master" target="blank">this repo</a>.</li>
+              <li>Front-end is referred to <a href="https://youtu.be/IwfIxAJiNiw" target="blank">this video</a> to improve.</li>
+              </ol> 
+            </p>All rights of other resources are reserved to <a target="blank" href="https://github.com/dewchan01">this developer</a>. Your feedback is welcome.<br />
+            </div>
             : <div></div>
           }
         </Content>

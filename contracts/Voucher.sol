@@ -217,7 +217,7 @@ contract VoucherContract is ERC1155, Ownable {
                     vouchers[i].valueCurrency,
                     string(
                         abi.encodePacked(
-                            "burn",
+                            "burn ",
                             Strings.toString(balanceOf(owner(), i)),
                             " unused voucher(Id: ",
                             Strings.toString(i),

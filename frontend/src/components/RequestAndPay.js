@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { DollarOutlined, SwapOutlined, TransactionOutlined, DownOutlined } from "@ant-design/icons";
-import { Modal, Input, InputNumber, Table, Button, Dropdown, Space, Menu } from "antd";
+import { Modal, Input, InputNumber, Table, Button, Dropdown, Space, Menu, Alert } from "antd";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
 import MCBDCABI from "../ABI/MCBDC.json";
+import ECommerceABI from "../ABI/ECommerce.json";
 import { getLabelByKey, tokenConfig } from "./tokenConfig";
+import axios from "axios";
 
 //check balanceOfLink
 function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, expiringTime, isFXRateResponseValid, getFXRate, getHistory, getRequests }) {
   const [payModal, setPayModal] = useState(false);
   const [remitIntModal, setRemitIntModal] = useState(false);
   const [requestModal, setRequestModal] = useState(false);
+  const [refundModal,setRefundModal] = useState(false);
   const [requestCurrency, setRequestCurrency] = useState("");
+  const [productId, setProductId] = useState(null);
+  const [purchaseId, setPurchaseId] = useState(null);
   const [toCurrency, setToCurrency] = useState("");
   const [requestAmount, setRequestAmount] = useState(null);
   const [swapAmount, setSwapAmount] = useState(null);
@@ -20,6 +25,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const [requestMessage, setRequestMessage] = useState("");
   const [swapMessage, setSwapMessage] = useState("");
   const [payIndex, setPayIndex] = useState(0);
+  const [isValidSeller,setIsValidSeller] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState(1);
   const [shouldDelete, setShouldDelete] = useState(false);
   const [shouldRate, setShouldRate] = useState(false);
@@ -35,6 +41,16 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 
   requests = requests?.['requests']?.slice();
   console.log("Requests", requests);
+
+  async function checkValidSeller() {
+    const res = await axios.get(`http://localhost:3001/isValidSeller`, {
+        params: { userAddress: address },
+    });
+
+    const response = res.data;
+    // console.log(response);
+    setIsValidSeller(response);
+}
 
   const { config: configPay } = usePrepareContractWrite({
     chainId: polygonMumbai.id,
@@ -112,6 +128,18 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     onSuccess: () => setIsSuccessRate(true),
   })
 
+  const { config: configRefund } = usePrepareContractWrite({
+    chainId: polygonMumbai.id,
+    address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
+    abi: ECommerceABI,
+    functionName: "refund",
+    args: [productId, purchaseId],
+  })
+
+  const { write: writeRefund, data: dataRefund } = useContractWrite(configRefund);
+  const { isLoading: isLoadingRefund, isSuccess: isSuccessRefund } = useWaitForTransaction({
+    hash: dataRefund?.hash,
+  })
 
   const showRemitIntModal = () => {
     setRemitIntModal(true);
@@ -143,6 +171,16 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     setRequestAddress('');
   };
 
+  const showRefundModal = () => {
+    setRefundModal(true);
+  } 
+
+  const hideRefundModal = () => {
+    setRefundModal(false);
+    setProductId('');
+    setPurchaseId('');
+  }
+
   const columns = [
     {
       title: "No",
@@ -172,7 +210,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <>
           {/* <Button type="primary" loading={isLoadingPay || isLoadingRate} onClick={() => handlePay(record.No)}>{((isSuccessRate && isFXRateResponseValid) || requests?.[record.No - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,)) ? "Pay" : "Request FX Rate"}</Button>
           &nbsp; */}
-          <Button type="primary" disabled={isLoadingPay||isLoadingRate} loading={isLoadingDeleteRequest} onClick={() => handleDelete(record.No)}>Delete</Button>
+          <Button type="primary" disabled={isLoadingPay || isLoadingRate} loading={isLoadingDeleteRequest} onClick={() => handleDelete(record.No)}>Delete</Button>
         </>
       ),
     }
@@ -270,6 +308,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   }
 
   const handlePayIndexChange = (e) => {
+    //confirm that pay first or modify order status
     const newIndex = e.key;
     setPayIndex(newIndex);
   }
@@ -278,6 +317,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     const sameCurrency = getLabelByKey(selectedCurrency).slice(1,) === toCurrency.slice(1,);
     const samePayRequestCurrency = requests?.[payIndex - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,);
     getFXRate();
+    checkValidSeller();
 
     if (payIndex !== 0) {
       const newOkText = (!isSuccessRate && !isFXRateResponseValid && !samePayRequestCurrency)
@@ -338,12 +378,24 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       setIsSuccessRate(false);
       setShouldRate(false);
       setIsSuccessPay(false);
+      if(requests?.[payIndex-1]?.[7].includes("refund") && isValidSeller){
+          showRefundModal();
+          setProductId(requests?.[payIndex-1]?.[7].split(" / ")[0].slice(7,)); 
+          setPurchaseId(requests?.[payIndex-1]?.[7].split(" / ")[1]);
+      }else{
       setPayIndex(0);
       setOkText("Select Request");
+      }
     }
     if (isSuccessRequest || isSuccessDeleteRequest) {
       getRequests();
       hideRequestModal();
+    }
+    
+    if(isSuccessRefund){
+      hideRefundModal();
+      setPayIndex(0);
+      setOkText("Select Request");
     }
     // if (!isFXRateResponseValid) {
     //   setShouldRate(false);
@@ -351,7 +403,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     // }
     console.log("isSuccessRate?", isSuccessRate, isFXRateResponseValid, isSuccessPay)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest, selectedCurrency, shouldRate, shouldDelete, shouldSwap, shouldPay, toCurrency, payIndex, isFXRateResponseValid])
+  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest,isSuccessRefund, selectedCurrency, shouldRate, shouldDelete, shouldSwap, shouldPay, toCurrency, payIndex, isFXRateResponseValid,isValidSeller,productId,purchaseId])
 
   return (
     <>
@@ -372,18 +424,19 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         okText={(!isFXRateResponseValid) ? "Request FX Rate" : ((isSuccessRate && !isSuccessSwap && isFXRateResponseValid) ? "Make Transaction" : "Request FX Rate")}
         cancelText="Cancel"
         closable={false}
-        cancelButtonProps={{disabled:isLoadingSwap||isLoadingRate||isSuccessRate}}
-        okButtonProps={{disabled:recipientAddress===""||swapAmount===""||swapMessage==="" || toCurrency===""}}
+        cancelButtonProps={{ disabled: isLoadingSwap || isLoadingRate || isSuccessRate }}
+        okButtonProps={{ disabled: recipientAddress === "" || swapAmount === "" || swapMessage === "" || toCurrency === "" }}
       >
-        <p><span style={{color:"red"}}>*</span>To (address)</p>
+        <Alert showIcon message="There could be a issue when the LINK Token is insufficient for requesting FX Rate." type="warning"></Alert>
+        <p><span style={{ color: "red" }}>*</span>To (address)</p>
         <Input placeholder="0x..." value={recipientAddress} onChange={(val) => setRecipientAddress(val.target.value)} />
-        <p><span style={{color:"red"}}>*</span>Amount</p>
-        <InputNumber min={0.01} placeholder={0.01} step={0.01} value={swapAmount} onChange={(val) => setSwapAmount(val)}/>
-        <p><span style={{color:"red"}}>*</span>From Currency</p>
+        <p><span style={{ color: "red" }}>*</span>Amount</p>
+        <InputNumber min={0.01} placeholder={0.01} step={0.01} value={swapAmount} onChange={(val) => setSwapAmount(val)} />
+        <p><span style={{ color: "red" }}>*</span>From Currency</p>
         <Input value={getLabelByKey(selectedCurrency)} readOnly={true} />
-        <p><span style={{color:"red"}}>*</span>Target Currency</p>
+        <p><span style={{ color: "red" }}>*</span>Target Currency</p>
         <Dropdown overlay={filteredMenu} trigger={['click']}>
-          <a style={{ color: 'black',fontSize:'smaller',marginLeft:"5px"  }} onClick={(e) => e.preventDefault()}>
+          <a style={{ color: 'black', fontSize: 'smaller', marginLeft: "5px" }} onClick={(e) => e.preventDefault()}>
             <Space>
               {(toCurrency === '') && <div>Select target currency</div>}
               {toCurrency === 'DSGD' && <div>DSGD</div>}
@@ -408,7 +461,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
             <p style={{ color: "red" }}>Please request FX Rate!</p>
           ))
         }
-        <p><span style={{color:"red"}}>*</span>Message</p>
+        <p><span style={{ color: "red" }}>*</span>Message</p>
         <Input placeholder="Lunch Bill..." value={swapMessage} onChange={(val) => setSwapMessage(val.target.value)} />
       </Modal>
 
@@ -425,8 +478,8 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         }}
         width={880}
         closable={false}
-        cancelButtonProps={{disabled:isLoadingPay||isLoadingRate||isSuccessRate|| isLoadingDeleteRequest}}
-        okButtonProps={{disabled:payIndex===0}}
+        cancelButtonProps={{ disabled: isLoadingPay || isLoadingRate || isSuccessRate || isLoadingDeleteRequest }}
+        okButtonProps={{ disabled: payIndex === 0 }}
       >
         {requests && requests.length > 0 && (
           <>
@@ -437,11 +490,11 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
               pagination={{ position: ["bottomCenter"], pageSize: 3 }}
             />
             <p>Pay by: <strong>{getLabelByKey(selectedCurrency)}</strong>&nbsp;&nbsp;
-            <span style={{color:"red"}}>*</span>Index No: &nbsp;
+              <span style={{ color: "red" }}>*</span>Index No: &nbsp;
               {/* <InputNumber value={payIndex} onChange={(val) => setPayIndex(val)} /> */}
               <Space>
                 <Dropdown overlay={indexMenu} trigger={['click']}>
-                  <a style={{ color: "black",fontSize:'smaller',marginLeft:"5px"  }} onClick={(e) => e.preventDefault()}>
+                  <a style={{ color: "black", fontSize: 'smaller', marginLeft: "5px" }} onClick={(e) => e.preventDefault()}>
                     {(payIndex === 0) ? "Select request" : payIndex}
                     &nbsp;<DownOutlined />
                   </a>
@@ -467,12 +520,29 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       </Modal>
 
       <Modal
+        title="Pay Refund"
+        open={refundModal}
+        onCancel={hideRefundModal}
+        confirmLoading={isLoadingRefund}
+        okText="Yes"
+        cancelText="No"
+        onOk={() => {
+          console.log("CHECK product and purchase id",productId,purchaseId)
+          writeRefund?.();
+        }
+        }
+        closable={false}
+        cancelButtonProps={{ disabled: isLoadingRefund }}
+      >
+        <Alert showIcon message="Seller paying refund is detected. If you are doing so, please modify the status by clicking the button 'YES' below." type="warning" />
+      </Modal>
+
+      <Modal
         title="Request A Payment"
         open={requestModal}
         onOk={() => {
           if (requestAddress !== address) { // Check if requestAddress is not equal to userAddress
             console.log(requestMessage)
-
             writeRequest?.();
           }
         }}
@@ -481,19 +551,19 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         okText="Proceed To Request"
         cancelText="Cancel"
         closable={false}
-        cancelButtonProps={{disabled:isLoadingRequest}}
-        okButtonProps={{disabled:requestAddress===address||requestAmount===0||requestCurrency===""||requestMessage===""|| requestAddress===""}}
+        cancelButtonProps={{ disabled: isLoadingRequest }}
+        okButtonProps={{ disabled: requestAddress === address || requestAmount === 0 || requestCurrency === "" || requestMessage === "" || requestAddress === "" }}
       >
-        <p><span style={{color:"red"}}>*</span>From (address)</p>
+        <p><span style={{ color: "red" }}>*</span>From (address)</p>
         <Input placeholder="0x..." value={requestAddress} onChange={(val) => setRequestAddress(val.target.value)} />
         {requestAddress === address && (
           <p style={{ color: 'red' }}>You cannot request payment from your own address.</p>
         )}
-        <p><span style={{color:"red"}}>*</span>Amount</p>
+        <p><span style={{ color: "red" }}>*</span>Amount</p>
         <InputNumber placeholder={0.01} min={0.01} value={requestAmount} onChange={(val) => setRequestAmount(val)} />
-        <p><span style={{color:"red"}}>*</span>Receive Currency</p>
+        <p><span style={{ color: "red" }}>*</span>Receive Currency</p>
         <Dropdown overlay={menu} trigger={['click']}>
-          <a style={{ color: 'black',fontSize:'smaller',marginLeft:"5px" }} onClick={(e) => e.preventDefault()}>
+          <a style={{ color: 'black', fontSize: 'smaller', marginLeft: "5px" }} onClick={(e) => e.preventDefault()}>
             <Space>
               {(requestCurrency === '') && <div>Select receive currency</div>}
               {requestCurrency === 'DSGD' && <div>DSGD</div>}
@@ -504,7 +574,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
             </Space>
           </a>
         </Dropdown>
-        <p><span style={{color:"red"}}>*</span>Message</p>
+        <p><span style={{ color: "red" }}>*</span>Message</p>
         <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val) => setRequestMessage(val.target.value)} />
       </Modal>
 
@@ -514,9 +584,9 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           onClick={() => {
             showRemitIntModal();
           }}
-          // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
+        // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
         >
-          <TransactionOutlined style={{ fontSize: "26px"}} />
+          <TransactionOutlined style={{ fontSize: "26px" }} />
           Remit Int.
         </div>
         <div
@@ -526,7 +596,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
               showPayModal();
             }
           }}
-          // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
+        // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
         >
           <DollarOutlined style={{ fontSize: "26px" }} />
           Pay
@@ -539,7 +609,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           onClick={() => {
             showRequestModal();
           }}
-          // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
+        // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
         >
           <SwapOutlined style={{ fontSize: "26px" }} />
           Request

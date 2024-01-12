@@ -54,6 +54,7 @@ contract ECommerce {
         string shipmentStatus;
         string deliveryAddress;
         address orderedBy;
+        uint256 payAmount;
         string payByCurrency;
         bool isActive;
         bool isCanceled;
@@ -126,8 +127,7 @@ contract ECommerce {
         string memory fromCurrency,
         uint256[] memory _voucherCodes
     ) public {
-        require(users[msg.sender].isCreated, "User is not signed up!");
-        require(products[_productId].isActive, "Product is not found!");
+        require(users[msg.sender].isCreated && products[_productId].isActive);
         uint256 discountedPrice = products[_productId].price;
         if (_voucherCodes.length > 0) {
             discountedPrice = voucherContract.redeemVouchers(
@@ -138,7 +138,6 @@ contract ECommerce {
                 products[_productId].seller
             );
         }
-       
 
         string memory message = string(
             abi.encodePacked(
@@ -149,7 +148,8 @@ contract ECommerce {
                 // Strings.toHexString(uint160(products[_productId].seller), 20)
             )
         );
-        if (Strings.equal(fromCurrency, products[_productId].priceCurrency)) {
+        bool sameCurrency = Strings.equal(fromCurrency, products[_productId].priceCurrency);
+        if (sameCurrency) {
             mcbdc.localTransfer(
                 products[_productId].seller,
                 discountedPrice,
@@ -161,8 +161,9 @@ contract ECommerce {
         } else {
             (uint256 rate, bool isFxRateValid, ) = mcbdc.getFxRateInfo();
             require(isFxRateValid, "FX Rate is expired!");
+            discountedPrice = (discountedPrice * 1e18) / rate;
             mcbdc.swapToken(
-                (discountedPrice * 1e18) / rate,
+                discountedPrice,
                 products[_productId].seller,
                 fromCurrency,
                 products[_productId].priceCurrency,
@@ -188,8 +189,10 @@ contract ECommerce {
 
         sellerShipments[products[_productId].seller][purchaseId]
             .productId = _productId;
-        sellerShipments[products[_productId].seller][purchaseId].orderedBy = msg
-            .sender;
+        sellerShipments[products[_productId].seller][purchaseId]
+        .orderedBy = msg.sender;
+        sellerShipments[products[_productId].seller][purchaseId]
+            .payAmount = discountedPrice;
         sellerShipments[products[_productId].seller][purchaseId]
             .payByCurrency = fromCurrency;
         sellerShipments[products[_productId].seller][purchaseId]
@@ -228,21 +231,47 @@ contract ECommerce {
     function cancelOrder(string memory _productId, uint256 _purchaseId) public {
         require(
             sellerShipments[products[_productId].seller][_purchaseId]
-                .orderedBy == msg.sender,
-            "Not Authorized!"
-        );
-        require(
-            sellerShipments[products[_productId].seller][_purchaseId].isActive,
-            "Order has been canceled!"
+                .orderedBy ==
+                msg.sender &&
+                sellerShipments[products[_productId].seller][_purchaseId]
+                    .isActive
         );
         sellerShipments[products[_productId].seller][_purchaseId]
             .shipmentStatus = "Order Canceled By Buyer, Payment will Be Refunded";
         sellerShipments[products[_productId].seller][_purchaseId]
             .isCanceled = true;
+
+        if (
+            !(
+                Strings.equal(
+                    sellerShipments[products[_productId].seller][_purchaseId]
+                        .payByCurrency,
+                    products[_productId].priceCurrency
+                )
+            )
+        ) {
+            mcbdc.createRequest(
+                products[_productId].seller,
+                sellerShipments[products[_productId].seller][_purchaseId]
+                    .payAmount,
+                sellerShipments[products[_productId].seller][_purchaseId]
+                    .payByCurrency,
+                string(
+                    abi.encodePacked("refund ", _productId, " / ", Strings.toString(_purchaseId))
+                )
+            );
+            // sellerShipments[products[_productId].seller][_purchaseId]
+            //     .shipmentStatus = "Order Canceled By Buyer, Payment Refunded";
+        }
     }
 
+    // check refund request has been paid at the frontend first if the two currencies are different
     function refund(string memory _productId, uint256 _purchaseId) public {
-        require(sellerShipments[msg.sender][_purchaseId].isCanceled);
+        require(
+            sellerShipments[msg.sender][_purchaseId].isCanceled &&
+                sellerShipments[products[_productId].seller][_purchaseId]
+                    .isActive
+        );
         if (
             Strings.equal(
                 sellerShipments[msg.sender][_purchaseId].payByCurrency,
@@ -251,7 +280,7 @@ contract ECommerce {
         ) {
             mcbdc.localTransfer(
                 sellerShipments[msg.sender][_purchaseId].orderedBy,
-                products[_productId].price,
+                sellerShipments[msg.sender][_purchaseId].payAmount,
                 products[_productId].priceCurrency,
                 string(
                     abi.encodePacked(
@@ -270,28 +299,6 @@ contract ECommerce {
                 ),
                 false,
                 address(0)
-            );
-        } else {
-            mcbdc.swapToken(
-                products[_productId].price,
-                sellerShipments[msg.sender][_purchaseId].orderedBy,
-                products[_productId].priceCurrency,
-                sellerShipments[msg.sender][_purchaseId].payByCurrency,
-                string(
-                    abi.encodePacked(
-                        // Strings.toHexString(uint160(msg.sender), 20),
-                        "refund ",
-                        _productId,
-                        " to"
-                        // Strings.toHexString(
-                        //     uint160(
-                        //         sellerShipments[msg.sender][_purchaseId]
-                        //             .orderedBy
-                        //     ),
-                        //     20
-                        // )
-                    )
-                )
             );
         }
         sellerShipments[products[_productId].seller][_purchaseId]

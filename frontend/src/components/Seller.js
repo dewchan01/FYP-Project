@@ -2,7 +2,7 @@ import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from
 import ECommerceABI from "../ABI/ECommerce.json";
 import { polygonMumbai } from "@wagmi/chains";
 import React, { useEffect, useState } from "react";
-import { Form, Input, Button, Modal, Table, InputNumber, Divider,Select } from "antd";
+import { Form, Input, Button, Modal, Table, InputNumber, Divider, Select, Alert } from "antd";
 import axios from "axios";
 import { Space } from 'antd';
 
@@ -56,6 +56,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     const [addProductForm] = Form.useForm();
     const [updateShipmentForm] = Form.useForm();
     const [deleteProductForm] = Form.useForm();
+    const [refundForm] = Form.useForm();
     const [productId, setProductId] = useState("");
     const [purchaseId, setPurchaseId] = useState("");
     const [shipmentDetails, setShipmentDetails] = useState("");
@@ -69,6 +70,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     const [addModal, setAddModal] = useState(false);
     const [deleteModal, setDeleteModal] = useState(false);
     const [updateModal, setUpdateModal] = useState(false);
+    const [refundModal, setRefundModal] = useState(false);
     const [allProducts, setAllProducts] = useState([]);
     const [buttonDisabled, setButtonDisabled] = useState(true);
 
@@ -220,6 +222,18 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
         hash: dataUpdateShipment?.hash,
     })
 
+    const { config: configRefund } = usePrepareContractWrite({
+        chainId: polygonMumbai.id,
+        address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
+        abi: ECommerceABI,
+        functionName: "refund",
+        args: [productId, purchaseId],
+    })
+
+    const { write: writeRefund, data: dataRefund } = useContractWrite(configRefund);
+    const { isLoading: isLoadingRefund, isSuccess: isSuccessRefund } = useWaitForTransaction({
+        hash: dataRefund?.hash,
+    })
 
     async function getOrdersPlaced() {
         const res = await axios.get(`http://localhost:3001/ordersPlaced`, {
@@ -361,6 +375,14 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
         setUpdateModal(false);
     };
 
+    const showRefundModal = () => {
+        setRefundModal(true);
+    }
+
+    const hideRefundModal = () => {
+        setRefundModal(false);
+    }
+
     useEffect(() => {
         if (ordersPlaced.length === 0 && allProducts.length === 0) {
             getOrdersPlaced();
@@ -368,20 +390,22 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
             checkValidSeller();
         }
         console.log(isSuccessUpdateShipment)
-        if (isSuccessDeleteProduct || isSuccessSellerSignUp || isSuccessUpdateShipment || isSuccessAddProduct) {
+        if (isSuccessDeleteProduct || isSuccessSellerSignUp || isSuccessUpdateShipment || isSuccessAddProduct || isSuccessRefund) {
             deleteProductForm.resetFields();
             updateShipmentForm.resetFields();
             addProductForm.resetFields();
+            refundForm.resetFields();
             hideAddModal();
             hideDeleteModal();
             hideUpdateModal();
+            hideRefundModal();
             checkValidSeller();
             getOrdersPlaced();
             showAllProducts();
             setSellerName("");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [deleteProductForm, updateShipmentForm, addProductForm, isSuccessAddProduct, isSuccessSellerSignUp, isSuccessDeleteProduct, isSuccessUpdateShipment]);
+    }, [deleteProductForm, updateShipmentForm, addProductForm, refundForm, isSuccessAddProduct, isSuccessSellerSignUp, isSuccessRefund, isSuccessDeleteProduct, isSuccessUpdateShipment]);
 
     return (
         isValidSeller ?
@@ -390,7 +414,6 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                 <Button type="primary" onClick={showUpdateModal}>
                     Update Shipment
                 </Button>
-                {/* <UpdateShipmentModal /> */}
                 <Modal
                     title="Update Shipment"
                     open={updateModal}
@@ -440,6 +463,81 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                             />
                         </Form.Item>
 
+                    </Form>
+                </Modal>
+
+                &nbsp;
+                <Button type="primary" onClick={showRefundModal} danger={true}>
+                    Refund
+                </Button>
+                <Modal
+                    title="Refund"
+                    open={refundModal}
+                    onCancel={hideRefundModal}
+                    okText="Refund"
+                    cancelText="Cancel"
+                    confirmLoading={isLoadingRefund}
+                    onOk={() => {
+                        if (!(purchaseId.length > 0) || !(productId.length > 0)) {
+                            alert("Please enter all the fields!");
+                            return;
+                        }
+                        for (let i = 0; i < ordersPlaced.length; i++) {
+                            if (ordersPlaced[i].purchaseId === purchaseId) {
+                                if (ordersPlaced[i].shipmentStatus === "Order Canceled By Buyer, Payment Refunded") {
+                                    alert("Order is already canceled by buyer, payment cannot be refunded!");
+                                    return;
+                                }
+                                if (ordersPlaced[i].shipmentStatus !== "Order Canceled By Buyer, Payment will Be Refunded") {
+                                    alert("Order is not canceled by buyer, payment cannot be refunded!");
+                                    return;
+                                }
+                                break;
+                            }
+                        }
+                        writeRefund?.();
+                    }}
+                    okButtonProps={{ disabled: buttonDisabled }}
+                    cancelButtonProps={{ disabled: isLoadingRefund }}
+                    closable={false}
+
+                >
+                    <Alert
+                        message="Warning"
+                        description="Refund for same product price currency and purchasing currency only !"
+                        type="warning"
+                        showIcon
+                    />
+                    <br />
+                    <Form name="Refund" layout="vertical"
+                        form={refundForm}
+                        onFieldsChange={() =>
+                            setButtonDisabled(
+                                refundForm.getFieldsError().some((field) => field.errors.length > 0)
+                            )
+                        }>
+                        <Form.Item name="productId" label="Product ID"
+                            rules={[{
+                                required: true,
+                                message: "Please enter product id!",
+                            }]}>
+                            <Input
+                                placeholder="SCSG1"
+                                value={productId}
+                                onChange={(e) => setProductId(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item name="purchaseId" label="Purchase ID"
+                            rules={[{
+                                required: true,
+                                message: "Please enter purchase id!",
+                            }]}>
+                            <Input
+                                placeholder="0"
+                                value={purchaseId}
+                                onChange={(e) => setPurchaseId(e.target.value)}
+                            />
+                        </Form.Item>
                     </Form>
                 </Modal>
 
@@ -543,7 +641,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                                 <Option value="DMYR">DMYR</Option>
                             </Select>
                         </Form.Item>
-                            {/* <Input
+                        {/* <Input
                                 placeholder="DSGD"//CHECK
                                 value={priceCurrency}
                                 onChange={(e) => setPriceCurrency(e.target.value)}

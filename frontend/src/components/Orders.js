@@ -62,9 +62,7 @@ function Orders({ address }) {
             key: 'action',
             render: (_, record) => (
                 <Space size="middle">
-                    {record.shipmentStatus !== "Order Canceled By Buyer, Payment will Be Refunded" && record.shipmentStatus !== "Delivered" ?
-                    <Button type="primary" loading={isLoadingCancelOrder} danger={true} onClick={() => handleCancelOrder(record.productId, record.purchaseId)}>Cancel</Button>
-                    : null}
+                    <Button type="primary" disabled={record.shipmentStatus === "Order Canceled By Buyer, Payment Refunded" ||record.shipmentStatus === "Order Canceled By Buyer, Payment will Be Refunded" || record.shipmentStatus === "Delivered"} loading={isLoadingCancelOrder} danger={true} onClick={() => handleCancelOrder(record.productId, record.purchaseId)}>Cancel</Button>
                 </Space>
             ),
         },
@@ -72,6 +70,7 @@ function Orders({ address }) {
 
     useEffect(() => {
         if (!isSuccessCancelOrder) {
+            console.log(productId, purchaseId, isSuccessCancelOrder)
             writeCancelOrder?.();
         }
         showMyOrders();

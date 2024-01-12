@@ -115,8 +115,6 @@ describe("VoucherContract", () => {
   it("should add and remove user from blacklist", async () => {
     await dsgdToken.connect(dsgdTokenOwner).mint(seller.address, 13);
     await voucherContract.connect(seller).createVoucher("CampaignA", ["ProductC"], Math.floor(Date.now() / 1000) + 3600 * 24 * 7, 20, 5, "SGD", 1, "cidA");
-    // Add user to the blacklist
-    console.log(Math.floor(Date.now()/1000) + 3600)
 
     await voucherContract.addToBlacklist(user.address);
     const voucherId = Number(await voucherContract.checkVoucherId()) -1;

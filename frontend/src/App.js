@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import logo from "./logo.svg";
 import { Layout, Button, Menu, Alert } from "antd";
+import Marquee from 'react-fast-marquee';
 import CurrencyStatus from "./components/CurrencyStatus";
 import AccountDetails from "./components/AccountDetails";
 import RecentActivity from "./components/RecentActivity";
-import { useConnect, useAccount, useDisconnect } from "wagmi";
+import { useConnect, useAccount, useDisconnect,useContractRead } from "wagmi";
 import { MetaMaskConnector } from "wagmi/connectors/metaMask";
 import { useNavigate } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import axios from "axios";
+import LINK_TOKEN_ABI from "./ABI/LINKTOKEN.json";
 
 const { Header, Content } = Layout;
 
@@ -20,6 +22,7 @@ function App() {
     connector: new MetaMaskConnector(),
   });
 
+  const LINK_CONTRACT_ADDRESS = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB";
   const [balance, setBalance] = useState("...");
   const [sgd, setSGD] = useState("...");
   const [myr, setMYR] = useState("...");
@@ -138,6 +141,31 @@ function App() {
     checkAccount();
   }
 
+  const BalanceOfLINKToken = () => {
+    const { data: readData, isLoading: readLoading } = useContractRead({
+      address: LINK_CONTRACT_ADDRESS,
+      abi: LINK_TOKEN_ABI,
+      functionName: 'balanceOf',
+      args: [process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS],
+    });
+
+    if (readLoading) return <Alert banner>Loading...</Alert>
+
+    return (
+      <div>
+        {readData && window.location.pathname === "/" && (
+          <Alert
+          banner
+          message={
+            <Marquee pauseOnHover gradient={false}>
+              <span>Contribute to fund MCBDC Contract LINK TOKEN for requesting FX rate. Current MCBDC Contract ({process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS}) has {(readData)/1e18} LINK. At least 0.1 LINK Token to support request FX rate. <a href="https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB#writeContract#F5" target="blank">Fund here by transferring LINK Token to MCBDC Contract.</a></span>
+            </Marquee>
+          }
+        />
+        )}
+      </div>
+    );
+  }
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -212,9 +240,11 @@ function App() {
             expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
             getRequests={getRequests} balance={balance} history={history} />
         </div>
+        <BalanceOfLINKToken />
         <Content className="content">
           {isConnected && window.location.pathname === "/" ? (
             <>
+              
               <div className="firstColumn">
                 <CurrencyStatus
                   sgd={sgd} myr={myr} address={address} getBalance={getBalance}
@@ -232,15 +262,15 @@ function App() {
               </div>
             </>
           ) : (!isConnected) ?
-            <div><p style={{fontWeight:"bold",fontSize:"1.5rem"}}>Please Connect Your MetaMask Wallet !</p>
-            <Alert showIcon type="warning" message="Please take note this wallet app does not give any warranties and will not be liable for any loss, direct or indirect through continued use of this feature."></Alert>
-            <p><br />Disclamers: 
-            <ol>
-              <li>E-Commerce Contract in <a target="blank" href="https://medium.datadriveninvestor.com/creating-shopping-smartcontract-f7f80add48c4">this article</a> is improved in this wallet app.</li>
-              <li>The structure of Voucher Contract is improved from <a href="https://github.com/opengovsg/cbdc-smart-contracts/tree/master" target="blank">this repo</a>.</li>
-              <li>Front-end is referred to <a href="https://youtu.be/IwfIxAJiNiw" target="blank">this video</a> to improve.</li>
-              </ol> 
-            </p>All rights of other resources are reserved to <a target="blank" href="https://github.com/dewchan01">this developer</a>. Your feedback is welcome.<br />
+            <div><p style={{ fontWeight: "bold", fontSize: "1.5rem" }}>Please Connect Your MetaMask Wallet !</p>
+              <Alert showIcon type="warning" message="Please take note this wallet app does not give any warranties and will not be liable for any loss, direct or indirect through continued use of this feature."></Alert>
+              <p><br />Disclamers:
+                <ol>
+                  <li>E-Commerce Contract in <a target="blank" href="https://medium.datadriveninvestor.com/creating-shopping-smartcontract-f7f80add48c4">this article</a> is improved in this wallet app.</li>
+                  <li>The structure of Voucher Contract is improved from <a href="https://github.com/opengovsg/cbdc-smart-contracts/tree/master" target="blank">this repo</a>.</li>
+                  <li>Front-end is referred to <a href="https://youtu.be/IwfIxAJiNiw" target="blank">this video</a> to improve.</li>
+                </ol>
+              </p>All rights of other resources are reserved to <a target="blank" href="https://github.com/dewchan01">this developer</a>. Your feedback is welcome.<br />
             </div>
             : <div></div>
           }

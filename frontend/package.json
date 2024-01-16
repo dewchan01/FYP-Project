@@ -12,6 +12,7 @@
     "nft.storage": "^7.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-fast-marquee": "^1.6.2",
     "react-router-dom": "^6.21.1",
     "react-scripts": "5.0.1",
     "wagmi": "^0.12.2",

@@ -2,6 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
 const POLYGON_RPC_URL = process.env.POLYGON_RPC_URL || ''
+const COIN_MARKET_API_KEY = process.env.COIN_MARKET_API_KEY || ''
 
 // API Envs
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || ''
@@ -31,5 +32,13 @@ module.exports = {
       apiKey: {
         polygonMumbai: POLYGONSCAN_API_KEY,
       },
+    },
+    gasReporter: {
+      enabled: true,
+      token: 'MATIC',
+      currency: 'SGD',
+      outputFile: 'gas-report.txt',
+      noColors: true,
+      coinmarketcap: COIN_MARKET_API_KEY,
     }
   }

@@ -58,24 +58,19 @@ jobs:
           artifacts
           cache/*.json
 
-    - name: Get build artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: compiled-contracts
+    # - name: Get build artifacts
+    #   uses: actions/download-artifact@v3
+    #   with:
+    #     name: compiled-contracts
+
+    - name: List files in the artifacts directory
+      run: |
+        echo "Listing files in the artifacts directory..."
+        ls -R artifacts
 
     - name: Run Tests
       run: |
         echo "Running tests..."
         npm run test
-    
-    - name: Deploy
-      run: npx hardhat node && npx hardhat run scripts/deploy.js --network localhost
-      env:
-        ALCHEMY_API_KEY: ${{ env.ALCHEMY_API_KEY }}
-        POLYGON_RPC_URL: ${{ env.POLYGON_RPC_URL }}
-        POLYGONSCAN_API_KEY: ${{ env.POLYGONSCAN_API_KEY }}
-        DSGD_OWNER_PRIVATE_KEY: ${{ env.DSGD_OWNER_PRIVATE_KEY }}
-        DMYR_OWNER_PRIVATE_KEY: ${{ env.DMYR_OWNER_PRIVATE_KEY }}
-        MCBDC_OWNER_PRIVATE_KEY: ${{ env.MCBDC_OWNER_PRIVATE_KEY }}
-        VOUCHER_OWNER_PRIVATE_KEY: ${{ env.VOUCHER_OWNER_PRIVATE_KEY }}
-        ECOMMERCE_OWNER_PRIVATE_KEY: ${{ env.ECOMMERCE_OWNER_PRIVATE_KEY }}
+
+  

@@ -48,13 +48,16 @@ jobs:
     - name: Save Build Artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: contract-artifacts
-        path: artifacts 
+        name: compiled-contracts
+        path: |
+          artifacts
+          cache/*.json
+
     
     - name: Get build artifacts
       uses: actions/download-artifact@v3
       with:
-        name: contract-artifacts
+        name: compiled-artifacts
 
     - name: Run Tests
       run: npm run test

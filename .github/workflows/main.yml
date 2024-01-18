@@ -73,9 +73,10 @@ jobs:
         echo "Running tests..."
         npm run test
 
-    - name: Deploy API
+    - name: Run API
+      timeout-minutes: 0.5
       run: |
-        echo "Deploying API..."
+        echo "Running API..."
         npm run start
       env:
         ALCHEMY_API_KEY: ${{ env.ALCHEMY_API_KEY }}

@@ -13,19 +13,19 @@ const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
 const DMYRTokenAddress = process.env.DMYRTOKEN_CONTRACT_ADDRESS;
 const MCBDCContractAddress = process.env.MCBDC_CONTRACT_ADDRESS;
-const EcommerceContractAddress = process.env.ECOMMERCE_CONTRACT_ADDRESS;
+const ECommerceContractAddress = process.env.ECOMMERCE_CONTRACT_ADDRESS;
 const VoucherContractAddress = process.env.VOUCHER_CONTRACT_ADDRESS;
 
 const DSGDTokenContractABI = require("./artifacts/contracts/DSGDToken.sol/DSGDToken.json").abi;
 const DMYRTokenContractABI = require("./artifacts/contracts/DMYRToken.sol/DMYRToken.json").abi;
 const MCBDCContractABI = require("./artifacts/contracts/MCBDC.sol/MCBDC.json").abi;
-const EcommerceContractABI = require("./artifacts/contracts/Ecommerce.sol/ECommerce.json").abi;
+const ECommerceContractABI = require("./artifacts/contracts/ECommerce.sol/ECommerce.json").abi;
 const VoucherContractABI = require("./artifacts/contracts/Voucher.sol/VoucherContract.json").abi;
 
 const MCBDCContract = new web3.eth.Contract(MCBDCContractABI, MCBDCContractAddress);
 const DMYRTokenContract = new web3.eth.Contract(DMYRTokenContractABI, DMYRTokenAddress);
 const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenAddress);
-const EcommerceContract = new web3.eth.Contract(EcommerceContractABI, EcommerceContractAddress);
+const ECommerceContract = new web3.eth.Contract(ECommerceContractABI, ECommerceContractAddress);
 const VoucherContract = new web3.eth.Contract(VoucherContractABI, VoucherContractAddress);
 
 app.use((_, res, next) => {
@@ -153,7 +153,7 @@ app.get("/showTokenAddress", async (req, res) => {
 
 app.get("/allProducts", async (req, res) => {
   try {
-    const allProducts = await EcommerceContract.methods.getAllProducts().call();
+    const allProducts = await ECommerceContract.methods.getAllProducts().call();
     const allProductsInfo = allProducts.map(array => ({
       productId: array[0],
       productName: array[1],
@@ -174,7 +174,7 @@ app.get("/allProducts", async (req, res) => {
 app.get("/myOrders", async (req, res) => {
   const { userAddress } = req.query;
   try {
-    const allOrders = await EcommerceContract.methods.myOrders().call({ from: userAddress });
+    const allOrders = await ECommerceContract.methods.myOrders().call({ from: userAddress });
     const allOrdersData = Object.keys(allOrders[0]).map((index) => ({
       productId: allOrders[0][index],
       orderStatus: allOrders[1][index],
@@ -191,7 +191,7 @@ app.get("/myOrders", async (req, res) => {
 app.get("/ordersPlaced", async (req, res) => {
   const { userAddress } = req.query;
   try {
-    const allOrdersPlaced = await EcommerceContract.methods.getOrdersPlaced().call({ from: userAddress });
+    const allOrdersPlaced = await ECommerceContract.methods.getOrdersPlaced().call({ from: userAddress });
     const allOrdersPlacedData = Object.keys(allOrdersPlaced[0]).map((index) => ({
       productId: allOrdersPlaced["0"][index],
       purchaseId: allOrdersPlaced["1"][index],
@@ -211,7 +211,7 @@ app.get("/ordersPlaced", async (req, res) => {
 app.get("/isValidUser", async (req, res) => {
   const { userAddress } = req.query;
   try {
-    const isValidUser = await EcommerceContract.methods.checkValidUser(userAddress).call();
+    const isValidUser = await ECommerceContract.methods.checkValidUser(userAddress).call();
     return res.status(200).json(isValidUser);
   } catch (error) {
     return res.status(500).json({ error: "Internal server error" });
@@ -221,7 +221,7 @@ app.get("/isValidUser", async (req, res) => {
 app.get("/isValidSeller", async (req, res) => {
   const { userAddress } = req.query;
   try {
-    const sellerInfo = await EcommerceContract.methods.sellers(userAddress).call();
+    const sellerInfo = await ECommerceContract.methods.sellers(userAddress).call();
     const isValidSeller = (sellerInfo['1'] !== '0x0000000000000000000000000000000000000000');
     return res.status(200).json(isValidSeller);
   } catch (error) {

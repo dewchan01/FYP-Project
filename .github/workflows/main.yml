@@ -63,22 +63,13 @@ jobs:
       with:
         name: compiled-contracts
 
-    - name: List files in the artifacts directory
-      run: |
-        echo "Listing files in the artifacts directory..."
-        ls -R artifacts
-
     - name: Run Tests
       run: |
         echo "Running tests..."
         npm run test
-
-    - name: Run API
-      run: |
-        echo "Running API..."
-        npm run start &&
-        sleep 10 
-        pkill -f "node index.js" || true
+    
+    - name: Deploy
+      run: npx hardhat node && npx hardhat run scripts/deploy.js --network localhost
       env:
         ALCHEMY_API_KEY: ${{ env.ALCHEMY_API_KEY }}
         POLYGON_RPC_URL: ${{ env.POLYGON_RPC_URL }}
@@ -88,8 +79,3 @@ jobs:
         MCBDC_OWNER_PRIVATE_KEY: ${{ env.MCBDC_OWNER_PRIVATE_KEY }}
         VOUCHER_OWNER_PRIVATE_KEY: ${{ env.VOUCHER_OWNER_PRIVATE_KEY }}
         ECOMMERCE_OWNER_PRIVATE_KEY: ${{ env.ECOMMERCE_OWNER_PRIVATE_KEY }}
-        DSGDTOKEN_CONTRACT_ADDRESS: ${{ env.DSGDTOKEN_CONTRACT_ADDRESS }}
-        DMYRTOKEN_CONTRACT_ADDRESS: ${{ env.DMYRTOKEN_CONTRACT_ADDRESS }}
-        MCBDC_CONTRACT_ADDRESS: ${{ env.MCBDC_CONTRACT_ADDRESS }}
-        VOUCHER_CONTRACT_ADDRESS: ${{ env.VOUCHER_CONTRACT_ADDRESS }}
-        ECOMMERCE_CONTRACT_ADDRESS: ${{ env.ECOMMERCE_CONTRACT_ADDRESS }}

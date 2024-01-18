@@ -45,12 +45,17 @@ jobs:
     - name: Compile Smart Contracts
       run: npx hardhat compile
 
-    - name: Deploy Artifacts
-      uses: actions/upload-artifact@v2
+    - name: Save Build Artifacts
+      uses: actions/upload-artifact@v3
       with:
-        name: compiled-contracts
-        path: ./artifacts 
-        
+        name: contract-artifacts
+        path: artifacts 
+    
+    - name: Get build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: contract-artifacts
+
     - name: Run Tests
       run: npm run test
 

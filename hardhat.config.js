@@ -40,5 +40,8 @@ module.exports = {
       outputFile: 'gas-report.txt',
       noColors: true,
       coinmarketcap: COIN_MARKET_API_KEY,
+    },
+    paths:{
+      artifacts: './artifacts',
     }
   }

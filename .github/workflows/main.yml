@@ -39,10 +39,23 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm install
-    - run: npm run compile
-    - run: npm run start
-    - run: npm run test
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Compile Smart Contracts
+      run: npx hardhat compile
+
+    - name: Deploy Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: compiled-contracts
+        path: ./artifacts 
+        
+    - name: Run Tests
+      run: npm run test
+
+    - name: Deploy API
+      run: npm run start
       env:
         ALCHEMY_API_KEY: ${{ env.ALCHEMY_API_KEY }}
         POLYGON_RPC_URL: ${{ env.POLYGON_RPC_URL }}

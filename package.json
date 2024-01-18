@@ -5,7 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat run --network deploy scripts/deploy.js",
+    "deploy:hardhat": "npx hardhat run --network localhost scripts/deploy.js",
+    "deploy:polygonMumbai": "npx hardhat run --network polygonMumbai scripts/deploy.js"
+
   },
   "author": "",
   "license": "ISC",

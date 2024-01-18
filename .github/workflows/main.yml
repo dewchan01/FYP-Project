@@ -1,0 +1,73 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.14.2]
+    env:
+      ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+      POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+      POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
+      DSGD_OWNER_PRIVATE_KEY: ${{ secrets.DSGD_OWNER_PRIVATE_KEY }}
+      DMYR_OWNER_PRIVATE_KEY: ${{ secrets.DMYR_OWNER_PRIVATE_KEY }}
+      MCBDC_OWNER_PRIVATE_KEY: ${{ secrets.MCBDC_OWNER_PRIVATE_KEY }}
+      VOUCHER_OWNER_PRIVATE_KEY: ${{ secrets.VOUCHER_OWNER_PRIVATE_KEY }}
+      ECOMMERCE_OWNER_PRIVATE_KEY: ${{ secrets.ECOMMERCE_OWNER_PRIVATE_KEY }}
+      DSGDTOKEN_CONTRACT_ADDRESS: ${{ secrets.DSGDTOKEN_CONTRACT_ADDRESS }}
+      DMYRTOKEN_CONTRACT_ADDRESS: ${{secrets.DMYRTOKEN_CONTRACT_ADDRESS }}
+      MCBDC_CONTRACT_ADDRESS: ${{secrets.MCBDC_CONTRACT_ADDRESS }}
+      VOUCHER_CONTRACT_ADDRESS: ${{secrets.VOUCHER_CONTRACT_ADDRESS }}
+      ECOMMERCE_CONTRACT_ADDRESS: ${{secrets.ECOMMERCE_CONTRACT_ADDRESS}}
+      
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Compile Smart Contracts
+      run: npx hardhat compile
+
+    - name: Deploy Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: compiled-contracts
+        path: ./artifacts 
+        
+    - name: Run Tests
+      run: npm run test
+
+    - name: Deploy API
+      run: npm run start
+      env:
+        ALCHEMY_API_KEY: ${{ env.ALCHEMY_API_KEY }}
+        POLYGON_RPC_URL: ${{ env.POLYGON_RPC_URL }}
+        POLYGONSCAN_API_KEY: ${{ env.POLYGONSCAN_API_KEY }}
+        DSGD_OWNER_PRIVATE_KEY: ${{ env.DSGD_OWNER_PRIVATE_KEY }}
+        DMYR_OWNER_PRIVATE_KEY: ${{ env.DMYR_OWNER_PRIVATE_KEY }}
+        MCBDC_OWNER_PRIVATE_KEY: ${{ env.MCBDC_OWNER_PRIVATE_KEY }}
+        VOUCHER_OWNER_PRIVATE_KEY: ${{ env.VOUCHER_OWNER_PRIVATE_KEY }}
+        ECOMMERCE_OWNER_PRIVATE_KEY: ${{ env.ECOMMERCE_OWNER_PRIVATE_KEY }}
+        DSGDTOKEN_CONTRACT_ADDRESS: ${{ env.DSGDTOKEN_CONTRACT_ADDRESS }}
+        DMYRTOKEN_CONTRACT_ADDRESS: ${{env.DMYRTOKEN_CONTRACT_ADDRESS }}
+        MCBDC_CONTRACT_ADDRESS: ${{env.MCBDC_CONTRACT_ADDRESS }}
+        VOUCHER_CONTRACT_ADDRESS: ${{env.VOUCHER_CONTRACT_ADDRESS }}
+        ECOMMERCE_CONTRACT_ADDRESS: ${{env.ECOMMERCE_CONTRACT_ADDRESS}}
+      

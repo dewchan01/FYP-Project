@@ -77,7 +77,9 @@ jobs:
       timeout-minutes: 0.5
       run: |
         echo "Running API..."
-        npm run start
+        npm run start &&
+        sleep 10 
+        pkill -f "node index.js" || true
       env:
         ALCHEMY_API_KEY: ${{ env.ALCHEMY_API_KEY }}
         POLYGON_RPC_URL: ${{ env.POLYGON_RPC_URL }}

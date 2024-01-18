@@ -47,6 +47,7 @@ jobs:
     - name: Compile Smart Contracts
       run: |
         echo "Compiling smart contracts..."
+        npx hardhat clean
         npx hardhat compile
 
     - name: Save Build Artifacts

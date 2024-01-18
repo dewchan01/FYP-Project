@@ -334,6 +334,22 @@ app.get("/getBalanceOfVoucher", async (req, res) => {
   }
 
 })
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Listening for API Calls on port ${port}`);
+});
+
+process.on('SIGTERM', () => {
+  console.info('SIGTERM signal received. Closing server gracefully.');
+  server.close(() => {
+    console.log('Server closed. Exiting process.');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.info('SIGINT signal received. Closing server gracefully.');
+  server.close(() => {
+    console.log('Server closed. Exiting process.');
+    process.exit(0);
+  });
 });

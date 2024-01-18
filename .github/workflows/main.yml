@@ -74,7 +74,6 @@ jobs:
         npm run test
 
     - name: Run API
-      timeout-minutes: 0.5
       run: |
         echo "Running API..."
         npm run start &&

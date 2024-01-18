@@ -57,7 +57,7 @@ jobs:
     - name: Get build artifacts
       uses: actions/download-artifact@v3
       with:
-        name: compiled-artifacts
+        name: compiled-contracts
 
     - name: Run Tests
       run: npm run test

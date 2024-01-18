@@ -19,7 +19,7 @@ const VoucherContractAddress = process.env.VOUCHER_CONTRACT_ADDRESS;
 const DSGDTokenContractABI = require("./artifacts/contracts/DSGDToken.sol/DSGDToken.json").abi;
 const DMYRTokenContractABI = require("./artifacts/contracts/DMYRToken.sol/DMYRToken.json").abi;
 const MCBDCContractABI = require("./artifacts/contracts/MCBDC.sol/MCBDC.json").abi;
-const EcommerceContractABI = require("./artifacts/contracts/ECommerce.sol/ECommerce.json").abi;
+const EcommerceContractABI = require("./artifacts/contracts/Ecommerce.sol/ECommerce.json").abi;
 const VoucherContractABI = require("./artifacts/contracts/Voucher.sol/VoucherContract.json").abi;
 
 const MCBDCContract = new web3.eth.Contract(MCBDCContractABI, MCBDCContractAddress);

@@ -347,12 +347,13 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       setShouldDelete(false);
     }
 
-    console.log("Pay?", payIndex, !isSuccessPay, requests?.[payIndex - 1]?.[5], getLabelByKey(selectedCurrency).slice(1,));
+    // console.log("Pay?", payIndex, !isSuccessPay, requests?.[payIndex - 1]?.[5], getLabelByKey(selectedCurrency).slice(1,));
     if (shouldPay) {
       writePay?.();
       setShouldRate(false);
       setShouldPay(false);
     }
+
     if (shouldSwap) {
       writeSwap?.();
       setShouldRate(false);

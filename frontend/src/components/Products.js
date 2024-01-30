@@ -47,7 +47,7 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
         setProductId(product.productId);
         setPriceCurrency(product.priceCurrency);
         console.log("Rate", isSuccessRate)
-        if (isSuccessRate && getLabelByKey(selectedCurrency).slice(1,) !== product.priceCurrency) {
+        if ((isSuccessRate && getLabelByKey(selectedCurrency).slice(1,) !== product.priceCurrency) || getLabelByKey(selectedCurrency).slice(1,) === product.priceCurrency) {
             setShouldBuy(true);
         }
     }
@@ -145,6 +145,7 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
     const hideBuyModal = () => {
         setBuyModal(false);
         setAllowedVouchers([]);
+        setShouldBuy(false);
     }
 
     useEffect(() => {
@@ -163,8 +164,8 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
         }
 
         console.log("Allow", allowedVouchers)
-
-        if ((productId !== "" && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) === priceCurrency)
+        console.log(shouldBuy)
+        if ((shouldBuy && productId !== "" && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) === priceCurrency)
             || (shouldBuy && isFXRateAvailable && isSuccessRate && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) !== priceCurrency)) {
             writeBuy?.();
         }

@@ -428,7 +428,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         cancelButtonProps={{ disabled: isLoadingSwap || isLoadingRate || isSuccessRate }}
         okButtonProps={{ disabled: recipientAddress === "" || swapAmount === "" || swapMessage === "" || toCurrency === "" }}
       >
-        <Alert showIcon message="There could be a issue when the LINK Token is insufficient for requesting FX Rate." type="warning"></Alert>
+        <Alert showIcon message="There could be an issue when the LINK Token is insufficient for requesting FX Rate." type="warning"></Alert>
         <p><span style={{ color: "red" }}>*</span>To (address)</p>
         <Input placeholder="0x..." value={recipientAddress} onChange={(val) => setRecipientAddress(val.target.value)} />
         <p><span style={{ color: "red" }}>*</span>Amount</p>
@@ -462,8 +462,10 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
             <p style={{ color: "red" }}>Please request FX Rate!</p>
           ))
         }
-        <p><span style={{ color: "red" }}>*</span>Message</p>
+        <p><span style={{ color: "red" }}>*</span>Message</p> 
+
         <Input placeholder="Lunch Bill..." value={swapMessage} onChange={(val) => setSwapMessage(val.target.value)} />
+        <p><i>Hint: If button of making transaction is not working, try to reinput the message.</i></p>
       </Modal>
 
       <Modal

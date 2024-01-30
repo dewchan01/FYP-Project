@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
-import { List, Card, Button, Modal, Form, Input, InputNumber, Select, Space, BackTop, DatePicker } from "antd";
+import { List, Card, Button, Modal, Form, Input, InputNumber, Select, Space, BackTop, DatePicker, Alert } from "antd";
 import {LoginOutlined} from "@ant-design/icons"
 import axios from "axios";
 import VoucherABI from "../ABI/VoucherContract.json"
@@ -317,6 +317,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
                     closable={false}
                     cancelButtonProps={{ disabled: isLoadingCreateVoucher || isCidLoading || isCidAvailable }}
                 >
+                    <Alert showIcon message="Please reload window to check the new voucher is updated in product tab after creation." type="warning"></Alert>
                     <Form name="Create Voucher" layout="vertical" form={createVoucherForm}
                         onFieldsChange={() => {
                             setButtonDisabled(

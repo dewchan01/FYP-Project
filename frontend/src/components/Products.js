@@ -3,7 +3,7 @@ import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from
 import ECommerceABI from "../ABI/ECommerce.json";
 import MCBDCABI from "../ABI/MCBDC.json";
 import { polygonMumbai } from "@wagmi/chains";
-import { List, Card, Button, Select, Space, Modal, BackTop } from "antd";
+import { List, Card, Button, Select, Space, Modal, BackTop, Alert } from "antd";
 import axios from "axios";
 import { DownOutlined } from '@ant-design/icons';
 import { tokenConfig, getLabelByKey } from "./tokenConfig";
@@ -81,13 +81,12 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
             </Select>
         );
     };
-
     const { config: configBuy } = usePrepareContractWrite({
         chainId: polygonMumbai.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "buyProduct",
-        args: [productId, getLabelByKey(selectedCurrency)?.slice(1,), selectedVouchers], // hard code voucher code first
+        args: [productId, getLabelByKey(selectedCurrency)?.slice(1,), selectedVouchers],
     });
 
     const { write: writeBuy, data: dataBuy } = useContractWrite(configBuy);
@@ -164,9 +163,10 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
         }
 
         console.log("Allow", allowedVouchers)
-        console.log(shouldBuy)
+        console.log(shouldBuy,productId, getLabelByKey(selectedCurrency)?.slice(1,), selectedVouchers)
         if ((shouldBuy && productId !== "" && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) === priceCurrency)
             || (shouldBuy && isFXRateAvailable && isSuccessRate && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) !== priceCurrency)) {
+            console.log("TRRY")
             writeBuy?.();
         }
 
@@ -227,6 +227,7 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
                 cancelButtonProps={{ disabled: (isLoadingBuy || isLoadingRate || isSuccessRate)  }}
                 closable={false}
             >
+            <Alert showIcon message="There could be a issue when the allowance of platform owner is insufficient for using voucher." type="warning"></Alert>
             <p style={{ fontSize: "smaller" }}>Product ID: {product?.productId} /
                 Category: {product?.category}</p>
             <p style={{ fontWeight: "bold", textAlign: "center", fontSize: "large" }}>{product?.productName}</p>

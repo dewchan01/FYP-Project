@@ -1,13 +1,42 @@
-# Sample Hardhat Project
+# Paypal Blockchain Wallet
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This project demonstrates a Wallet that can facilitate cross-border transaction and e-commerce payment. It comes with four contracts, tests for all contracts, and scripts that deploy the contracts.
 
-Try running some of the following tasks:
+To start this program, you need to prepare your own env scripts for env variables for frontend and backend part.
+
+```
+ALCHEMY_API_KEY/REACT_APP_ALCHEMY_API_KEY = ""
+POLYGON_RPC_URL = ""
+POLYGONSCAN_API_KEY = ""
+COIN_MARKET_API_KEY=""
+NFT_STORAGE_TOKEN/REACT_APP_NFT_STORAGE_TOKEN = ""
+
+DSGD_OWNER_PRIVATE_KEY = ""
+DMYR_OWNER_PRIVATE_KEY = ""
+MCBDC_OWNER_PRIVATE_KEY = ""
+VOUCHER_OWNER_PRIVATE_KEY = ""
+ECOMMERCE_OWNER_PRIVATE_KEY = ""
+
+DSGDTOKEN_CONTRACT_ADDRESS/REACT_APP_DSGD_CONTRACT_ADDRESS = ""
+DMYRTOKEN_CONTRACT_ADDRESS/REACT_APP_DMYR_CONTRACT_ADDRESS = ""
+MCBDC_CONTRACT_ADDRESS/REACT_APP_MCBDC_CONTRACT_ADDRESS = ""
+VOUCHER_CONTRACT_ADDRESS/REACT_APP_VOUCHER_CONTRACT_ADDRESS = ""
+ECOMMERCE_CONTRACT_ADDRESS/REACT_APP_ECOMMERCE_CONTRACT_ADDRESS = ""
+
+REACT_APP_DSGD_CONTRACT_OWNER = ""
+REACT_APP_DMYR_CONTRACT_OWNER = ""
+REACT_APP_VOUCHER_CONTRACT_OWNER = ""
+
+```
+Basic Commands:
 
 ```shell
-npx hardhat help
+npm run start
+cd frontend && npm run start
+```
+Other Useful Commands:
+```shell
 npx hardhat test
 REPORT_GAS=true npx hardhat test
-npx hardhat node
 npx hardhat run scripts/deploy.js
 ```

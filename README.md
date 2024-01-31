@@ -1,6 +1,6 @@
 # Paypal Blockchain Wallet
 
-This project demonstrates a Wallet that can facilitate cross-border transaction and e-commerce payment. It comes with four contracts, tests for all contracts, and scripts that deploy the contracts.
+This project demonstrates a blockchain Wallet that can facilitate cross-border transaction and e-commerce payment. It comes with four contracts, tests for all contracts, and scripts that deploy the contracts.
 
 To start this program, you need to prepare your own env scripts for env variables for frontend and backend part.
 

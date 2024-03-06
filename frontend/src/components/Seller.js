@@ -73,6 +73,9 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     const [refundModal, setRefundModal] = useState(false);
     const [allProducts, setAllProducts] = useState([]);
     const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [isLoadingAllProduct, setIsLoadingAllProduct] = useState(true);
+    const [isLoadingOrdersPlaced, setIsLoadingOrdersPlaced] = useState(true);
+
 
     // const AddProductModal = () => {
     //     return (
@@ -240,6 +243,9 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
             params: { userAddress: address },
         });
         setOrdersPlaced(res.data || []);
+        if (res.data.length === 0) {
+            setIsLoadingOrdersPlaced(false);
+        }
     }
 
     async function showAllProducts() {
@@ -247,6 +253,9 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
         const filteredProducts = res.data.filter(product => product.seller === address);
         setAllProducts(filteredProducts || []);
         // console.log(res.data);
+        if (filteredProducts.length === 0) {
+            setIsLoadingAllProduct(false);
+        }
     }
 
     const columns = [
@@ -546,6 +555,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                     <Table columns={columns}
                         dataSource={ordersPlaced}
                         pagination={{ position: ["bottomCenter"], pageSize: 3 }}
+                        loading={isLoadingOrdersPlaced && ordersPlaced.length === 0}
                     />
                 </div>
 
@@ -681,6 +691,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                     <Table columns={myProductsColumn}
                         dataSource={allProducts}
                         pagination={{ position: ["bottomCenter"], pageSize: 2 }}
+                        loading={allProducts.length === 0 && isLoadingAllProduct}
                     />
                 </div>
             </>

@@ -9,6 +9,7 @@ function Orders({ address }) {
     const [myOrders, setMyOrders] = useState([]);
     const [productId, setProductId] = useState("");
     const [purchaseId, setPurchaseId] = useState("");
+    const [stillLoading, setStillLoading] = useState(true);
 
     const { config: configCancelOrder } = usePrepareContractWrite({
         chainId: polygonMumbai.id,
@@ -34,6 +35,9 @@ function Orders({ address }) {
         })
         setMyOrders(res.data || []);
         console.log(res.data);
+        if (res.data.length === 0) {
+            setStillLoading(false);
+        }
     }
 
     const columns = [
@@ -80,10 +84,10 @@ function Orders({ address }) {
 
     return (
         <div style={{ width: '85vw' }} >
-
             <Table columns={columns}
                 dataSource={myOrders}
                 pagination={{ position: ["bottomCenter"], pageSize: 9 }}
+                loading={stillLoading && myOrders.length === 0}
             />
         </div>
     )

@@ -157,14 +157,14 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
           closable={false}
           okButtonProps={{ disabled: address.length===0 || transferAmount===null || message.length===0 || address === transferAddress }}
         >
-          <p>Amount <strong>({getLabelByKey(selectedCurrency)})</strong></p>
+          <p><span style={{ color: "red" }}>*</span>Amount <strong>({getLabelByKey(selectedCurrency)})</strong></p>
           <InputNumber placeholder="0.01" min={0.01} value={transferAmount} onChange={(val) => setTransferAmount(val)} required={true} />
-          <p>To (address)</p>
+          <p><span style={{ color: "red" }}>*</span>To (address)</p>
           <Input placeholder="0x..." value={transferAddress} onChange={(val) => setTransferAddress(val.target.value)} required={true} />
           {transferAddress === address && (
             <p style={{ color: 'red' }}>You cannot transfer token to your own address.</p>
           )}
-          <p>Message</p>
+          <p><span style={{ color: "red" }}>*</span>Message</p>
           <Input required={true} placeholder="Send 1 DSGD..." value={message} onChange={(val) => setMessage(val.target.value)} />
 
         </Modal>
@@ -192,7 +192,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
               cancelButtonProps={{ disabled: isLoadingMint }}
               okButtonProps={{ disabled: mintAmount <= 0 }}
             >
-              <p>Amount ({getLabelByKey(selectedCurrency)})</p>
+              <p><span style={{ color: "red" }}>*</span>Amount ({getLabelByKey(selectedCurrency)})</p>
               <InputNumber min={0.01} placeholder={0.01} value={mintAmount} onChange={(val) => setMintAmount(val)} />
             </Modal>
 
@@ -219,7 +219,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
               cancelButtonProps={{ disabled: isLoadingBurn }}
               okButtonProps={{ disabled: burnAmount <= 0 }}
             >
-              <p>Amount ({getLabelByKey(selectedCurrency)})</p>
+              <p><span style={{ color: "red" }}>*</span>Amount ({getLabelByKey(selectedCurrency)})</p>
               <InputNumber min={0.01} placeholder={0.01} step={0.01} value={burnAmount} onChange={(val) => setBurnAmount(val)} />
             </Modal>
           </>

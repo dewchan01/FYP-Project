@@ -24,6 +24,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
     const [shouldRate, setShouldRate] = useState(false);
     const [buyModal, setBuyModal] = useState(false);
     const [isFXRateAvailable, setIsFXRateAvailable] = useState(false);
+    const [stillLoading,setStillLoading] = useState(true)
     const items = tokenConfig;
 
     // console.log(myr, sgd)
@@ -40,6 +41,9 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         const res = await axios.get("http://localhost:3001/allProducts");
         setAllProducts(res.data || []);
         // console.log(res.data);
+        if (res.data.length === 0) {
+            setStillLoading(false);
+        }
     }
 
     async function getBalanceOfVoucher() {
@@ -216,11 +220,11 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
                         onCurrencyChange={setSelectedCurrency}
                     />
                 </div>
-                {allProducts.length === 0 && <p>Loading products...</p>}
                 <List
                     style={{ margin: "20px 0 0 0", width: 1000 }}
                     grid={{ gutter: 16, column: 4 }}
                     dataSource={allProducts}
+                    loading={allProducts.length === 0 && stillLoading}
                     renderItem={(product) => (
                         <List.Item>
                             <Card
@@ -272,9 +276,11 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
                             style={{
                                 width: '100%',
                             }}
-                            placeholder="Please select vouchers"
+                            placeholder={allowedVouchers.length === 0 ? "No vouchers available" : "Please select vouchers"}
                             required={true}
                             options={allowedVouchers.filter((o) => !selectedVouchers.includes(o)).map(voucher => ({ label: voucher, value: voucher }))}
+                            loading={allowedVouchers.length === 0}
+                            disabled={allowedVouchers.length === 0}
                             onDeselect={(value) => setSelectedVouchers((prevIds) => prevIds.filter((id) => id !== value))}
                             onSelect={(value) => setSelectedVouchers((prevIds) => [...prevIds, value])}
                             onFocus={() => showBuyModal(product)}

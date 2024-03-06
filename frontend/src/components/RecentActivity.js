@@ -1,7 +1,8 @@
-import React from "react";
+import React,{useState} from "react";
 import { Card, Table } from "antd";
 
 function RecentActivity({ history, address }) {
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   console.log("history", history);
   history = history?.slice()?.reverse();
   const columns = [
@@ -97,6 +98,7 @@ return (
       dataSource={dataSource}
       columns={columns}
       pagination={{ position: ["bottomCenter"], pageSize: 5 }}
+      loading = {!dataSource && isLoadingHistory} 
     />
   </Card>
 );

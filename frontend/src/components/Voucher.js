@@ -35,10 +35,14 @@ function Voucher({ address, isValidUser,myr,sgd }) {
     const [claimedList, setClaimedList] = useState([]);
     const client = new NFTStorage({ token: process.env.REACT_APP_NFT_STORAGE_TOKEN })
     const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [isLoadingVoucher,setIsLoadingVoucher] = useState(true)
 
     async function showAllVouchers() {
         const res = await axios.get("http://localhost:3001/getAllVouchers");
         setAllVouchers(res.data || []);
+        if (res.data.length === 0) {
+            setIsLoadingVoucher(false);
+        }
         // console.log(res.data);
     }
 
@@ -479,11 +483,11 @@ function Voucher({ address, isValidUser,myr,sgd }) {
 
                 </Modal>
 
-                {allVouchers.length === 0 && <p>Loading vouchers...</p>}
                 <List
                     style={{ margin: "20px 0 0 0", width: 1000 }}
                     grid={{ gutter: 8, column: 4 }}
                     dataSource={allVouchers}
+                    loading = {isLoadingVoucher && allVouchers.length === 0}
                     renderItem={(voucher) => {
                         console.log(voucher)
                         const remainingDays = Math.ceil(Math.max(0, (new Date(voucher.expirationDate * 1000) - new Date()) / (1000 * 60 * 60 * 24)));

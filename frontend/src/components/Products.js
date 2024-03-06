@@ -8,12 +8,14 @@ import axios from "axios";
 import { DownOutlined } from '@ant-design/icons';
 import { tokenConfig, getLabelByKey } from "./tokenConfig";
 
-function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expiredVouchers, getExpiredVoucher, getBalanceOfVoucher }) {
+// function Products({ address,isValidUser, myr, sgd, getBalance, expiredVouchers, getExpiredVoucher }) {
+function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers, getExpiredVoucher }) {
     const [productId, setProductId] = useState("");
     const [allProducts, setAllProducts] = useState([]);
     const [selectedVouchers, setSelectedVouchers] = useState([]);
     const [availableVouchers, setAvailableVouchers] = useState([]);
     const [allowedVouchers, setAllowedVouchers] = useState([]);
+    const [balanceOfVouchers, setBalanceOfVouchers] = useState([]);
     const [product, setProduct] = useState({});
     const [selectedCurrency, setSelectedCurrency] = useState('1');
     const [priceCurrency, setPriceCurrency] = useState('');
@@ -38,6 +40,14 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
         setAllProducts(res.data || []);
         // console.log(res.data);
     }
+
+    async function getBalanceOfVoucher() {
+        const res = await axios.get("http://localhost:3001/getBalanceOfVoucher", {
+            params: { userAddress: address },
+        });
+        setBalanceOfVouchers(res.data || []);
+    }
+
 
     const handleBuyProduct = async (product) => {
         if (!isValidUser) {
@@ -116,7 +126,7 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
             setAllowedVouchers([]);
             return;
         }
-
+        const allowedVouchers = [];
         for (let i = 0; i < availableVouchers.length; i++) {
             try {
                 const res = await axios.get("http://localhost:3001/getVoucherInfo", {
@@ -132,12 +142,13 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
                     voucherInfo.minSpend <= product.price
                 ) {
                     // lack checking balance
-                    setAllowedVouchers((prevIds) => [...prevIds, res.data.voucherId]);
+                    allowedVouchers.push(res.data.voucherId);
                 }
             } catch (error) {
                 console.error("Error fetching voucher info:", error);
             }
         }
+        setAllowedVouchers(allowedVouchers);
     };
 
 
@@ -147,13 +158,17 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
         setShouldBuy(false);
     }
 
-    useEffect(() => {
+    const handleAvailableVouchers = () => {
         setAvailableVouchers(expiredVouchers
             ?.map((expired, index) => ({ expired, balance: Number(balanceOfVouchers[index]), index }))
             ?.filter(({ expired, balance }) => !expired && balance > 0));
-        if (allProducts.length === 0) {
-            showAllProducts();
-        }
+    }
+
+    useEffect(() => {
+        showAllProducts();
+        getBalanceOfVoucher();
+        handleAvailableVouchers();
+        
         // console.log(isFXRateAvailable,productId, getLabelByKey(selectedCurrency).slice(1,), priceCurrency, isSuccessBuy, isSuccessRate)
         if (!isSuccessRate && productId !== "" && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) !== priceCurrency) {
             writeRate?.();
@@ -163,7 +178,7 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
         }
 
         console.log("Allow", allowedVouchers)
-        console.log(shouldBuy,productId, getLabelByKey(selectedCurrency)?.slice(1,), selectedVouchers)
+        console.log(shouldBuy, productId, getLabelByKey(selectedCurrency)?.slice(1,), selectedVouchers)
         if ((shouldBuy && productId !== "" && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) === priceCurrency)
             || (shouldBuy && isFXRateAvailable && isSuccessRate && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) !== priceCurrency)) {
             console.log("TRRY")
@@ -173,13 +188,14 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
         if (isSuccessBuy) {
             hideBuyModal();
             setShouldBuy(false);
+            setSelectedVouchers([]);
             getBalanceOfVoucher();
             getExpiredVoucher();
             getBalance();
             alert("Purchase Successfully!");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSuccessBuy, shouldBuy, product, priceCurrency, isSuccessRate, isFXRateAvailable, selectedCurrency, selectedVouchers, buyModal]);
+    }, [isSuccessBuy, shouldBuy, product, priceCurrency, isSuccessRate, isFXRateAvailable, selectedCurrency, selectedVouchers, buyModal,allowedVouchers]);
 
     return (
         <>
@@ -224,39 +240,41 @@ function Products({ isValidUser, myr, sgd, getBalance, balanceOfVouchers, expire
                     console.log("Product: ", product)
                     handleBuyProduct(product);
                 }}
-                cancelButtonProps={{ disabled: (isLoadingBuy || isLoadingRate || isSuccessRate)  }}
+                cancelButtonProps={{ disabled: (isLoadingBuy || isLoadingRate || isSuccessRate) }}
                 closable={false}
             >
-            <Alert showIcon message="There could be a issue when the allowance of platform owner is insufficient for using voucher." type="warning"></Alert>
-            <p style={{ fontSize: "smaller" }}>Product ID: {product?.productId} /
-                Category: {product?.category}</p>
-            <p style={{ fontWeight: "bold", textAlign: "center", fontSize: "large" }}>{product?.productName}</p>
-            <p style={{ fontStyle: "italic" }}>{product?.description}</p>
-            <p>Seller: {product?.seller}</p>
-            <p style={{ fontSize: "larger", fontWeight: "", textAlign: "center", border: "1px solid black", borderRadius: "5px" }}>{product?.price / 1e18} D{product?.priceCurrency}
-                {isSuccessRate && isFXRateAvailable ? <p>Converted Price: {product?.price / rate} {getLabelByKey(selectedCurrency)}</p> : null}
-            </p>
-            <p>Vouchers:&nbsp;
-                <Space
-                    style={{
-                        width: '40%',
-                    }}
-                    direction="vertical"
-                >
-                    <Select
-                        mode="multiple"
-                        allowClear
+                <Alert showIcon message="There could be a issue when the allowance of platform owner is insufficient for using voucher." type="warning"></Alert>
+                <p style={{ fontSize: "smaller" }}>Product ID: {product?.productId} /
+                    Category: {product?.category}</p>
+                <p style={{ fontWeight: "bold", textAlign: "center", fontSize: "large" }}>{product?.productName}</p>
+                <p style={{ fontStyle: "italic" }}>{product?.description}</p>
+                <p>Seller: {product?.seller}</p>
+                <p style={{ fontSize: "larger", fontWeight: "", textAlign: "center", border: "1px solid black", borderRadius: "5px" }}>{product?.price / 1e18} D{product?.priceCurrency}
+                    {isSuccessRate && isFXRateAvailable ? <p>Converted Price: {product?.price / rate} {getLabelByKey(selectedCurrency)}</p> : null}
+                </p>
+                <p>Vouchers:&nbsp;
+                    <Space
                         style={{
-                            width: '100%',
+                            width: '40%',
                         }}
-                        placeholder="Please select vouchers"
-                        required={true}
-                        onChange={(selectedValues) => setSelectedVouchers((prevIds) => [...prevIds, ...selectedValues])}
-                        options={allowedVouchers.map(voucher => ({ label: voucher, value: voucher }))}
-                    />
-                </Space>
-            </p>
-        </Modal >
+                        direction="vertical"
+                    >
+                        <Select
+                            mode="multiple"
+                            allowClear
+                            style={{
+                                width: '100%',
+                            }}
+                            placeholder="Please select vouchers"
+                            required={true}
+                            options={allowedVouchers.filter((o) => !selectedVouchers.includes(o)).map(voucher => ({ label: voucher, value: voucher }))}
+                            onDeselect={(value) => setSelectedVouchers((prevIds) => prevIds.filter((id) => id !== value))}
+                            onSelect={(value) => setSelectedVouchers((prevIds) => [...prevIds, value])}
+                            onFocus={() => showBuyModal(product)}
+                        />
+                    </Space>
+                </p>
+            </Modal >
             <div>
                 <BackTop />
             </div>

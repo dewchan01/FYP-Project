@@ -24,7 +24,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
     const [shouldRate, setShouldRate] = useState(false);
     const [buyModal, setBuyModal] = useState(false);
     const [isFXRateAvailable, setIsFXRateAvailable] = useState(false);
-    const [stillLoading,setStillLoading] = useState(true)
+    const [isLoadingProducts,setIsLoadingProducts] = useState(true)
     const items = tokenConfig;
 
     // console.log(myr, sgd)
@@ -42,7 +42,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         setAllProducts(res.data || []);
         // console.log(res.data);
         if (res.data.length === 0) {
-            setStillLoading(false);
+            setIsLoadingProducts(false);
         }
     }
 
@@ -224,7 +224,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
                     style={{ margin: "20px 0 0 0", width: 1000 }}
                     grid={{ gutter: 16, column: 4 }}
                     dataSource={allProducts}
-                    loading={allProducts.length === 0 && stillLoading}
+                    loading={allProducts.length === 0 && isLoadingProducts}
                     renderItem={(product) => (
                         <List.Item>
                             <Card

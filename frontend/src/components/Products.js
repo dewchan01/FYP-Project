@@ -21,6 +21,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
     const [priceCurrency, setPriceCurrency] = useState('');
     const [rate, setRate] = useState(0);
     const [shouldBuy, setShouldBuy] = useState(false);
+    const [shouldRate, setShouldRate] = useState(false);
     const [buyModal, setBuyModal] = useState(false);
     const [isFXRateAvailable, setIsFXRateAvailable] = useState(false);
     const items = tokenConfig;
@@ -57,6 +58,9 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         setProductId(product.productId);
         setPriceCurrency(product.priceCurrency);
         console.log("Rate", isSuccessRate)
+        if (!isSuccessRate && getLabelByKey(selectedCurrency).slice(1,) !== product.priceCurrency){
+            setShouldRate(true)
+        }
         if ((isSuccessRate && getLabelByKey(selectedCurrency).slice(1,) !== product.priceCurrency) || getLabelByKey(selectedCurrency).slice(1,) === product.priceCurrency) {
             setShouldBuy(true);
         }
@@ -156,6 +160,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         setBuyModal(false);
         setAllowedVouchers([]);
         setShouldBuy(false);
+        setShouldRate(false);
     }
 
     const handleAvailableVouchers = () => {
@@ -170,8 +175,10 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         handleAvailableVouchers();
         
         // console.log(isFXRateAvailable,productId, getLabelByKey(selectedCurrency).slice(1,), priceCurrency, isSuccessBuy, isSuccessRate)
-        if (!isSuccessRate && productId !== "" && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) !== priceCurrency) {
+        if (shouldRate && !isSuccessRate && productId !== "" && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) !== priceCurrency) {
+            console.log("TRIGGER")
             writeRate?.();
+            setShouldRate(false);
         }
         if (isSuccessRate) {
             getFXRate();

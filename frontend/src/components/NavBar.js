@@ -27,6 +27,31 @@ function NavBar({ sgd, myr, address, getBalance,
           expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
           getRequests={getRequests} />}>
         </Route>
+        <Route path="/shopping/products" element={<Shopping sgd={sgd} myr={myr} address={address} getBalance={getBalance}
+          requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid}
+          expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
+          getRequests={getRequests} />}>
+        </Route>
+        <Route path="/shopping/orders" element={<Shopping sgd={sgd} myr={myr} address={address} getBalance={getBalance}
+          requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid}
+          expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
+          getRequests={getRequests} />}>
+        </Route>
+        <Route path="/shopping/seller" element={<Shopping sgd={sgd} myr={myr} address={address} getBalance={getBalance}
+          requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid}
+          expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
+          getRequests={getRequests} />}>
+        </Route>
+        <Route path="/shopping/vouchers" element={<Shopping sgd={sgd} myr={myr} address={address} getBalance={getBalance}
+          requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid}
+          expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
+          getRequests={getRequests} />}>
+        </Route>
+        <Route path="/shopping/sign-up" element={<Shopping sgd={sgd} myr={myr} address={address} getBalance={getBalance}
+          requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid}
+          expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
+          getRequests={getRequests} />}>
+        </Route>
         <Route path='/help' element={<Help />}></Route>
         <Route path="*" element={<div style={{ fontWeight: "bold", fontSize: "1.5rem", textAlign: "center", backgroundColor: "white" }}>404 Not Found</div>}></Route>
       </Routes >

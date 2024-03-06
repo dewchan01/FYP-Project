@@ -49,22 +49,20 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
 
     }
     const items = [
-        getItem('Products', '1', <ShopOutlined />),
-        // getItem('Orders', '2', <MenuOutlined />, [
-        //     getItem('Order Details', '3', <OrderedListOutlined />, '/order-details'),
-        // ]),
-        getItem('Orders', '2', <OrderedListOutlined />),
-        getItem('Seller', '3', <TeamOutlined />),
-        getItem('Vouchers', '5', <TagOutlined />),
-        getItem('Sign Up', '4', <LoginOutlined />),
+        getItem('Products', '1', <ShopOutlined />, '/shopping/products'),
+        getItem('Orders', '2', <OrderedListOutlined />, '/shopping/orders'),
+        getItem('Seller', '3', <TeamOutlined />, '/shopping/seller'),
+        getItem('Vouchers', '5', <TagOutlined />, '/shopping/vouchers'),
+        getItem('Sign Up', '4', <LoginOutlined />, '/shopping/sign-up'),
     ];
 
     // Define the getItem function
-    function getItem(title, key, icon) {
+    function getItem(title, key, icon, path) {
         return {
             title,
             key,
             icon,
+            path
         };
     }
     // const [collapsed, setCollapsed] = useState(false);
@@ -87,7 +85,7 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
                     <Menu mode="vertical" theme="light" defaultSelectedKeys={['1']}>
                         {items.map((item) => (
                             <Menu.Item key={item.key} icon={item.icon} onClick={() => handleMenuItemClick(item.title)}>
-                                <Link>{item.title}</Link>
+                                <Link to={item.path}>{item.title}</Link>
                             </Menu.Item>
                         ))}
                     </Menu>

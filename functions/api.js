@@ -5,7 +5,7 @@ require("dotenv").config();
 const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 
 const app = express();
-app.use(express.json());
+const router = express.Router();
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
@@ -26,12 +26,7 @@ const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenA
 const ECommerceContract = new web3.eth.Contract(ECommerceContractABI, ECommerceContractAddress);
 const VoucherContract = new web3.eth.Contract(VoucherContractABI, VoucherContractAddress);
 
-app.use((_, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  next();
-});
-
-app.get("/getBalance", async (req, res) => {
+router.get("/getBalance", async (req, res) => {
   try {
     const { userAddress } = req.query;
 
@@ -59,7 +54,7 @@ app.get("/getBalance", async (req, res) => {
   }
 });
 
-app.get("/getHistory", async (req, res) => {
+router.get("/getHistory", async (req, res) => {
   try {
     const { userAddress } = req.query;
     console.log(userAddress);
@@ -77,7 +72,7 @@ app.get("/getHistory", async (req, res) => {
   }
 });
 
-app.get("/getRequests", async (req, res) => {
+router.get("/getRequests", async (req, res) => {
   try {
     const { userAddress } = req.query;
     // Fetch user requests using your smart contract ABI (modify based on your contract)
@@ -95,7 +90,7 @@ app.get("/getRequests", async (req, res) => {
   }
 });
 
-app.get("/getBalanceOfLink", async (req, res) => {
+router.get("/getBalanceOfLink", async (req, res) => {
   try {
     const balanceOfLink = await MCBDCContract.methods._balanceOfLink().call();
     const jsonResponse = {
@@ -109,7 +104,7 @@ app.get("/getBalanceOfLink", async (req, res) => {
   }
 })
 
-app.get("/getFXRate", async (req, res) => {
+router.get("/getFXRate", async (req, res) => {
   try {
     const rate = await MCBDCContract.methods.fxRateResponse().call();
     const expiringTime = await MCBDCContract.methods.responseExpiryTime().call();
@@ -127,7 +122,7 @@ app.get("/getFXRate", async (req, res) => {
   }
 })
 
-app.get("/showTokenAddress", async (req, res) => {
+router.get("/showTokenAddress", async (req, res) => {
   try {
     const { token } = req.query;
     console.log("Symbol:", token);
@@ -149,7 +144,7 @@ app.get("/showTokenAddress", async (req, res) => {
   }
 })
 
-app.get("/allProducts", async (req, res) => {
+router.get("/allProducts", async (req, res) => {
   try {
     const allProducts = await ECommerceContract.methods.getAllProducts().call();
     const allProductsInfo = allProducts.map(array => ({
@@ -169,7 +164,7 @@ app.get("/allProducts", async (req, res) => {
   }
 })
 
-app.get("/myOrders", async (req, res) => {
+router.get("/myOrders", async (req, res) => {
   const { userAddress } = req.query;
   try {
     const allOrders = await ECommerceContract.methods.myOrders().call({ from: userAddress });
@@ -186,7 +181,7 @@ app.get("/myOrders", async (req, res) => {
   }
 })
 
-app.get("/ordersPlaced", async (req, res) => {
+router.get("/ordersPlaced", async (req, res) => {
   const { userAddress } = req.query;
   try {
     const allOrdersPlaced = await ECommerceContract.methods.getOrdersPlaced().call({ from: userAddress });
@@ -206,7 +201,7 @@ app.get("/ordersPlaced", async (req, res) => {
   }
 })
 
-app.get("/isValidUser", async (req, res) => {
+router.get("/isValidUser", async (req, res) => {
   const { userAddress } = req.query;
   try {
     const isValidUser = await ECommerceContract.methods.checkValidUser(userAddress).call();
@@ -216,7 +211,7 @@ app.get("/isValidUser", async (req, res) => {
   }
 })
 
-app.get("/isValidSeller", async (req, res) => {
+router.get("/isValidSeller", async (req, res) => {
   const { userAddress } = req.query;
   try {
     const sellerInfo = await ECommerceContract.methods.sellers(userAddress).call();
@@ -226,7 +221,7 @@ app.get("/isValidSeller", async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 })
-app.get("/getVoucherInfo", async (req, res) => {
+router.get("/getVoucherInfo", async (req, res) => {
   const { voucherId } = req.query;
   try {
     const voucher = await VoucherContract.methods.getVoucherInfo(voucherId).call();
@@ -250,7 +245,7 @@ app.get("/getVoucherInfo", async (req, res) => {
   }
 })
 
-app.get("/getAllVouchers", async (req, res) => {
+router.get("/getAllVouchers", async (req, res) => {
   try {
     const voucherLength = await VoucherContract.methods.checkVoucherId().call();
     const allVouchersInfo = [];
@@ -282,7 +277,7 @@ app.get("/getAllVouchers", async (req, res) => {
   }
 })
 
-app.get("/getExpiredVouchers", async (req, res) => {
+router.get("/getExpiredVouchers", async (req, res) => {
   try {
     const vouchers = await VoucherContract.methods.getExpiredVouchers().call();
     const allExpiredVoucherIds = [];
@@ -297,7 +292,7 @@ app.get("/getExpiredVouchers", async (req, res) => {
   }
 })
 
-app.get("/getClaimedList", async (req, res) => {
+router.get("/getClaimedList", async (req, res) => {
   const { userAddress } = req.query;
   const voucherLength = await VoucherContract.methods.checkVoucherId().call();
   const allClaimedVoucherIds = [];
@@ -315,7 +310,7 @@ app.get("/getClaimedList", async (req, res) => {
   }
 })
 
-app.get("/getBalanceOfVoucher", async (req, res) => {
+router.get("/getBalanceOfVoucher", async (req, res) => {
   const { userAddress } = req.query;
   const voucherLength = await VoucherContract.methods._voucherId().call();
   const balancesOfVouchers = [];

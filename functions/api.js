@@ -8,6 +8,11 @@ const app = express();
 const router = express.Router();
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 
+app.use((_, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    next();
+  });
+
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
 const DMYRTokenAddress = process.env.DMYRTOKEN_CONTRACT_ADDRESS;
 const MCBDCContractAddress = process.env.MCBDC_CONTRACT_ADDRESS;

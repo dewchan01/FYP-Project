@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactPlayer from 'react-player';
 import { Typography, Collapse, Button, List, Avatar } from 'antd';
 
 const { Paragraph } = Typography;
@@ -48,6 +49,7 @@ function Help() {
             />
             <Collapse accordion>
                 <Panel header="How to Get Started for Cross-border Transaction ?" key="1">
+                    <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/-D72El9FEYw"/>
                     <Paragraph>
                         To get started, create contract and set up the environment for cross-border transaction:
                         <ol>
@@ -66,6 +68,7 @@ function Help() {
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Requesting Payment and Pay by Another Currency ?" key="2">
+                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/n0-mmq9vaBA"/>
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction is set up:
                         <ol>
@@ -79,6 +82,8 @@ function Help() {
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Selling Product and Creating Voucher ?" key="3">
+                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/lvz4gB6DE0c"/>
+                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/eUzGpOjnW4U"/>
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction is set up:
                         <ol>
@@ -97,6 +102,8 @@ function Help() {
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Buying Product with Voucher ?" key="4">
+                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/lvz4gB6DE0c"/>
+                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/eUzGpOjnW4U"/>
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction, e-commerce platform is set up:
                         <ol>

@@ -467,7 +467,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <p><span style={{ color: "red" }}>*</span>Message</p> 
 
         <Input placeholder="Lunch Bill..." value={swapMessage} onChange={(val) => setSwapMessage(val.target.value)} />
-        <p><i>Hint: If button of making transaction is not working, try to reinput the message.</i></p>
+        <p><i>Reminder: Please <strong>reinput</strong> the message after requesting FX rate to continue transaction.</i></p>
       </Modal>
 
       <Modal

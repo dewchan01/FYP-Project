@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npm install",
-    "build:prod": "npm install && npm run build:frontend",
-    "build:frontend": "cd frontend && npm run build:prod",
+    "build:prod": "npm install",
     "start": "node index.js", 
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",

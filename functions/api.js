@@ -1,11 +1,11 @@
 const express = require("express");
+const serverless = require("serverless-http");
 require("dotenv").config();
 
 const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 
 const app = express();
 app.use(express.json());
-const port = 3001;
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
@@ -14,11 +14,11 @@ const MCBDCContractAddress = process.env.MCBDC_CONTRACT_ADDRESS;
 const ECommerceContractAddress = process.env.ECOMMERCE_CONTRACT_ADDRESS;
 const VoucherContractAddress = process.env.VOUCHER_CONTRACT_ADDRESS;
 
-const DSGDTokenContractABI = require("./artifacts/contracts/DSGDToken.sol/DSGDToken.json").abi;
-const DMYRTokenContractABI = require("./artifacts/contracts/DMYRToken.sol/DMYRToken.json").abi;
-const MCBDCContractABI = require("./artifacts/contracts/MCBDC.sol/MCBDC.json").abi;
-const ECommerceContractABI = require("./artifacts/contracts/ECommerce.sol/ECommerce.json").abi;
-const VoucherContractABI = require("./artifacts/contracts/Voucher.sol/VoucherContract.json").abi;
+const DSGDTokenContractABI = require("../artifacts/contracts/DSGDToken.sol/DSGDToken.json").abi;
+const DMYRTokenContractABI = require("../artifacts/contracts/DMYRToken.sol/DMYRToken.json").abi;
+const MCBDCContractABI = require("../artifacts/contracts/MCBDC.sol/MCBDC.json").abi;
+const ECommerceContractABI = require("../artifacts/contracts/ECommerce.sol/ECommerce.json").abi;
+const VoucherContractABI = require("../artifacts/contracts/Voucher.sol/VoucherContract.json").abi;
 
 const MCBDCContract = new web3.eth.Contract(MCBDCContractABI, MCBDCContractAddress);
 const DMYRTokenContract = new web3.eth.Contract(DMYRTokenContractABI, DMYRTokenAddress);
@@ -332,22 +332,6 @@ app.get("/getBalanceOfVoucher", async (req, res) => {
   }
 
 })
-const server = app.listen(port, () => {
-  console.log(`Listening for API Calls on port ${port}`);
-});
 
-process.on('SIGTERM', () => {
-  console.info('SIGTERM signal received. Closing server gracefully.');
-  server.close(() => {
-    console.log('Server closed. Exiting process.');
-    process.exit(0);
-  });
-});
-
-process.on('SIGINT', () => {
-  console.info('SIGINT signal received. Closing server gracefully.');
-  server.close(() => {
-    console.log('Server closed. Exiting process.');
-    process.exit(0);
-  });
-});
+app.use('/.netlify/functions/api', router);
+module.exports.handler = serverless(app)

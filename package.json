@@ -4,13 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "npm install",
     "start": "node index.js",
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat run --network deploy scripts/deploy.js",
     "deploy:hardhat": "npx hardhat run --network localhost scripts/deploy.js",
     "deploy:polygonMumbai": "npx hardhat run --network polygonMumbai scripts/deploy.js"
-
   },
   "author": "",
   "license": "ISC",
@@ -22,7 +22,11 @@
   "dependencies": {
     "@alch/alchemy-web3": "^1.4.7",
     "@chainlink/contracts": "^0.8.0",
+    "@netlify/functions": "^2.6.0",
     "@openzeppelin/contracts": "^5.0.0",
-    "axios": "^1.6.0"
+    "@types/express": "^4.17.21",
+    "axios": "^1.6.0",
+    "express": "^4.18.3",
+    "serverless-http": "^3.2.0"
   }
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import SiderPanel from "./SiderPanel";
-import { apiUrl } from "../apiConfig";
+import apiUrl from "../apiConfig";
 
 function Shopping({address,sgd,myr,getFXRate,getBalance}) {
     console.log("Address",address)

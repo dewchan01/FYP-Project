@@ -4,6 +4,7 @@ import { polygonMumbai } from "@wagmi/chains";
 import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Card } from "antd";
 import axios from "axios";
+import apiUrl from "../apiConfig";
 
 function UserSignUp({ address }) {
     const [form] = Form.useForm();
@@ -12,6 +13,7 @@ function UserSignUp({ address }) {
     const [deliveryAddress, setDeliveryAddress] = useState("");
     const [isValidUser, setIsValidUser] = useState(false);
     const [buttonDisabled, setButtonDisabled] = useState(true);
+    const baseURL = apiUrl();
 
     const { config: configCreateAccount } = usePrepareContractWrite({
         chainId: polygonMumbai.id,

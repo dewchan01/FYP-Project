@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm install",
     "build:prod": "npm install && npm run build:frontend",
-    "build:frontend": "cd frontend && npm run build:prod",
+    "build:frontend": "cd frontend && npm run build:prod && netlify deploy --prod",
     "start": "node index.js", 
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",

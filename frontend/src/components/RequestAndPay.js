@@ -7,6 +7,7 @@ import MCBDCABI from "../ABI/MCBDC.json";
 import ECommerceABI from "../ABI/ECommerce.json";
 import { getLabelByKey, tokenConfig } from "./tokenConfig";
 import axios from "axios";
+import apiUrl from "../apiConfig";
 
 //check balanceOfLink
 function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, expiringTime, isFXRateResponseValid, getFXRate, getHistory, getRequests }) {
@@ -38,6 +39,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const [isSuccessRate, setIsSuccessRate] = useState(false);
   const items = tokenConfig;
   const filteredTokens = tokenConfig.filter(item => item.key !== selectedCurrency);
+  const baseURL = apiUrl();
 
   requests = requests?.['requests']?.slice();
   console.log("Requests", requests);

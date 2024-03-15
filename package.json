@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npm install",
-    "build:prod": "npm install && npm run build:frontend && cd.. && netlify deploy --prod",
+    "build:prod": "npm install && npm run build:frontend",
     "build:frontend": "cd frontend && npm run build:prod",
     "start": "node index.js", 
     "test": "npx hardhat test",

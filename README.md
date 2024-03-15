@@ -1,6 +1,10 @@
 # Paypal Blockchain Wallet
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/25b56f8c-8001-427b-8c28-99b59c15bbb9/deploy-status)](https://app.netlify.com/sites/webthreewalletapi/deploys)
+
 This project demonstrates a blockchain Wallet that can facilitate cross-border transaction and e-commerce payment. It comes with four contracts, tests for all contracts, and scripts that deploy the contracts.
+
+Real Time Website: https://webthreewallet.netlify.app
 
 To start this program, you need to prepare your own env scripts for env variables for frontend and backend part.
 

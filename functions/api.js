@@ -15,10 +15,10 @@ const ECommerceContractAddress = process.env.ECOMMERCE_CONTRACT_ADDRESS;
 const VoucherContractAddress = process.env.VOUCHER_CONTRACT_ADDRESS;
 
 const DSGDTokenContractABI = require("./ABI/DSGDToken.json");
-const DMYRTokenContractABI = require(".ABI/DMYRToken.json");
-const MCBDCContractABI = require(".ABI/MCBDC.json");
+const DMYRTokenContractABI = require("./ABI/DMYRToken.json");
+const MCBDCContractABI = require("./ABI/MCBDC.json");
 const ECommerceContractABI = require(".ABI/ECommerce.json");
-const VoucherContractABI = require(".ABI/VoucherContract.json");
+const VoucherContractABI = require("./ABI/VoucherContract.json");
 
 const MCBDCContract = new web3.eth.Contract(MCBDCContractABI, MCBDCContractAddress);
 const DMYRTokenContract = new web3.eth.Contract(DMYRTokenContractABI, DMYRTokenAddress);

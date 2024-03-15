@@ -27,7 +27,7 @@ function UserSignUp({ address }) {
     });
 
     async function checkValidUser() {
-        const res = await axios.get(`http://localhost:3001/isValidUser`, {
+        const res = await axios.get(`${baseURL}/isValidUser`, {
             params: { userAddress: address },
         });
 

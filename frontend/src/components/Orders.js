@@ -4,8 +4,10 @@ import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from
 import { polygonMumbai } from "@wagmi/chains";
 import ECommerceABI from "../ABI/ECommerce.json";
 import { Button, Space, Table } from 'antd';
+import apiUrl from "../apiConfig";
 
 function Orders({ address }) {
+    const baseURL = apiUrl();
     const [myOrders, setMyOrders] = useState([]);
     const [productId, setProductId] = useState("");
     const [purchaseId, setPurchaseId] = useState("");
@@ -30,7 +32,7 @@ function Orders({ address }) {
     }
 
     async function showMyOrders() {
-        const res = await axios.get("http://localhost:3001/myOrders", {
+        const res = await axios.get(`${baseURL}/myOrders`, {
             params: { userAddress: address },
         })
         setMyOrders(res.data || []);

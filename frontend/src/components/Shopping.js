@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import SiderPanel from "./SiderPanel";
+import { apiUrl } from "../apiConfig";
 
 function Shopping({address,sgd,myr,getFXRate,getBalance}) {
     console.log("Address",address)
+    const baseURL = apiUrl();
     const [isValidUser, setIsValidUser] = useState(false);
     const [isValidSeller, setIsValidSeller] = useState(false);
     const [balanceOfVouchers, setBalanceOfVouchers] = useState([]);
     const [expiredVouchers, setExpiredVouchers] = useState([]);
 
     async function checkValidUser() {
-        const res = await axios.get(`http://localhost:3001/isValidUser`, {
+        const res = await axios.get(`${baseURL}/isValidUser`, {
             params: { userAddress: address },
         });
 
@@ -20,7 +22,7 @@ function Shopping({address,sgd,myr,getFXRate,getBalance}) {
 
     }
     async function checkValidSeller() {
-        const res = await axios.get(`http://localhost:3001/isValidSeller`, {
+        const res = await axios.get(`${baseURL}/isValidSeller`, {
             params: { userAddress: address },
         });
 
@@ -32,14 +34,14 @@ function Shopping({address,sgd,myr,getFXRate,getBalance}) {
 
     // getMyVoucher & getExpiredVoucher
     async function getBalanceOfVoucher() {
-        const res = await axios.get("http://localhost:3001/getBalanceOfVoucher", {
+        const res = await axios.get(`${baseURL}/getBalanceOfVoucher`, {
             params: { userAddress: address },
         });
         setBalanceOfVouchers(res.data || []);
     }
 
     async function getExpiredVoucher() {
-        const res = await axios.get("http://localhost:3001/getExpiredVouchers");
+        const res = await axios.get(`${baseURL}/getExpiredVouchers`);
         setExpiredVouchers(res.data || []);
     }
 

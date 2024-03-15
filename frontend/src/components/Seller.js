@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Modal, Table, InputNumber, Divider, Select, Alert } from "antd";
 import axios from "axios";
 import { Space } from 'antd';
+import apiUrl from "../apiConfig";
 
 // When you declare the modal components (AddProductModal, DeleteProductModal, UpdateShipmentModal) within the functional component, 
 // they are created on every render. If any of these modal components use state variables (productId, productName, etc.) or 
@@ -52,6 +53,7 @@ const DeleteProductModal = ({ deleteModal, hideDeleteModal, isLoadingDeleteProdu
 };
 
 function Seller({ isValidSeller, address, checkValidSeller }) {
+    const baseURL = apiUrl();
     const { Option } = Select;
     const [addProductForm] = Form.useForm();
     const [updateShipmentForm] = Form.useForm();
@@ -239,7 +241,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     })
 
     async function getOrdersPlaced() {
-        const res = await axios.get(`http://localhost:3001/ordersPlaced`, {
+        const res = await axios.get(`${baseURL}/ordersPlaced`, {
             params: { userAddress: address },
         });
         setOrdersPlaced(res.data || []);
@@ -249,7 +251,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     }
 
     async function showAllProducts() {
-        const res = await axios.get("http://localhost:3001/allProducts");
+        const res = await axios.get(`${baseURL}/allProducts`);
         const filteredProducts = res.data.filter(product => product.seller === address);
         setAllProducts(filteredProducts || []);
         // console.log(res.data);

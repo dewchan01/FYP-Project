@@ -7,6 +7,7 @@ import { List, Card, Button, Select, Space, Modal, BackTop, Alert } from "antd";
 import axios from "axios";
 import { DownOutlined } from '@ant-design/icons';
 import { tokenConfig, getLabelByKey } from "./tokenConfig";
+import apiUrl from "../apiConfig";
 
 // function Products({ address,isValidUser, myr, sgd, getBalance, expiredVouchers, getExpiredVoucher }) {
 function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers, getExpiredVoucher }) {
@@ -26,10 +27,11 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
     const [isFXRateAvailable, setIsFXRateAvailable] = useState(false);
     const [isLoadingProducts,setIsLoadingProducts] = useState(true)
     const items = tokenConfig;
+    const baseURL = apiUrl();
 
     // console.log(myr, sgd)
     async function getFXRate() {
-        const res = await axios.get(`http://localhost:3001/getFXRate`);
+        const res = await axios.get(`${baseURL}/getFXRate`);
         const response = res.data;
         console.log(response);
         setRate(response.rate);
@@ -38,7 +40,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
 
 
     async function showAllProducts() {
-        const res = await axios.get("http://localhost:3001/allProducts");
+        const res = await axios.get(`${baseURL}/allProducts`);
         setAllProducts(res.data || []);
         // console.log(res.data);
         if (res.data.length === 0) {
@@ -47,7 +49,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
     }
 
     async function getBalanceOfVoucher() {
-        const res = await axios.get("http://localhost:3001/getBalanceOfVoucher", {
+        const res = await axios.get(`${baseURL}/getBalanceOfVoucher`, {
             params: { userAddress: address },
         });
         setBalanceOfVouchers(res.data || []);
@@ -137,7 +139,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         const allowedVouchers = [];
         for (let i = 0; i < availableVouchers.length; i++) {
             try {
-                const res = await axios.get("http://localhost:3001/getVoucherInfo", {
+                const res = await axios.get(`${baseURL}/getVoucherInfo`, {
                     params: { voucherId: String(availableVouchers[i].index) },
                 });
                 // console.log("RES", res.data, product,selectedCurrency);

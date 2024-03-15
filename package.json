@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "npm install",
-    "start": "node index.js",
+    "build:prod": "npm install && netlify deploy --prod",
+    "start": "node index.js", 
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat run --network deploy scripts/deploy.js",

@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import axios from "axios";
 import LINK_TOKEN_ABI from "./ABI/LINKTOKEN.json";
+import apiUrl from "./apiConfig";
 
 const { Header, Content } = Layout;
 
@@ -21,6 +22,7 @@ function App() {
   const { connect } = useConnect({
     connector: new MetaMaskConnector(),
   });
+  const baseURL = apiUrl();
 
   const LINK_CONTRACT_ADDRESS = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB";
   const [balance, setBalance] = useState("...");
@@ -65,7 +67,7 @@ function App() {
     }
   }
   async function getBalance() {
-    const res = await axios.get(`http://localhost:3001/getBalance`, {
+    const res = await axios.get(`${baseURL}/getBalance`, {
       params: { userAddress: address },
     });
 
@@ -80,7 +82,7 @@ function App() {
   }
 
   async function getHistory() {
-    const res = await axios.get(`http://localhost:3001/getHistory`, {
+    const res = await axios.get(`${baseURL}/getHistory`, {
       params: { userAddress: address },
     });
 
@@ -92,7 +94,7 @@ function App() {
   }
 
   async function getRequests() {
-    const res = await axios.get(`http://localhost:3001/getRequests`, {
+    const res = await axios.get(`${baseURL}/getRequests`, {
       params: { userAddress: address },
     });
     let response;
@@ -108,7 +110,7 @@ function App() {
   }
 
   async function getBalanceOfLink() {
-    const res = await axios.get(`http://localhost:3001/getBalanceOfLink`);
+    const res = await axios.get(`${baseURL}/getBalanceOfLink`);
     const response = res.data;
     console.log(response);
 
@@ -117,7 +119,7 @@ function App() {
   }
 
   async function getFXRate() {
-    const res = await axios.get(`http://localhost:3001/getFXRate`);
+    const res = await axios.get(`${baseURL}/getFXRate`);
     const response = res.data;
     console.log(response);
 
@@ -129,7 +131,7 @@ function App() {
   }
 
   async function showTokenAddress() {
-    const res = await axios.get(`http://localhost:3001/showTokenAddress`, {
+    const res = await axios.get(`${baseURL}/showTokenAddress`, {
       params: { token: tokenSymbol },
     });
     const response = res.data;

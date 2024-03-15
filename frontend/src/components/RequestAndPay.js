@@ -43,7 +43,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   console.log("Requests", requests);
 
   async function checkValidSeller() {
-    const res = await axios.get(`http://localhost:3001/isValidSeller`, {
+    const res = await axios.get(`${baseURL}/isValidSeller`, {
         params: { userAddress: address },
     });
 

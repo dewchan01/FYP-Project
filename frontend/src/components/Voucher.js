@@ -7,8 +7,10 @@ import axios from "axios";
 import VoucherABI from "../ABI/VoucherContract.json"
 import { NFTStorage, Blob } from "nft.storage";
 import { getContractABIByKey, getContractAddressByKey } from "./tokenConfig";
+import apiUrl from "../apiConfig";
 
 function Voucher({ address, isValidUser,myr,sgd }) {
+    const baseURL = apiUrl();
     const { Option } = Select;
     const [createVoucherForm] = Form.useForm();
     const [updateAllowanceForm] = Form.useForm();
@@ -38,7 +40,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
     const [isLoadingVoucher,setIsLoadingVoucher] = useState(true)
 
     async function showAllVouchers() {
-        const res = await axios.get("http://localhost:3001/getAllVouchers");
+        const res = await axios.get(`${baseURL}/getAllVouchers`);
         setAllVouchers(res.data || []);
         if (res.data.length === 0) {
             setIsLoadingVoucher(false);
@@ -47,14 +49,14 @@ function Voucher({ address, isValidUser,myr,sgd }) {
     }
 
     async function balanceOf() {
-        const res = await axios.get("http://localhost:3001/getBalanceOfVoucher", {
+        const res = await axios.get(`${baseURL}/getBalanceOfVoucher`, {
             params: { userAddress: process.env.REACT_APP_VOUCHER_CONTRACT_OWNER },
         });
         setBalanceOfAllVouchers(res.data || []);
     }
 
     async function showAllProducts() {
-        const res = await axios.get("http://localhost:3001/allProducts");
+        const res = await axios.get(`${baseURL}/allProducts`);
         setAllProducts(res.data || []);
         console.log(res.data);
         // console.log(res.data);
@@ -93,7 +95,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
     }
 
     async function getClaimedList() {
-        const res = await axios.get("http://localhost:3001/getClaimedList", {
+        const res = await axios.get(`${baseURL}/getClaimedList`, {
             params: { userAddress: address },
         })
         setClaimedList(res.data || []);

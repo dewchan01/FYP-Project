@@ -102,6 +102,7 @@ function Help() {
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Buying Product with Voucher ?" key="4">
+                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/N6CapDnUXbI"/>
                 <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/lvz4gB6DE0c"/>
                 <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/eUzGpOjnW4U"/>
                     <Paragraph>

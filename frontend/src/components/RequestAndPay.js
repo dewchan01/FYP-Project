@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { DollarOutlined, SwapOutlined, TransactionOutlined, DownOutlined } from "@ant-design/icons";
-import { Modal, Input, InputNumber, Table, Button, Dropdown, Space, Menu, Alert } from "antd";
+import { Modal, Input, InputNumber, Table, Button, Dropdown, Space, Menu, Alert, Checkbox } from "antd";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
 import MCBDCABI from "../ABI/MCBDC.json";
@@ -406,7 +406,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     // }
     console.log("isSuccessRate?", isSuccessRate, isFXRateResponseValid, isSuccessPay)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest,isSuccessRefund, selectedCurrency, shouldRate, shouldDelete, shouldSwap, shouldPay, toCurrency, payIndex, isFXRateResponseValid,isValidSeller,productId,purchaseId])
+  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest,isSuccessRefund, selectedCurrency, shouldRate, shouldDelete, shouldSwap, shouldPay, toCurrency, payIndex, isFXRateResponseValid,isValidSeller,productId,purchaseId,rate])
 
   return (
     <>
@@ -467,7 +467,19 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         <p><span style={{ color: "red" }}>*</span>Message</p> 
 
         <Input placeholder="Lunch Bill..." value={swapMessage} onChange={(val) => setSwapMessage(val.target.value)} />
-        <p><i>Reminder: Please <strong>reinput</strong> the message after requesting FX rate to continue transaction.</i></p>
+        {!isSuccessRate && !isFXRateResponseValid ? (
+          <p></p>
+        ) : (isSuccessRate && isFXRateResponseValid
+          ?
+          (
+            <>
+              <p><i>Reminder: Please <strong>confirm</strong> your transaction details to continue transaction.</i></p>
+            </>
+          )
+          : (
+            <p></p>
+          ))
+        }
       </Modal>
 
       <Modal

@@ -481,6 +481,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
                 &nbsp;
                 <i>Reminder: Please <strong>confirm</strong> your transaction details to continue transaction.</i>
               </p>
+              <p><i>Hint: If you are unable to click the "Make Transaction" button, please refresh the page and try again.</i></p>
             </>
           )
           : (

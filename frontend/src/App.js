@@ -266,7 +266,7 @@ function App() {
             </>
           ) : (!isConnected) ?
             <div><p style={{ fontWeight: "bold", fontSize: "1.5rem" }}>Please Connect Your MetaMask Wallet !</p>
-              <Alert showIcon type="error" message="Access is restricted solely to the MetaMask Extension configured with the Polygon Mumbai Network and Alchemy for PC browsers."></Alert>
+              <Alert showIcon type="error" message="Access is restricted solely to the MetaMask Extension configured with the Polygon Mumbai Network and Alchemy RPC URL for PC browsers."></Alert>
               <br />
               <Alert showIcon type="warning" message="Please take note this wallet app does not give any warranties and will not be liable for any loss, direct or indirect through continued use of this feature."></Alert>
               <p><br />Disclamers:

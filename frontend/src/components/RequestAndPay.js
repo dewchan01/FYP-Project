@@ -32,6 +32,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const [shouldRate, setShouldRate] = useState(false);
   const [shouldSwap, setShouldSwap] = useState(false);
   const [shouldPay, setShouldPay] = useState(false);
+  const [confirmChecked,setConfirmChecked] = useState(false);
   const [okText, setOkText] = useState("Please select requests!");
 
   const [isSuccessPay, setIsSuccessPay] = useState(false);
@@ -152,6 +153,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     setSwapMessage('');
     setRecipientAddress('');
     setToCurrency('');
+    setConfirmChecked(false);
   }
 
   const showPayModal = () => {
@@ -356,7 +358,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       setShouldPay(false);
     }
 
-    if (shouldSwap) {
+    if (shouldSwap && confirmChecked) {
       writeSwap?.();
       setShouldRate(false);
       setShouldSwap(false);
@@ -370,6 +372,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       hideRemitIntModal();
       setIsSuccessSwap(false);
       setIsSuccessRate(false);
+      setConfirmChecked(false);
     }
     if (isSuccessPay) {
       setIsSuccessPay(true);
@@ -406,7 +409,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     // }
     console.log("isSuccessRate?", isSuccessRate, isFXRateResponseValid, isSuccessPay)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest,isSuccessRefund, selectedCurrency, shouldRate, shouldDelete, shouldSwap, shouldPay, toCurrency, payIndex, isFXRateResponseValid,isValidSeller,productId,purchaseId,rate])
+  }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest,isSuccessRefund, selectedCurrency, shouldRate, shouldDelete, shouldSwap, shouldPay, toCurrency, payIndex, isFXRateResponseValid,isValidSeller,productId,purchaseId])
 
   return (
     <>
@@ -428,7 +431,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         cancelText="Cancel"
         closable={false}
         cancelButtonProps={{ disabled: isLoadingSwap || isLoadingRate || isSuccessRate }}
-        okButtonProps={{ disabled: recipientAddress === "" || swapAmount === "" || swapMessage === "" || toCurrency === "" }}
+        okButtonProps={{ disabled: recipientAddress === "" || swapAmount === "" || swapMessage === "" || toCurrency === "" || (isFXRateResponseValid && isSuccessRate && !isSuccessSwap && !confirmChecked) }}
       >
         <Alert showIcon message="There could be an issue when the LINK Token is insufficient for requesting FX Rate." type="warning"></Alert>
         <p><span style={{ color: "red" }}>*</span>To (address)</p>
@@ -473,7 +476,11 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           ?
           (
             <>
-              <p><i>Reminder: Please <strong>confirm</strong> your transaction details to continue transaction.</i></p>
+              <p>
+                <Checkbox checked={confirmChecked} onChange={(e) => setConfirmChecked(e.target.checked)} />
+                &nbsp;
+                <i>Reminder: Please <strong>confirm</strong> your transaction details to continue transaction.</i>
+              </p>
             </>
           )
           : (

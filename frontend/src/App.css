@@ -1,5 +1,5 @@
 .App {
-  min-width: 100%;
+  min-width: 100vw;
   min-height: 100vh;
 }
 
@@ -179,3 +179,10 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+@media (max-width: 768px) {
+  .App {
+    min-width: 300vw;
+  }
+}
+

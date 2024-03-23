@@ -22,6 +22,12 @@ function App() {
   const { disconnect } = useDisconnect();
   const { connect } = useConnect({
     connector: new MetaMaskConnector(),
+    onSuccess: () => {
+      alert("Connected!");
+    },
+    onError: (error) => {
+      alert(` Wallet Connection Error: ${error.message}`);
+    },
   });
   const baseURL = apiUrl();
 

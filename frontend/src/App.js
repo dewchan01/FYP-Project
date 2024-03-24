@@ -34,12 +34,10 @@ function App() {
   const [myr, setMYR] = useState("...");
   const [history, setHistory] = useState(null);
   const [requests, setRequests] = useState(null);
-  const [balanceOfLink, setBalanceOfLink] = useState("...");
   const [rate, setFXRate] = useState("...");
   const [isFXRateResponseValid, setIsFXRateAvailable] = useState(false);
   const [expiringTime, setExpiringTime] = useState("...");
-  const [tokenSymbol, setTokenSymbol] = useState("...");
-  const [tokenAddress, setTokenAddress] = useState(null);
+  const [, setTokenAddress] = useState(null);
 
   function disconnectAndSetNull() {
     disconnect();
@@ -105,15 +103,6 @@ function App() {
     checkAccount();
   }
 
-  async function getBalanceOfLink() {
-    const res = await axios.get(`${baseURL}/getBalanceOfLink`);
-    const response = res.data;
-    console.log(response);
-
-    setBalanceOfLink(String(response.balance));
-    checkAccount();
-  }
-
   async function getFXRate() {
     const res = await axios.get(`${baseURL}/getFXRate`);
     const response = res.data;
@@ -122,19 +111,6 @@ function App() {
     setFXRate(String(response.rate));
     setExpiringTime(String(response.expiringTime));
     setIsFXRateAvailable(response.availableStatus);
-
-    checkAccount();
-  }
-
-  async function showTokenAddress() {
-    const res = await axios.get(`${baseURL}/showTokenAddress`, {
-      params: { token: tokenSymbol },
-    });
-    const response = res.data;
-    console.log(response);
-
-    setTokenSymbol(String(response.tokenSymbol));
-    setTokenAddress(String(response.tokenAddress));
 
     checkAccount();
   }
@@ -261,7 +237,7 @@ function App() {
             </>
           ) : (!isConnected) ?
             <div><p style={{ fontWeight: "bold", fontSize: "1.5rem" }}>Please Connect Your MetaMask Wallet !</p>
-              <Alert showIcon type="error" message="Access is restricted solely to the MetaMask Extension configured with the Polygon Mumbai Network and Alchemy RPC URL for PC browsers."></Alert>
+              <Alert showIcon type="error" message="Access is restricted solely to the MetaMask Extension configured with the Polygon Mumbai Network and Alchemy RPC URL for browsers."></Alert>
               <br />
               <Alert showIcon type="warning" message="Please take note this wallet app does not give any warranties and will not be liable for any loss, direct or indirect through continued use of this feature."></Alert>
               <p><br />Disclamers:
@@ -271,7 +247,7 @@ function App() {
                   <li>Front-end is referred to <a href="https://youtu.be/IwfIxAJiNiw" target="blank">this video</a> to improve.</li>
                 </ol>
               </p>All rights of other resources are reserved to <a target="blank" href="https://github.com/dewchan01">this developer</a>. Your feedback is welcome.<br />
-              <br /><ReactPlayer controls="true" url="https://youtu.be/fdhfVwJP334" />
+              <br /><ReactPlayer controls="true" url="https://youtu.be/fdhfVwJP334" width="45%" style={{display: "inline-block"}} /><ReactPlayer controls="true" url="https://youtu.be/_h6NsYREW-w" width="45%" style={{display: "inline-block", marginLeft: "10px"}} />
             </div>
             : <div></div>
           }

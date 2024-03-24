@@ -82,8 +82,8 @@ function Help() {
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Selling Product and Creating Voucher ?" key="3">
-                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/lvz4gB6DE0c"/>
-                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/eUzGpOjnW4U"/>
+                <ReactPlayer width="20%" height="20%" controls="true" style={{display: "inline-block"}} url="https://youtu.be/lvz4gB6DE0c"/>
+                <ReactPlayer width="20%" height="20%" controls="true" style={{display: "inline-block", marginLeft: "10px"}} url="https://youtu.be/eUzGpOjnW4U"/>
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction is set up:
                         <ol>
@@ -102,9 +102,9 @@ function Help() {
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Buying Product with Voucher ?" key="4">
-                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/N6CapDnUXbI"/>
-                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/lvz4gB6DE0c"/>
-                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/eUzGpOjnW4U"/>
+                <ReactPlayer style={{display: "inline-block"}} width="20%" height="20%" controls="true" url="https://youtu.be/N6CapDnUXbI"/>
+                <ReactPlayer style={{display: "inline-block", marginLeft: "10px"}} width="20%" height="20%" controls="true" url="https://youtu.be/lvz4gB6DE0c"/>
+                <ReactPlayer style={{display: "inline-block", marginLeft: "10px"}} width="20%" height="20%" controls="true" url="https://youtu.be/eUzGpOjnW4U"/>
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction, e-commerce platform is set up:
                         <ol>

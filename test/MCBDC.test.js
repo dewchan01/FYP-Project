@@ -21,7 +21,7 @@ describe("MCBDC Contract", function () {
 
     it("should add a new supported token", async () => {
         const tokenSymbol = "SGD";
-        const tokenAddress = dsgdToken.target; // Example token address
+        const tokenAddress = dsgdToken.target;
 
         await mcbdc.addNewToken(tokenSymbol, tokenAddress);
 
@@ -33,24 +33,21 @@ describe("MCBDC Contract", function () {
     it("should create and pay a request", async () => {
         const [sender, recipient] = await ethers.getSigners();
         const targetCurrency = "SGD";
-        const tokenAddress = dsgdToken.target; // Example token address
+        const tokenAddress = dsgdToken.target;
         const message = "Payment for services";
 
-        // Add supported tokens
         await mcbdc.addNewToken(targetCurrency, tokenAddress);
         await dsgdToken.mint(sender.address, 100);
         expect(await dsgdToken.balanceOf(sender.address)).to.equal(100);
-        // Create a request
+
         await mcbdc.connect(recipient).createRequest(sender.address, 100, "SGD", "Payment for services");
         const senderRequests = await mcbdc.connect(sender).getMyRequests();
-        expect(senderRequests.length).to.equal(1); // Request should be deleted after payment
+        expect(senderRequests.length).to.equal(1);
 
-        // Pay the request
         await mcbdc.connect(sender).payRequest(0, "SGD");
         const recipientRequests = await mcbdc.connect(recipient).getMyRequests();
-        expect(recipientRequests.length).to.equal(0); // Request should be deleted after payment
+        expect(recipientRequests.length).to.equal(0);
 
-        // Check recipient's history
         const recipientHistory = await mcbdc.connect(recipient).getMyHistory(recipient);
         const senderHistory = await mcbdc.connect(sender).getMyHistory(sender);
         expect(recipientHistory.length).to.equal(1);
@@ -68,15 +65,13 @@ describe("MCBDC Contract", function () {
 
     it("should add and remove a supported token", async () => {
         const newTokenSymbol = "DMYR";
-        const newTokenAddress = owner.address; //example address
+        const newTokenAddress = owner.address;
 
-        // Add a new supported token
         await mcbdc.addNewToken(newTokenSymbol, newTokenAddress);
         const addedTokenInfo = await mcbdc.supportedTokens(newTokenSymbol);
         expect(addedTokenInfo.tokenAddress).to.equal(newTokenAddress);
         expect(addedTokenInfo.tokenSymbol).to.equal(newTokenSymbol);
 
-        // Remove the supported token
         await mcbdc.removeToken(newTokenSymbol);
         const removedTokenInfo = await mcbdc.supportedTokens(newTokenSymbol);
         expect(removedTokenInfo.tokenAddress).to.equal("0x0000000000000000000000000000000000000000");
@@ -86,16 +81,13 @@ describe("MCBDC Contract", function () {
     it("should delete a request", async () => {
         const targetCurrency = "DMYR";
         const message = "Test request deletion";
-    
-        // Add supported tokens
+
         await mcbdc.addNewToken(targetCurrency, owner.address);
     
-        // Create a request
         await mcbdc.createRequest(owner.address, 100, targetCurrency, message);
         const userRequestsBefore = await mcbdc.getMyRequests();
         expect(userRequestsBefore.length).to.equal(1);
     
-        // Delete the request
         await mcbdc.deleteRequest(0);
         const userRequestsAfter = await mcbdc.getMyRequests();
         expect(userRequestsAfter.length).to.equal(0);
@@ -106,20 +98,15 @@ describe("MCBDC Contract", function () {
         const amount = 50;
         const currency = "DSGD";
         const message = "Test local transfer";
-        // Add supported tokens
         await mcbdc.addNewToken(currency, dsgdToken.target);
     
-        // Mint tokens to the sender for the local transfer
         await dsgdToken.mint(owner.address, 100);
     
-        // Perform a local transfer
         await mcbdc.localTransfer(recipient.address, amount, currency, message, false, "0x0000000000000000000000000000000000000000");
     
-        // Check the balance of the recipient after the local transfer
         const balanceRecipient = await dsgdToken.balanceOf(recipient.address);
         expect(balanceRecipient).to.equal(amount);
     
-        // Check the history of the recipient after the local transfer
         const recipientHistory = await mcbdc.getMyHistory(recipient);
         expect(recipientHistory.length).to.equal(1);
         const transferredEvent = recipientHistory[0];
@@ -133,32 +120,25 @@ describe("MCBDC Contract", function () {
     
     xit("should perform a token swap", async () => {
         const fromCurrency = "TEST";
-        const toCurrency = "USDC"; // Assuming USDC is a supported token
+        const toCurrency = "USDC";
         const amountToSwap = 100;
 
-        // Add supported tokens
         await mcbdc.addNewToken(fromCurrency, owner.address);
         await mcbdc.addNewToken(toCurrency, owner.address);
 
-        // Mock LINK balance for the contract
         const LinkToken = await ethers.getContractFactory("LinkToken");
         const linkToken = await LinkToken.deploy();
         await linkToken.deployed();
-        await linkToken.transfer(mcbdc.address, ethers.utils.parseEther("0.1")); // Assuming 0.1 LINK
+        await linkToken.transfer(mcbdc.address, ethers.utils.parseEther("0.1"));
 
-        // Request FX rate
         await mcbdc.requestFxRate(fromCurrency, toCurrency);
         const fxRateBefore = await mcbdc.getFxRateInfo();
 
-        // Perform token swap
         await mcbdc.swapToken(amountToSwap, user.address, fromCurrency, toCurrency, "Test Swap");
 
-        // Check the updated FX rate
         const fxRateAfter = await mcbdc.getFxRateInfo();
-        expect(fxRateAfter[0]).to.not.equal(fxRateBefore[0]); // FX rate should be updated after a swap
-        expect(fxRateAfter[1]).to.equal(true); // FX rate should still be valid
-
-        // Check user's history
+        expect(fxRateAfter[0]).to.not.equal(fxRateBefore[0]);
+        expect(fxRateAfter[1]).to.equal(true); 
         const userHistory = await mcbdc.getMyHistory();
         expect(userHistory.length).to.equal(1);
         const swapEntry = userHistory[0];

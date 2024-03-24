@@ -22,15 +22,12 @@ describe("ECommerce", () => {
     DSGDToken = await ethers.getContractFactory("DSGDToken");
     dsgdToken = await DSGDToken.connect(dsgdTokenOwner).deploy();
     
-    // Deploy MCBDC contract
     MCBDC = await ethers.getContractFactory("MCBDC");
     mcbdc = await MCBDC.connect(owner).deploy();
 
-    // Deploy VoucherContract contract
     VoucherContract = await ethers.getContractFactory("VoucherContract");
     voucherContract = await VoucherContract.connect(owner).deploy(mcbdc.target);
 
-    // Deploy ECommerce contract and connect it to MCBDC and VoucherContract
     ECommerce = await ethers.getContractFactory("ECommerce");
     ecommerce = await ECommerce.connect(owner).deploy(mcbdc.target, voucherContract.target);
 
@@ -40,7 +37,6 @@ describe("ECommerce", () => {
     await dsgdToken.connect(dsgdTokenOwner).mint(user.address, 100);
     await dsgdToken.connect(dsgdTokenOwner).mint(organizer.address, 100);
 
-    // Add a product
     await ecommerce.connect(seller).sellerSignUp("Seller Name");
     await ecommerce.connect(seller).addProduct(
       "prod123",
@@ -51,18 +47,16 @@ describe("ECommerce", () => {
       "Product Description"
     );
 
-    // Create a user account
     await ecommerce.connect(user).createAccount("User Name", "user@example.com", "Delivery Address");
 
-    // Buy the product with a voucher
     await voucherContract.connect(organizer).createVoucher(
       "Campaign123",
       ["prod123"],
-      Math.floor(Date.now() / 1000) + 3600, // Expiration time 1 hour from now
-      10, // Min spend
-      1, // Value
+      Math.floor(Date.now() / 1000) + 3600,
+      10, 
+      1,
       "SGD",
-      10, // Amount
+      10, 
       "cid123"
     );
 
@@ -86,7 +80,6 @@ describe("ECommerce", () => {
   });
 
 it("should update shipment status by seller", async () => {
-    // Update shipment status by seller
     expect(await ecommerce.connect(seller).updateShipment(0, "Shipped"))
     const shipmentInfo = await ecommerce.connect(user).myOrders();
     expect(shipmentInfo[3][0]).to.be.equal("Shipped"); 
@@ -94,7 +87,6 @@ it("should update shipment status by seller", async () => {
   
   it("should allow user to cancel an order and receive a refund", async () => {
 
-    // Cancel the order and receive a refund
     expect(await ecommerce.connect(user).cancelOrder("prod123", 0))
     const shipmentInfo = await ecommerce.connect(user).myOrders();
     expect(shipmentInfo[3][0]).to.be.equal("Order Canceled By Buyer, Payment will Be Refunded");
@@ -107,12 +99,10 @@ it("should update shipment status by seller", async () => {
   });
   
   it("should get all products", async () => {
-    // Add a few products
     await ecommerce.connect(seller).addProduct("prod1", "Product 1", "Category", "SGD", 100, "Description 1");
     await ecommerce.connect(seller).addProduct("prod2", "Product 2", "Category", "SGD", 150, "Description 2");
     await ecommerce.connect(seller).addProduct("prod3", "Product 3", "Category", "SGD", 200, "Description 3");
   
-    // Get all products
     const allProducts = await ecommerce.getAllProducts();
     expect(allProducts.length).to.equal(4);
     expect(allProducts[1].productId).to.equal("prod1");
@@ -122,16 +112,12 @@ it("should update shipment status by seller", async () => {
   
   it("should get user's order details", async () => {
     
-    // Add a product
     await ecommerce.connect(seller).addProduct("prod4", "Product Name", "Category", "SGD", 300, "Product Description");
   
-    // Buy the product
     await dsgdToken.mint(user.address, 300);
     await ecommerce.connect(user).buyProduct("prod4", "SGD", []);
   
-    // Get user's order details
     const [productIds, orderStatuses, purchaseIds, shipmentStatuses] = await ecommerce.connect(user).myOrders();
-    // console.log(JSON.stringify(await ecommerce.connect(user).myOrders()))
     expect(productIds.length).to.equal(2);
     expect(productIds[1]).to.equal("prod4");
     expect(orderStatuses[1]).to.equal("Order Placed With Seller");
@@ -141,23 +127,20 @@ it("should update shipment status by seller", async () => {
   
   it("should get seller's orders placed details", async () => {
     
-    // Get seller's orders placed details
     const [productIds, purchaseIds, orderedBys, shipmentStatuses, deliveryAddresses, payByCurrencies, areCanceled] = await ecommerce.connect(seller).getOrdersPlaced();
     expect(productIds.length).to.equal(1);
     expect(productIds[0]).to.equal("prod123");
     expect(purchaseIds[0]).to.equal(0); 
     expect(orderedBys[0]).to.equal(user.address);
-    expect(shipmentStatuses[0]).to.equal(""); // Assuming the shipment status is not updated
+    expect(shipmentStatuses[0]).to.equal(""); 
     expect(deliveryAddresses[0]).to.equal("Delivery Address");
     expect(payByCurrencies[0]).to.equal("SGD");
-    expect(areCanceled[0]).to.equal(false); // Assuming the order is not canceled
+    expect(areCanceled[0]).to.equal(false); 
   });
   
   it("should check if a user is valid", async () => {
-    // Create a user account
     await ecommerce.connect(user).createAccount("User Name", "user@example.com", "Delivery Address");
   
-    // Check if the user is valid
     const isValidUser = await ecommerce.checkValidUser(user.address);
     expect(isValidUser).to.equal(true);
   });

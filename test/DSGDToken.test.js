@@ -9,14 +9,11 @@ describe("DSGDToken", () => {
   let recipient;
 
   beforeEach(async () => {
-    // Get accounts from the network
     [owner, allowedContract, recipient] = await ethers.getSigners();
 
-    // Deploy DSGDToken contract using the deployContract helper
     DSGDToken = await ethers.getContractFactory("DSGDToken");
     dsgdToken = await DSGDToken.connect(owner).deploy();
 
-    // Connect DSGDToken contract to the owner's signer
     dsgdToken = dsgdToken.connect(owner);
   });
 

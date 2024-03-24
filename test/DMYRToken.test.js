@@ -9,14 +9,11 @@ describe("DMYRToken", () => {
   let recipient;
 
   beforeEach(async () => {
-    // Get accounts from the network
     [owner, allowedContract, recipient] = await ethers.getSigners();
 
-    // Deploy DMYRToken contract using the deployContract helper
     DMYRToken = await ethers.getContractFactory("DMYRToken");
     dmyrToken = await DMYRToken.connect(owner).deploy();
 
-    // Connect DMYRToken contract to the owner's signer
     dmyrToken = dmyrToken.connect(owner);
   });
 

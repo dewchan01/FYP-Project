@@ -153,7 +153,6 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
         const res = await axios.get(`${baseURL}/allProducts`);
         const filteredProducts = res.data.filter(product => product.seller === address);
         setAllProducts(filteredProducts || []);
-        // console.log(res.data);
         if (filteredProducts.length === 0) {
             setIsLoadingAllProduct(false);
         }

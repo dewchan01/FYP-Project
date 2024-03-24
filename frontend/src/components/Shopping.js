@@ -17,7 +17,6 @@ function Shopping({address,sgd,myr,getFXRate,getBalance}) {
         });
 
         const response = res.data;
-        // console.log(response);
         setIsValidUser(response);
 
     }
@@ -27,12 +26,10 @@ function Shopping({address,sgd,myr,getFXRate,getBalance}) {
         });
 
         const response = res.data;
-        // console.log(response);
         setIsValidSeller(response);
 
     }
 
-    // getMyVoucher & getExpiredVoucher
     async function getBalanceOfVoucher() {
         const res = await axios.get(`${baseURL}/getBalanceOfVoucher`, {
             params: { userAddress: address },
@@ -68,18 +65,6 @@ function Shopping({address,sgd,myr,getFXRate,getBalance}) {
             getExpiredVoucher={getExpiredVoucher}
             getBalanceOfVoucher={getBalanceOfVoucher}
             />
-            
-            {/* <Layout className="site-layout">
-                <Routes>
-                    <Route
-                        path="/shopping"
-                        element={<Products />}
-                    />
-                    <Route path="/shopping" element={<Orders />} />
-                    <Route path="/shopping/seller" element={<Seller />} />
-                    <Route path="/shopping/signup" element={<UserSignUp />} />
-                </Routes>
-            </Layout> */}
         </React.Fragment>
     );
 };

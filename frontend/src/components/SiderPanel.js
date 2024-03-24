@@ -56,7 +56,6 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
         getItem('Sign Up', '4', <LoginOutlined />, '/shopping/sign-up'),
     ];
 
-    // Define the getItem function
     function getItem(title, key, icon, path) {
         return {
             title,
@@ -65,7 +64,6 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
             path
         };
     }
-    // const [collapsed, setCollapsed] = useState(false);
     const [title, setTitle] = useState('');
     const handleMenuItemClick = (title) => {
         setTitle(title);
@@ -77,10 +75,10 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
                 <Sider width={"15vw"} theme='light' collapsible collapsed={isSiderCollapsed}
                     onCollapse={() => setIsSiderCollapsed(!isSiderCollapsed)}
                     style={{
-                        position: 'fixed',  
-                        left: 0,             
-                        height: '100%',      
-                        overflow: 'auto',  
+                        position: 'fixed',
+                        left: 0,
+                        height: '100%',
+                        overflow: 'auto',
                     }}>
                     <Menu mode="vertical" theme="light" defaultSelectedKeys={['1']}>
                         {items.map((item) => (
@@ -91,7 +89,6 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
                     </Menu>
                 </Sider>
                 <div style={{ marginLeft: isSiderCollapsed ? '8vw' : '15vw', transition: 'margin-left 0.2s' }}>
-                    {/* Add some padding to the right based on the Sider width */}
                     <ItemContent title={title} getBalance={getBalance} />
                 </div>
             </Layout>

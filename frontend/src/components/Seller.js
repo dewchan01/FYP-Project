@@ -7,10 +7,6 @@ import axios from "axios";
 import { Space } from 'antd';
 import apiUrl from "../apiConfig";
 
-// When you declare the modal components (AddProductModal, DeleteProductModal, UpdateShipmentModal) within the functional component, 
-// they are created on every render. If any of these modal components use state variables (productId, productName, etc.) or 
-// depend on props, their creation can trigger re-renders, leading to unexpected behavior.
-
 const DeleteProductModal = ({ deleteModal, hideDeleteModal, isLoadingDeleteProduct, productId, writeDeleteProduct, setProductId, deleteProductForm, buttonDisabled, setButtonDisabled }) => {
     return (
         <Modal
@@ -77,103 +73,6 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [isLoadingAllProduct, setIsLoadingAllProduct] = useState(true);
     const [isLoadingOrdersPlaced, setIsLoadingOrdersPlaced] = useState(true);
-
-
-    // const AddProductModal = () => {
-    //     return (
-    //         <Modal
-    //             title="Add Product"
-    //             open={addModal}
-    //             onCancel={hideAddModal}
-    //             okText="Add Product"
-    //             cancelText="Cancel"
-    //             confirmLoading={isLoadingAddProduct}
-    //             onOk={() => {
-    //                 console.log(productId);
-    //                 if (productId.length > 0) {
-    //                     writeAddProduct?.();
-    //                 }
-    //             }}
-    //         >
-    //             <Form name="Add Product" layout="vertical" >
-    //                 <Form.Item label="Product ID">
-    //                     <Input
-    //                         value={productId}
-    //                         onChange={(e) =>
-    //                             setProductId(e.target.value)}
-    //                     />
-    //                 </Form.Item>
-    //                 <Form.Item label="Product Name">
-    //                     <Input
-    //                         value={productName}
-    //                         onChange={(e) => setProductName(e.target.value)}
-    //                     />
-    //                 </Form.Item>
-    //                 <Form.Item label="Category">
-    //                     <Input
-    //                         value={category}
-    //                         onChange={(e) => setCategory(e.target.value)}
-    //                     />
-    //                 </Form.Item>
-    //                 <Form.Item label="Price">
-    //                     <InputNumber
-    //                         value={price}
-    //                         onChange={(e) => setPrice(e)}
-    //                     />
-    //                 </Form.Item>
-    //                 <Form.Item label="Price Currency">
-    //                     <Input
-    //                         value={priceCurrency}
-    //                         onChange={(e) => setPriceCurrency(e.target.value)}
-    //                     />
-    //                 </Form.Item>
-    //                 <Form.Item label="Description">
-    //                     <Input
-    //                         value={description}
-    //                         onChange={(e) => setDescription(e.target.value)}
-    //                     />
-    //                 </Form.Item>
-    //             </Form>
-    //         </Modal>
-    //     );
-    // };
-
-
-
-    // const UpdateShipmentModal = () => {
-    //     return (
-    //         <Modal
-    //             title="Update Shipment"
-    //             open={updateModal}
-    //             onCancel={hideUpdateModal}
-    //             okText="Update Shipment"
-    //             cancelText="Cancel"
-    //             confirmLoading={isLoadingUpdateShipment}
-    //             onOk={() => {
-    //                 if (purchaseId.length > 0) {
-    //                     writeUpdateShipment?.();
-    //                 }
-    //             }}
-
-    //         >
-    //             <Form name="Update Shipment" layout="vertical">
-    //                 <Form.Item label="Purchase ID">
-    //                     <Input
-    //                         value={purchaseId}
-    //                         onChange={(e) => setPurchaseId(e.target.value)}
-    //                     />
-    //                 </Form.Item>
-    //                 <Form.Item label="Shipment Details">
-    //                     <Input
-    //                         value={shipmentDetails}
-    //                         onChange={(e) => setShipmentDetails(e.target.value)}
-    //                     />
-    //                 </Form.Item>
-
-    //             </Form>
-    //         </Modal>
-    //     );
-    // };
 
     const { config: configSellerSignUp } = usePrepareContractWrite({
         chainId: polygonMumbai.id,
@@ -565,7 +464,6 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                 <Button type="primary" onClick={showAddModal}>
                     Add Product
                 </Button>
-                {/* <AddProductModal /> */}
                 <Modal
                     title="Add Product"
                     open={addModal}
@@ -653,12 +551,6 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                                 <Option value="DMYR">DMYR</Option>
                             </Select>
                         </Form.Item>
-                        {/* <Input
-                                placeholder="DSGD"//CHECK
-                                value={priceCurrency}
-                                onChange={(e) => setPriceCurrency(e.target.value)}
-                            /> */}
-                        {/* </Form.Item> */}
                         <Form.Item name="description" label="Description"
                             rules={[{
                                 required: true,

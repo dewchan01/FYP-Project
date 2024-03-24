@@ -121,7 +121,6 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
       hideMintModal();
       hideTransferModal();
       hideBurnModal();
-      //prompt tx is successful
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccessMint, isSuccessTransfer, isSuccessBurn])

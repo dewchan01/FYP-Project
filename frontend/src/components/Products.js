@@ -9,7 +9,6 @@ import { DownOutlined } from '@ant-design/icons';
 import { tokenConfig, getLabelByKey } from "./tokenConfig";
 import apiUrl from "../apiConfig";
 
-// function Products({ address,isValidUser, myr, sgd, getBalance, expiredVouchers, getExpiredVoucher }) {
 function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers, getExpiredVoucher }) {
     const [productId, setProductId] = useState("");
     const [allProducts, setAllProducts] = useState([]);
@@ -25,11 +24,10 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
     const [shouldRate, setShouldRate] = useState(false);
     const [buyModal, setBuyModal] = useState(false);
     const [isFXRateAvailable, setIsFXRateAvailable] = useState(false);
-    const [isLoadingProducts,setIsLoadingProducts] = useState(true)
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true)
     const items = tokenConfig;
     const baseURL = apiUrl();
 
-    // console.log(myr, sgd)
     async function getFXRate() {
         const res = await axios.get(`${baseURL}/getFXRate`);
         const response = res.data;
@@ -42,7 +40,6 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
     async function showAllProducts() {
         const res = await axios.get(`${baseURL}/allProducts`);
         setAllProducts(res.data || []);
-        // console.log(res.data);
         if (res.data.length === 0) {
             setIsLoadingProducts(false);
         }
@@ -64,7 +61,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         setProductId(product.productId);
         setPriceCurrency(product.priceCurrency);
         console.log("Rate", isSuccessRate)
-        if (!isSuccessRate && getLabelByKey(selectedCurrency).slice(1,) !== product.priceCurrency){
+        if (!isSuccessRate && getLabelByKey(selectedCurrency).slice(1,) !== product.priceCurrency) {
             setShouldRate(true)
         }
         if ((isSuccessRate && getLabelByKey(selectedCurrency).slice(1,) !== product.priceCurrency) || getLabelByKey(selectedCurrency).slice(1,) === product.priceCurrency) {
@@ -130,7 +127,6 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
     const showBuyModal = async (product) => {
         setBuyModal(true);
         setProduct(product);
-        // console.log("AVA", availableVouchers);
 
         if (availableVouchers.length === 0) {
             setAllowedVouchers([]);
@@ -142,7 +138,6 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
                 const res = await axios.get(`${baseURL}/getVoucherInfo`, {
                     params: { voucherId: String(availableVouchers[i].index) },
                 });
-                // console.log("RES", res.data, product,selectedCurrency);
 
                 const voucherInfo = res.data;
                 if (
@@ -151,7 +146,6 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
                     product.priceCurrency === getLabelByKey(selectedCurrency).slice(1,) &&
                     voucherInfo.minSpend <= product.price
                 ) {
-                    // lack checking balance
                     allowedVouchers.push(res.data.voucherId);
                 }
             } catch (error) {
@@ -179,8 +173,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         showAllProducts();
         getBalanceOfVoucher();
         handleAvailableVouchers();
-        
-        // console.log(isFXRateAvailable,productId, getLabelByKey(selectedCurrency).slice(1,), priceCurrency, isSuccessBuy, isSuccessRate)
+
         if (shouldRate && !isSuccessRate && productId !== "" && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) !== priceCurrency) {
             console.log("TRIGGER")
             writeRate?.();
@@ -208,7 +201,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
             alert("Purchase Successfully!");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSuccessBuy, shouldBuy, product, priceCurrency, isSuccessRate, isFXRateAvailable, selectedCurrency, selectedVouchers, buyModal,allowedVouchers]);
+    }, [isSuccessBuy, shouldBuy, product, priceCurrency, isSuccessRate, isFXRateAvailable, selectedCurrency, selectedVouchers, buyModal, allowedVouchers]);
 
     return (
         <>

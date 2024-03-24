@@ -5,9 +5,7 @@ import matic from "../matic.png";
 
 function AccountDetails({ address, balance }) {
   return (
-        <Card title="Account Details" 
-        // style={{ width: "100%", margin:(window.location.pathname === "/acc"? "80% 0 0 -40%" :0)}}
-        >
+    <Card title="Account Details">
       <div className="accountDetailRow">
         <UserOutlined style={{ color: "#767676", fontSize: "25px" }} />
         <div>
@@ -26,27 +24,9 @@ function AccountDetails({ address, balance }) {
         </div>
       </div>
       <div className="balanceOptions">
-        {/* <div className="extraOption" onClick={() => showUsernameModal()}>Set Username</div> */}
-        {/* <div className="extraOption">Switch Accounts</div> */}
       </div>
-
-      {/* <Modal
-        title="Set Username"
-        open={usernameModal}
-        onOk={() => {
-          write?.();
-        }}
-        confirmLoading={isLoading}
-        onCancel={hideUsernameModal}
-      >
-        <Input
-          placeholder="Enter your new username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </Modal> */}
     </Card>
   )
-    }
+}
 
 export default AccountDetails;

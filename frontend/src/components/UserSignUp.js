@@ -34,7 +34,6 @@ function UserSignUp({ address }) {
         });
 
         const response = res.data;
-        // console.log(response);
         setIsValidUser(response);
 
     }
@@ -43,14 +42,13 @@ function UserSignUp({ address }) {
         if (isSuccessCreateAccount) {
             form.resetFields();
             alert("Account created successfully! Please connect again!");
-            window.location.href="/";
+            window.location.href = "/";
         }
         checkValidUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccessCreateAccount, form, isValidUser]);
 
     const handleFormValuesChange = (_, allValues) => {
-        // Update state when form values change
         setBuyerName(allValues.buyerName);
         setEmail(allValues.email);
         setDeliveryAddress(allValues.deliveryAddress);
@@ -58,7 +56,7 @@ function UserSignUp({ address }) {
 
     return (
         <div style={{ margin: "2% 0 0 5%" }}>
-        {(!isValidUser) ?
+            {(!isValidUser) ?
                 <Card title="User Sign Up" style={{ width: "70vw" }}>
                     <Form
                         form={form}
@@ -71,9 +69,9 @@ function UserSignUp({ address }) {
                         onValuesChange={handleFormValuesChange}
                         onFieldsChange={() =>
                             setButtonDisabled(
-                              form.getFieldsError().some((field) => field.errors.length > 0)
+                                form.getFieldsError().some((field) => field.errors.length > 0)
                             )
-                          }
+                        }
                         style={{ width: "65vw" }}
                     >
                         <Form.Item
@@ -104,18 +102,18 @@ function UserSignUp({ address }) {
                         </Form.Item>
                     </Form>
                 </Card>
-            : <Card title="User Sign Up" style={{ width: "70vw"  }}>
-                <Form            
-                    layout="horizontal"
-                    size="large"
-                    style={{ width: 1100 }}
-                >
-                    <Form.Item>
+                : <Card title="User Sign Up" style={{ width: "70vw" }}>
+                    <Form
+                        layout="horizontal"
+                        size="large"
+                        style={{ width: 1100 }}
+                    >
+                        <Form.Item>
                             You have already signed up as user!
                         </Form.Item>
-                        </Form>
-            </Card>}
-    </div>
+                    </Form>
+                </Card>}
+        </div>
     );
 
 }

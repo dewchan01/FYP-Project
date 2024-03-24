@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { polygonMumbai } from "@wagmi/chains";
 import { List, Card, Button, Modal, Form, Input, InputNumber, Select, Space, BackTop, DatePicker, Alert } from "antd";
-import {LoginOutlined} from "@ant-design/icons"
+import { LoginOutlined } from "@ant-design/icons"
 import axios from "axios";
 import VoucherABI from "../ABI/VoucherContract.json"
 import { NFTStorage, Blob } from "nft.storage";
 import { getContractABIByKey, getContractAddressByKey } from "./tokenConfig";
 import apiUrl from "../apiConfig";
 
-function Voucher({ address, isValidUser,myr,sgd }) {
+function Voucher({ address, isValidUser, myr, sgd }) {
     const baseURL = apiUrl();
     const { Option } = Select;
     const [createVoucherForm] = Form.useForm();
@@ -37,7 +37,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
     const [claimedList, setClaimedList] = useState([]);
     const client = new NFTStorage({ token: process.env.REACT_APP_NFT_STORAGE_TOKEN })
     const [buttonDisabled, setButtonDisabled] = useState(true);
-    const [isLoadingVoucher,setIsLoadingVoucher] = useState(true)
+    const [isLoadingVoucher, setIsLoadingVoucher] = useState(true)
 
     async function showAllVouchers() {
         const res = await axios.get(`${baseURL}/getAllVouchers`);
@@ -45,7 +45,6 @@ function Voucher({ address, isValidUser,myr,sgd }) {
         if (res.data.length === 0) {
             setIsLoadingVoucher(false);
         }
-        // console.log(res.data);
     }
 
     async function balanceOf() {
@@ -59,7 +58,6 @@ function Voucher({ address, isValidUser,myr,sgd }) {
         const res = await axios.get(`${baseURL}/allProducts`);
         setAllProducts(res.data || []);
         console.log(res.data);
-        // console.log(res.data);
     }
 
     async function requestCID() {
@@ -68,12 +66,12 @@ function Voucher({ address, isValidUser,myr,sgd }) {
             alert('One or more properties in voucher info is empty');
             return;
         }
-        if((valueCurrency==='SGD' && sgd<value*amount/1e18) || (valueCurrency==='MYR' && myr<value*amount/1e18)){
+        if ((valueCurrency === 'SGD' && sgd < value * amount / 1e18) || (valueCurrency === 'MYR' && myr < value * amount / 1e18)) {
             alert('Insufficient Balance');
             return;
         }
         try {
-            setIsCidLoading(true); 
+            setIsCidLoading(true);
             const VoucherInfo = new Blob([JSON.stringify({
                 campaignId,
                 voucherId: allVouchers.length,
@@ -188,7 +186,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
     }
 
     const handleConvertToUTC = (date) => {
-        console.log("DATE",date)
+        console.log("DATE", date)
         const localTimestamp = new Date(new Date(date)).getTime() - new Date(date).getTimezoneOffset() * 60000;
         const utcTimestamp = Math.floor(localTimestamp / 1000) + (new Date().getTimezoneOffset() * 60);
         setExpirationDate(date);
@@ -216,13 +214,13 @@ function Voucher({ address, isValidUser,myr,sgd }) {
             alert("Allowance update successfully!");
             updateAllowanceForm.resetFields();
         }
-        if(isSuccessBurnVoucher){
+        if (isSuccessBurnVoucher) {
             balanceOf();
             showAllVouchers();
             getClaimedList();
             alert("Burn successfully!");
         }
-        if (isSuccessClaimVoucher || isSuccessCreateVoucher ) {
+        if (isSuccessClaimVoucher || isSuccessCreateVoucher) {
             createVoucherForm.resetFields();
             hideCreateModal();
             balanceOf();
@@ -233,7 +231,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
             setCid("");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSuccessClaimVoucher, isSuccessCreateVoucher, isSuccessBurnVoucher, isSuccessUpdateAllowance, allProducts, voucherId, cid, valueCurrency, shouldClaim, createVoucherForm, allowanceCurrency, updateAllowanceForm,expirationUTCDate,suitableProductIds])
+    }, [isSuccessClaimVoucher, isSuccessCreateVoucher, isSuccessBurnVoucher, isSuccessUpdateAllowance, allProducts, voucherId, cid, valueCurrency, shouldClaim, createVoucherForm, allowanceCurrency, updateAllowanceForm, expirationUTCDate, suitableProductIds])
     return (
         <>
             <div style={{ margin: "20px 0 0 20px" }}>
@@ -312,7 +310,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
                     onOk={async () => {
                         console.log(cid);
                         if (cid.length === 0) {
-                            await requestCID(); // await here to wait for the CID before proceeding
+                            await requestCID();
                         } else {
                             console.log(campaignId, suitableProductIds, expirationUTCDate, String(Number(minSpend * 1e18)), String(Number(value * 1e18)), valueCurrency.slice(1,), amount, cid)
                             writeCreateVoucher?.();
@@ -392,17 +390,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
                                     }}
                                 disabledDate={d => !d || d.isBefore(new Date())}
                             />
-                    
-                            {/* 
-                            <Input
-                                id="Expiry Date"
-                                type="datetime-local"
-                                value={expirationDate}
-                                min={new Date().getDate()}
-                                onChange={(e) => {
-                                    handleConvertToUTC(e.target.value);
-                                }}
-                            /> */}
+
                         </Form.Item>
                         <Form.Item label="Min Spend" name="Min Spend"
                             rules={[
@@ -489,7 +477,7 @@ function Voucher({ address, isValidUser,myr,sgd }) {
                     style={{ margin: "20px 0 0 0", width: 1000 }}
                     grid={{ gutter: 8, column: 4 }}
                     dataSource={allVouchers}
-                    loading = {isLoadingVoucher && allVouchers.length === 0}
+                    loading={isLoadingVoucher && allVouchers.length === 0}
                     renderItem={(voucher) => {
                         console.log(voucher)
                         const remainingDays = Math.ceil(Math.max(0, (new Date(voucher.expirationDate * 1000) - new Date()) / (1000 * 60 * 60 * 24)));
@@ -497,10 +485,8 @@ function Voucher({ address, isValidUser,myr,sgd }) {
                             <List.Item>
                                 <Card
                                     title={<a href={voucher.uri} target="blank">Voucher ID: {voucher.voucherId}</a>}
-                                    // title={(voucher.organizer!==process.env.REACT_APP_VOUCHER_CONTRACT_OWNER)?"Seller Voucher":"Platform Voucher"}
                                     style={{ width: 200, textAlign: "center" }}
                                 >
-                                    {/* <p style={{ fontWeight: "bold" }}>Voucher ID: {voucher.voucherId}</p> */}
                                     <strong>{parseFloat(voucher.value) / 1e18} D{voucher.valueCurrency}</strong>
                                     <p><i>Suitable for {voucher.suitableProductIds}</i></p>
                                     {remainingDays > 0 ? <p> {remainingDays} day{remainingDays !== 1 ? 's' : ''} left</p> : <p>Expired</p>}

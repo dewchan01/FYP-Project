@@ -5,15 +5,11 @@ require("dotenv").config();
 async function main() {
   let contract_owner = await ethers.getSigners();
 
-  // Deploy the mCBDC contract
-  // const Voucher = await ethers.getContractFactory("VoucherContract");
-  const VoucherContract = await ethers.deployContract("VoucherContract", [process.env.MCBDC_CONTRACT_ADDRESS],contract_owner[3]);
-  // const VoucherContract= await Voucher.connect(contract_owner[3]).deploy(process.env.MCBDC_CONTRACT_ADDRESS);
+  const VoucherContract = await ethers.deployContract("VoucherContract", [process.env.MCBDC_CONTRACT_ADDRESS], contract_owner[3]);
 
   await VoucherContract.waitForDeployment();
   console.log(`VoucherContract is deployed to ${VoucherContract.target} by ${contract_owner[3].address}`);
 
-  // Verify the ECommerceContract contract
   if (network.name !== "localhost" && network.name !== "hardhat") {
     await verifyContract(VoucherContract.target, [process.env.MCBDC_CONTRACT_ADDRESS], "contracts/Voucher.sol:VoucherContract");
   }

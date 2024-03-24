@@ -9,9 +9,9 @@ const router = express.Router();
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 
 app.use((_, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    next();
-  });
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+});
 
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
 const DMYRTokenAddress = process.env.DMYRTOKEN_CONTRACT_ADDRESS;
@@ -35,17 +35,14 @@ router.get("/getBalance", async (req, res) => {
   try {
     const { userAddress } = req.query;
 
-    // Get the balance
     console.log("balanceInEth");
 
     const nativeBalance = await web3.eth.getBalance(userAddress);
     console.log(nativeBalance);
-    // Fetch native balance
     const balanceInEth = web3.utils.fromWei(nativeBalance, "ether");
     const DSGDbalance = await DSGDTokenContract.methods.balanceOf(userAddress).call();
     const DMYRbalance = await DMYRTokenContract.methods.balanceOf(userAddress).call();
 
-    // Transform history and requests (modify based on your data structure)
     const jsonResponse = {
       balance: balanceInEth,
       sgd: String(DSGDbalance / (1e18)),
@@ -63,7 +60,6 @@ router.get("/getHistory", async (req, res) => {
   try {
     const { userAddress } = req.query;
     console.log(userAddress);
-    // Fetch transaction history using your smart contract ABI (modify based on your contract)
     const history = await MCBDCContract.methods.getMyHistory().call({ from: userAddress });
 
     const jsonResponse = {
@@ -80,12 +76,11 @@ router.get("/getHistory", async (req, res) => {
 router.get("/getRequests", async (req, res) => {
   try {
     const { userAddress } = req.query;
-    // Fetch user requests using your smart contract ABI (modify based on your contract)
     const requests = await MCBDCContract.methods.getMyRequests().call({ from: userAddress });
 
     const jsonResponseRequests = requests;
     const jsonResponse = {
-      requests: jsonResponseRequests, // Modify this to include user requests
+      requests: jsonResponseRequests,
     };
     console.log(jsonResponse);
     return res.status(200).json(jsonResponse);
@@ -99,7 +94,7 @@ router.get("/getBalanceOfLink", async (req, res) => {
   try {
     const balanceOfLink = await MCBDCContract.methods._balanceOfLink().call();
     const jsonResponse = {
-      balanceOfLink: balanceOfLink, // Modify this to include user requests
+      balanceOfLink: balanceOfLink,
     };
     console.log(jsonResponse);
     return res.status(200).json(jsonResponse);
@@ -258,7 +253,6 @@ router.get("/getAllVouchers", async (req, res) => {
     for (let i = 0; i < voucherLength; i++) {
       const voucher = await VoucherContract.methods.getVoucherInfo(i).call();
 
-      // Map voucher data to the desired format
       const voucherInfo = {
         campaignId: voucher[0],
         voucherId: voucher[1],

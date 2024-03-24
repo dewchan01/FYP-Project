@@ -28,7 +28,6 @@ function CurrencyStatus({ sgd, myr, address, getBalance, requests, rate, expirin
                 getFXRate={getFXRate}
                 getHistory={getHistory}
                 getRequests={getRequests} />
-            {/* You can use getSelectedCurrencyState here too */}
         </div>
     );
 }

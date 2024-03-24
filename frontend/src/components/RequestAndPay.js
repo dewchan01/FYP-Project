@@ -9,7 +9,6 @@ import { getLabelByKey, tokenConfig } from "./tokenConfig";
 import axios from "axios";
 import apiUrl from "../apiConfig";
 
-//check balanceOfLink
 function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, expiringTime, isFXRateResponseValid, getFXRate, getHistory, getRequests }) {
   const [payModal, setPayModal] = useState(false);
   const [remitIntModal, setRemitIntModal] = useState(false);
@@ -51,7 +50,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     });
 
     const response = res.data;
-    // console.log(response);
     setIsValidSeller(response);
 }
 
@@ -61,9 +59,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
     abi: MCBDCABI,
     functionName: "payRequest",
     args: [payIndex - 1, getLabelByKey(selectedCurrency).slice(1,)],
-    // overrides: {
-    //   value: String(Number(requests["1"][0])),
-    // },
   });
 
   const { write: writePay, data: dataPay } = useContractWrite(configPay);
@@ -212,8 +207,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       key: "Action",
       render: (_, record) => (
         <>
-          {/* <Button type="primary" loading={isLoadingPay || isLoadingRate} onClick={() => handlePay(record.No)}>{((isSuccessRate && isFXRateResponseValid) || requests?.[record.No - 1]?.[5] === getLabelByKey(selectedCurrency).slice(1,)) ? "Pay" : "Request FX Rate"}</Button>
-          &nbsp; */}
           <Button type="primary" disabled={isLoadingPay || isLoadingRate} loading={isLoadingDeleteRequest} onClick={() => handleDelete(record.No)}>Delete</Button>
         </>
       ),
@@ -312,7 +305,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   }
 
   const handlePayIndexChange = (e) => {
-    //confirm that pay first or modify order status
     const newIndex = e.key;
     setPayIndex(newIndex);
   }
@@ -351,7 +343,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       setShouldDelete(false);
     }
 
-    // console.log("Pay?", payIndex, !isSuccessPay, requests?.[payIndex - 1]?.[5], getLabelByKey(selectedCurrency).slice(1,));
     if (shouldPay) {
       writePay?.();
       setShouldRate(false);
@@ -403,10 +394,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
       setPayIndex(0);
       setOkText("Select Request");
     }
-    // if (!isFXRateResponseValid) {
-    //   setShouldRate(false);
-    //   setIsSuccessRate(false);
-    // }
     console.log("isSuccessRate?", isSuccessRate, isFXRateResponseValid, isSuccessPay)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccessPay, isSuccessRequest, isSuccessSwap, isSuccessRate, isSuccessDeleteRequest,isSuccessRefund, selectedCurrency, shouldRate, shouldDelete, shouldSwap, shouldPay, toCurrency, payIndex, isFXRateResponseValid,isValidSeller,productId,purchaseId])
@@ -566,7 +553,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
         title="Request A Payment"
         open={requestModal}
         onOk={() => {
-          if (requestAddress !== address) { // Check if requestAddress is not equal to userAddress
+          if (requestAddress !== address) {
             console.log(requestMessage)
             writeRequest?.();
           }
@@ -609,7 +596,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           onClick={() => {
             showRemitIntModal();
           }}
-        // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
         >
           <TransactionOutlined style={{ fontSize: "26px" }} />
           Remit Int.
@@ -621,7 +607,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
               showPayModal();
             }
           }}
-        // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
         >
           <DollarOutlined style={{ fontSize: "26px" }} />
           Pay
@@ -634,7 +619,6 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
           onClick={() => {
             showRequestModal();
           }}
-        // style={{ height: (window.location.pathname === "/sendAndRequest" ? "200px" : 0)}}
         >
           <SwapOutlined style={{ fontSize: "26px" }} />
           Request

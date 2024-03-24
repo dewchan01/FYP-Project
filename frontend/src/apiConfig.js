@@ -4,7 +4,7 @@ const apiUrl = () => {
     } else if (process.env.REACT_APP_NODE_ENV === 'development') {
         return 'http://localhost:3001';
     } else {
-        return 'http://localhost:3001'; // Default URL for other environments
+        return 'http://localhost:3001';
     }
 }
 

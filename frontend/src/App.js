@@ -57,16 +57,10 @@ function App() {
     if (window.ethereum) {
       const ethereum = window.ethereum;
 
-      // Add an event listener to detect account changes
       ethereum.on('accountsChanged', (accounts) => {
-        // `accounts` is an array of the current accounts
-        const newAccount = accounts[0];
-        // Handle the account change here
-        console.log('MetaMask account changed to:', newAccount);
-
-        // You can perform any actions or updates in response to the account change here
-        // For example, call your `getNameAndBalance` function
-        disconnectAndSetNull();
+      const newAccount = accounts[0];
+      console.log('MetaMask account changed to:', newAccount);
+      disconnectAndSetNull();
       });
     }
   }
@@ -92,8 +86,6 @@ function App() {
 
     const response = res.data;
     setHistory(response.history);
-    // console.log("History",response.history[0])
-
     checkAccount();
   }
 

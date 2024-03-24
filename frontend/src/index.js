@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-// import NavBar from './components/NavBar';
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import { mainnet, polygonMumbai } from '@wagmi/chains';

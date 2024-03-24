@@ -2,7 +2,7 @@ import React,{useState} from "react";
 import { Card, Table } from "antd";
 
 function RecentActivity({ history, address }) {
-  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [isLoadingHistory] = useState(true);
   console.log("history", history);
   history = history?.slice()?.reverse();
   const columns = [
@@ -10,7 +10,7 @@ function RecentActivity({ history, address }) {
       title: "Time (GMT+8)",
       dataIndex: "Time",
       key: "Time",
-      render: (value, record) => {
+      render: (value, _) => {
         const date = new Date(value * 1000)
         date.setHours(date.getHours() + 8);
         return <span>{date.toISOString().replace(/T/, ' ').replace(/\..+/, '')}</span>;

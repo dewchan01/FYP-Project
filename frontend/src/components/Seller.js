@@ -7,47 +7,6 @@ import axios from "axios";
 import { Space } from 'antd';
 import apiUrl from "../apiConfig";
 
-const DeleteProductModal = ({ deleteModal, hideDeleteModal, isLoadingDeleteProduct, productId, writeDeleteProduct, setProductId, deleteProductForm, buttonDisabled, setButtonDisabled }) => {
-    return (
-        <Modal
-            title="Delete Product"
-            open={deleteModal}
-            onCancel={hideDeleteModal}
-            okText="Delete Product"
-            cancelText="Cancel"
-            confirmLoading={isLoadingDeleteProduct}
-            onOk={() => {
-                if (productId.length > 0) {
-                    writeDeleteProduct?.();
-                }
-            }}
-            okButtonProps={{ disabled: buttonDisabled }}
-            cancelButtonProps={{ disabled: isLoadingDeleteProduct }}
-            closable={false}
-        >
-            <Form name="Delete Product" layout="vertical" form={deleteProductForm}
-                onFieldsChange={() =>
-                    setButtonDisabled(
-                        deleteProductForm.getFieldsError().some((field) => field.errors.length > 0)
-                    )
-                }>
-                <Form.Item name="productId" label="Product ID"
-                    rules={[{
-                        required: true,
-                        message: 'Please input Product ID!',
-                    }]}>
-                    <Input
-                        placeholder="SCSG1"
-                        value={productId}
-                        onChange={(e) => setProductId(e.target.value)}
-                    />
-                </Form.Item>
-
-            </Form>
-        </Modal>
-    );
-};
-
 function Seller({ isValidSeller, address, checkValidSeller }) {
     const baseURL = apiUrl();
     const { Option } = Select;
@@ -568,16 +527,42 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                 <Button type="primary" onClick={showDeleteModal} danger={true}>
                     Delete Product
                 </Button>
-                <DeleteProductModal
-                    deleteModal={deleteModal}
-                    hideDeleteModal={hideDeleteModal}
-                    isLoadingDeleteProduct={isLoadingDeleteProduct}
-                    productId={productId}
-                    writeDeleteProduct={writeDeleteProduct}
-                    setProductId={setProductId}
-                    deleteProductForm={deleteProductForm}
-                    buttonDisabled={buttonDisabled}
-                    setButtonDisabled={setButtonDisabled} />
+                <Modal
+                    title="Delete Product"
+                    open={deleteModal}
+                    onCancel={hideDeleteModal}
+                    okText="Delete Product"
+                    cancelText="Cancel"
+                    confirmLoading={isLoadingDeleteProduct}
+                    onOk={() => {
+                        if (productId.length > 0) {
+                            writeDeleteProduct?.();
+                        }
+                    }}
+                    okButtonProps={{ disabled: buttonDisabled }}
+                    cancelButtonProps={{ disabled: isLoadingDeleteProduct }}
+                    closable={false}
+                >
+                    <Form name="Delete Product" layout="vertical" form={deleteProductForm}
+                        onFieldsChange={() =>
+                            setButtonDisabled(
+                                deleteProductForm.getFieldsError().some((field) => field.errors.length > 0)
+                            )
+                        }>
+                        <Form.Item name="productId" label="Product ID"
+                            rules={[{
+                                required: true,
+                                message: 'Please input Product ID!',
+                            }]}>
+                            <Input
+                                placeholder="SCSG1"
+                                value={productId}
+                                onChange={(e) => setProductId(e.target.value)}
+                            />
+                        </Form.Item>
+
+                    </Form>
+                </Modal>
 
                 <div style={{ width: '85vw' }} >
                     <Divider>My Products</Divider>

@@ -26,14 +26,14 @@ const DMYRTokenContract = new web3.eth.Contract(DMYRTokenContractABI, DMYRTokenA
 const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenAddress);
 const ECommerceContract = new web3.eth.Contract(ECommerceContractABI, ECommerceContractAddress);
 const VoucherContract = new web3.eth.Contract(VoucherContractABI, VoucherContractAddress);
+const router = express.Router();
 
-app.use((req, res, next) => {
+router.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'content-type');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   next();
 });
-const router = express.Router();
 
 router.get("/db", async (req, res) => {
   try {

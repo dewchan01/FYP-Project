@@ -5,6 +5,7 @@ const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 
 const app = express();
 app.use(express.json());
+const db = require('./db/conn');
 const port = 3001;
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 
@@ -26,32 +27,71 @@ const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenA
 const ECommerceContract = new web3.eth.Contract(ECommerceContractABI, ECommerceContractAddress);
 const VoucherContract = new web3.eth.Contract(VoucherContractABI, VoucherContractAddress);
 
-app.use((_, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type');
   next();
 });
+
+app.get("/db", async (req, res) => {
+  try {
+    let collection = await db.collection("visited_user");
+    let results = await collection.countDocuments();
+    console.log("Total visited user:", results);
+    res.send(results.toString()).status(200);
+  } catch (error) {
+    console.error("Error when fetching visited user from db:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+app.get("/user_last_log_in", async (req, res) => {
+  try {
+    const { userAddress } = req.query;
+    let collection = await db.collection("visited_user");
+    let results = await collection.findOne({ address: userAddress }, { sort: { time: -1 } });
+    if (results) {
+      console.log(results);
+      res.send(results).status(200);
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error when fetching user log in time from db:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/db", async (req, res) => {
+  try {
+    console.log(req.body);
+    let collection = await db.collection("visited_user");
+    let results = await collection.insertOne(req.body);
+    res.send(results).status(200);
+  } catch (error) {
+    console.error("Error when inserting data to db:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 app.get("/getBalance", async (req, res) => {
   try {
     const { userAddress } = req.query;
 
-    // Get the balance
     console.log("balanceInEth");
 
     const nativeBalance = await web3.eth.getBalance(userAddress);
-    console.log(nativeBalance);
-    // Fetch native balance
     const balanceInEth = web3.utils.fromWei(nativeBalance, "ether");
     const DSGDbalance = await DSGDTokenContract.methods.balanceOf(userAddress).call();
     const DMYRbalance = await DMYRTokenContract.methods.balanceOf(userAddress).call();
 
-    // Transform history and requests (modify based on your data structure)
     const jsonResponse = {
       balance: balanceInEth,
       sgd: String(DSGDbalance / (1e18)),
       myr: String(DMYRbalance / (1e18)),
     };
-    console.log(jsonResponse);
     return res.status(200).json(jsonResponse);
   } catch (error) {
     console.error("Error fetching balance:", error);
@@ -63,13 +103,11 @@ app.get("/getHistory", async (req, res) => {
   try {
     const { userAddress } = req.query;
     console.log(userAddress);
-    // Fetch transaction history using your smart contract ABI (modify based on your contract)
     const history = await MCBDCContract.methods.getMyHistory().call({ from: userAddress });
 
     const jsonResponse = {
       history: history
     };
-    console.log(jsonResponse);
     return res.status(200).json(jsonResponse);
   } catch (error) {
     console.error("Error fetching history:", error);
@@ -80,14 +118,12 @@ app.get("/getHistory", async (req, res) => {
 app.get("/getRequests", async (req, res) => {
   try {
     const { userAddress } = req.query;
-    // Fetch user requests using your smart contract ABI (modify based on your contract)
     const requests = await MCBDCContract.methods.getMyRequests().call({ from: userAddress });
 
     const jsonResponseRequests = requests;
     const jsonResponse = {
-      requests: jsonResponseRequests, // Modify this to include user requests
+      requests: jsonResponseRequests,
     };
-    console.log(jsonResponse);
     return res.status(200).json(jsonResponse);
   } catch (error) {
     console.error("Error fetching requests:", error);
@@ -99,9 +135,8 @@ app.get("/getBalanceOfLink", async (req, res) => {
   try {
     const balanceOfLink = await MCBDCContract.methods._balanceOfLink().call();
     const jsonResponse = {
-      balanceOfLink: balanceOfLink, // Modify this to include user requests
+      balanceOfLink: balanceOfLink, 
     };
-    console.log(jsonResponse);
     return res.status(200).json(jsonResponse);
   } catch (error) {
     console.error("Error fetching balance of link:", error);
@@ -119,7 +154,6 @@ app.get("/getFXRate", async (req, res) => {
       expiringTime: expiringTime,
       availableStatus: checkAvailableRequests,
     };
-    console.log(jsonResponse);
     return res.status(200).json(jsonResponse);
   } catch (error) {
     console.error("Error fetching Fx Rate:", error);
@@ -139,8 +173,6 @@ app.get("/showTokenAddress", async (req, res) => {
       tokenSymbol: tokenInfo['0'],
       tokenAddress: tokenInfo['1'],
     };
-
-    console.log("JsonResponse:", dataArray);
 
     return res.status(200).json(dataArray);
   } catch (error) {
@@ -258,7 +290,6 @@ app.get("/getAllVouchers", async (req, res) => {
     for (let i = 0; i < voucherLength; i++) {
       const voucher = await VoucherContract.methods.getVoucherInfo(i).call();
 
-      // Map voucher data to the desired format
       const voucherInfo = {
         campaignId: voucher[0],
         voucherId: voucher[1],
@@ -324,7 +355,6 @@ app.get("/getBalanceOfVoucher", async (req, res) => {
       const balanceOfVoucher = await VoucherContract.methods.balanceOf(userAddress, i).call();
       balancesOfVouchers.push(balanceOfVoucher);
     }
-    console.log(balancesOfVouchers);
     return res.status(200).json(balancesOfVouchers);
   } catch (error) {
     console.error(error);

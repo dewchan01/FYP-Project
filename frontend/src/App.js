@@ -6,7 +6,7 @@ import Marquee from 'react-fast-marquee';
 import CurrencyStatus from "./components/CurrencyStatus";
 import AccountDetails from "./components/AccountDetails";
 import RecentActivity from "./components/RecentActivity";
-import { useConnect, useAccount, useDisconnect,useContractRead } from "wagmi";
+import { useConnect, useAccount, useDisconnect, useContractRead } from "wagmi";
 import { MetaMaskConnector } from "wagmi/connectors/metaMask";
 import { useNavigate } from "react-router-dom";
 import NavBar from "./components/NavBar";
@@ -14,19 +14,30 @@ import axios from "axios";
 import LINK_TOKEN_ABI from "./ABI/LINKTOKEN.json";
 import apiUrl from "./apiConfig";
 import ReactPlayer from "react-player";
+import VisitedCount from "./components/VisitedCount";
 
 const { Header, Content } = Layout;
 
 function App() {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
+  const baseURL = apiUrl();
   const { connect } = useConnect({
     connector: new MetaMaskConnector(),
     onError: (error) => {
       alert(` Wallet Connection Error: ${error.message}`);
     },
+    onSuccess: () => {
+      const res = axios.post(baseURL + "/db", { address, time: new Date() });
+      if (res.status === 200) {
+        console.log("Data inserted successfully");
+      } else {
+        console.error("Error when inserting data to db:", res.statusText);
+      }
+      getLastAccessDate();
+    }
   });
-  const baseURL = apiUrl();
+
 
   const LINK_CONTRACT_ADDRESS = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB";
   const [balance, setBalance] = useState("...");
@@ -38,6 +49,7 @@ function App() {
   const [isFXRateResponseValid, setIsFXRateAvailable] = useState(false);
   const [expiringTime, setExpiringTime] = useState("...");
   const [, setTokenAddress] = useState(null);
+  const [lastLoginDate, setLastLoginDate] = useState(null);
 
   function disconnectAndSetNull() {
     disconnect();
@@ -48,7 +60,7 @@ function App() {
     setRequests(null);
     setTokenAddress(null);
     setExpiringTime(0);
-    window.location.href = "/";
+    window.location.href = "/";    
   }
 
   function checkAccount() {
@@ -56,11 +68,18 @@ function App() {
       const ethereum = window.ethereum;
 
       ethereum.on('accountsChanged', (accounts) => {
-      const newAccount = accounts[0];
-      console.log('MetaMask account changed to:', newAccount);
-      disconnectAndSetNull();
+        const newAccount = accounts[0];
+        console.log('MetaMask account changed to:', newAccount);
+        disconnectAndSetNull();
       });
     }
+  }
+
+  async function getLastAccessDate() {
+    const res = await axios.get(`${baseURL}/user_last_log_in`, {
+      params: { userAddress: address },
+    });
+    setLastLoginDate(res.data.time);
   }
   async function getBalance() {
     const res = await axios.get(`${baseURL}/getBalance`, {
@@ -129,13 +148,13 @@ function App() {
       <div>
         {readData && window.location.pathname === "/" && (
           <Alert
-          banner
-          message={
-            <Marquee pauseOnHover gradient={false}>
-              <span> Contribute to fund MCBDC Contract LINK TOKEN for requesting FX rate. Current MCBDC Contract ({process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS}) has {(readData)/1e18} LINK. At least 0.1 LINK Token to support request FX rate. <a href="https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB#writeContract#F5" target="blank">Fund here by transferring LINK Token to MCBDC Contract.</a></span>
-            </Marquee>
-          }
-        />
+            banner
+            message={
+              <Marquee pauseOnHover gradient={false}>
+                <span> Contribute to fund MCBDC Contract LINK TOKEN for requesting FX rate. Current MCBDC Contract ({process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS}) has {(readData) / 1e18} LINK. At least 0.1 LINK Token to support request FX rate. <a href="https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB#writeContract#F5" target="blank">Fund here by transferring LINK Token to MCBDC Contract.</a></span>
+              </Marquee>
+            }
+          />
         )}
       </div>
     );
@@ -184,12 +203,11 @@ function App() {
                     { key: "/help", label: "Help" },
                   ]}
                 />
-
               </>
-
             )}
 
           </div>
+          {! isConnected && (<VisitedCount/>)}
           {isConnected ? (
             <Button type={"primary"} onClick={disconnectAndSetNull}>
               Disconnect Wallet
@@ -200,7 +218,7 @@ function App() {
                 await connect();
                 console.log("Connected successfully!");
               } catch (error) {
-                console.error("Connection error:", error);
+                  console.error("Error when inserting data to db:", error.message);
               }
             }}>
               Connect Wallet
@@ -212,13 +230,13 @@ function App() {
             sgd={sgd} myr={myr} address={address} getBalance={getBalance}
             requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid}
             expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory}
-            getRequests={getRequests} balance={balance} history={history} />
+            getRequests={getRequests} balance={balance} history={history} lastLoginDate={lastLoginDate} />
         </div>
         <BalanceOfLINKToken />
         <Content className="content">
           {isConnected && window.location.pathname === "/" ? (
             <>
-              
+
               <div className="firstColumn">
                 <CurrencyStatus
                   sgd={sgd} myr={myr} address={address} getBalance={getBalance}
@@ -228,6 +246,7 @@ function App() {
                 <AccountDetails
                   address={address}
                   balance={balance}
+                  lastLoginDate={lastLoginDate}
                 />
 
               </div>
@@ -237,7 +256,7 @@ function App() {
             </>
           ) : (!isConnected) ?
             <div><p style={{ fontWeight: "bold", fontSize: "1.5rem" }}>Please Connect Your MetaMask Wallet !</p>
-              <Alert showIcon type="error" message="Access is restricted solely to the MetaMask Extension configured with the Polygon Mumbai Network and Alchemy RPC URL for browsers."></Alert>
+              <Alert showIcon type="error" message="Access is restricted solely to the MetaMask Extension configured with the Polygon Mumbai Network and Alchemy RPC URL for web browsers."></Alert>
               <br />
               <Alert showIcon type="warning" message="Please take note this wallet app does not give any warranties and will not be liable for any loss, direct or indirect through continued use of this feature."></Alert>
               <p><br />Disclamers:
@@ -247,7 +266,8 @@ function App() {
                   <li>Front-end is referred to <a href="https://youtu.be/IwfIxAJiNiw" target="blank">this video</a> to improve.</li>
                 </ol>
               </p>All rights of other resources are reserved to <a target="blank" href="https://github.com/dewchan01">this developer</a>. Your feedback is welcome.<br />
-              <br /><ReactPlayer controls="true" url="https://youtu.be/fdhfVwJP334" width="45%" style={{display: "inline-block"}} /><ReactPlayer controls="true" url="https://youtu.be/_h6NsYREW-w" width="45%" style={{display: "inline-block", marginLeft: "10px"}} />
+              <br /><ReactPlayer controls="true" url="https://youtu.be/fdhfVwJP334" width="45%" style={{ display: "inline-block" }} /><ReactPlayer controls="true" url="https://youtu.be/_h6NsYREW-w" width="45%" style={{ display: "inline-block", marginLeft: "10px" }} />
+
             </div>
             : <div></div>
           }

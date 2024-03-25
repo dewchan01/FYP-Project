@@ -8,13 +8,13 @@ const RecentActivity = lazy(() => import("./RecentActivity"));
 const Shopping = lazy(() => import("./Shopping"));
 const Help = lazy(() => import("./Help"));
 
-function NavBar({ sgd, myr, address, getBalance, requests, rate, isFXRateResponseValid, expiringTime, getFXRate, getHistory, getRequests, balance, history }) {
+function NavBar({ sgd, myr, address, getBalance, requests, rate, isFXRateResponseValid, expiringTime, getFXRate, getHistory, getRequests, balance, history, lastLoginDate }) {
   return (
     <div>
       <Suspense fallback={<div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}><Spin size="large" /></div>}>
         <Routes>
           <Route path="/" element={<div></div>}></Route>
-          <Route path="/acc" element={<AccountDetails address={address} balance={balance} />}></Route>
+          <Route path="/acc" element={<AccountDetails address={address} balance={balance} lastLoginDate={lastLoginDate} />}></Route>
           <Route path="/activity" element={<RecentActivity history={history} address={address} />}></Route>
           <Route path="/sendAndRequest" element={<CurrencyStatus sgd={sgd} myr={myr} address={address} getBalance={getBalance} requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid} expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory} getRequests={getRequests} />}></Route>
           <Route path="/shopping" element={<Shopping sgd={sgd} myr={myr} address={address} getBalance={getBalance} requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid} expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory} getRequests={getRequests} />}></Route>

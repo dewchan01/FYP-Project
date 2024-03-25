@@ -7,11 +7,7 @@ const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 const app = express();
 const router = express.Router();
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
-
-app.use((_, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  next();
-});
+const db = require('../db/conn');
 
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
 const DMYRTokenAddress = process.env.DMYRTOKEN_CONTRACT_ADDRESS;
@@ -30,6 +26,54 @@ const DMYRTokenContract = new web3.eth.Contract(DMYRTokenContractABI, DMYRTokenA
 const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenAddress);
 const ECommerceContract = new web3.eth.Contract(ECommerceContractABI, ECommerceContractAddress);
 const VoucherContract = new web3.eth.Contract(VoucherContractABI, VoucherContractAddress);
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type');
+  next();
+});
+
+router.get("/db", async (req, res) => {
+  try {
+    let collection = await db.collection("visited_user");
+    let results = await collection.countDocuments();
+    console.log("Total visited user:", results);
+    res.send(results.toString()).status(200);
+  } catch (error) {
+    console.error("Error when fetching visited user from db:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+router.get("/user_last_log_in", async (req, res) => {
+  try {
+    const { userAddress } = req.query;
+    let collection = await db.collection("visited_user");
+    let results = await collection.findOne({ address: userAddress }, { sort: { time: -1 } });
+    if (results) {
+      console.log(results);
+      res.send(results).status(200);
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error when fetching user log in time from db:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/db", async (req, res) => {
+  try {
+    console.log(req.body);
+    let collection = await db.collection("visited_user");
+    let results = await collection.insertOne(req.body);
+    res.send(results).status(200);
+  } catch (error) {
+    console.error("Error when inserting data to db:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 router.get("/getBalance", async (req, res) => {
   try {

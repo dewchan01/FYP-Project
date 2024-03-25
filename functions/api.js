@@ -10,8 +10,7 @@ const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 const db = require('../db/conn');
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'content-type');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   next();
 });
 

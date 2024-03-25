@@ -1,7 +1,6 @@
 [build]
     functions = "functions"
-    publish = "publish"
-    headers = {
-        [[/*]]
-        Access-Control-Allow-Origin = "*"
-    }
+[[headers]]
+  for = "/*"
+  [headers.values]
+    access-control-allow-origin = "*" # see a list of allowed values here:

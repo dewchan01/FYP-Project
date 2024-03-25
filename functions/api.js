@@ -5,15 +5,9 @@ require("dotenv").config();
 const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 
 const app = express();
-const router = express.Router();
+app.use(express.json());
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 const db = require('../db/conn');
-
-router.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'content-type');
-  next();
-});
 
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
 const DMYRTokenAddress = process.env.DMYRTOKEN_CONTRACT_ADDRESS;
@@ -32,6 +26,13 @@ const DMYRTokenContract = new web3.eth.Contract(DMYRTokenContractABI, DMYRTokenA
 const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenAddress);
 const ECommerceContract = new web3.eth.Contract(ECommerceContractABI, ECommerceContractAddress);
 const VoucherContract = new web3.eth.Contract(VoucherContractABI, VoucherContractAddress);
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type');
+  next();
+});
+const router = express.Router();
 
 router.get("/db", async (req, res) => {
   try {

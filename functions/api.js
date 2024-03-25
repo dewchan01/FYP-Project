@@ -5,9 +5,15 @@ require("dotenv").config();
 const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 
 const app = express();
-app.use(express.json());
+const router = express.Router();
 const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
 const db = require('../db/conn');
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'content-type');
+  next();
+});
 
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
 const DMYRTokenAddress = process.env.DMYRTOKEN_CONTRACT_ADDRESS;
@@ -26,14 +32,6 @@ const DMYRTokenContract = new web3.eth.Contract(DMYRTokenContractABI, DMYRTokenA
 const DSGDTokenContract = new web3.eth.Contract(DSGDTokenContractABI, DSGDTokenAddress);
 const ECommerceContract = new web3.eth.Contract(ECommerceContractABI, ECommerceContractAddress);
 const VoucherContract = new web3.eth.Contract(VoucherContractABI, VoucherContractAddress);
-const router = express.Router();
-
-router.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'content-type');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  next();
-});
 
 router.get("/db", async (req, res) => {
   try {
@@ -67,6 +65,7 @@ router.get("/user_last_log_in", async (req, res) => {
 
 router.post("/db", async (req, res) => {
   try {
+    console.log(req.body);
     let collection = await db.collection("visited_user");
     let results = await collection.insertOne(req.body);
     res.send(results).status(200);

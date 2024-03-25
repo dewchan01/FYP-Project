@@ -1,2 +1,7 @@
 [build]
     functions = "functions"
+    publish = "publish"
+    headers = {
+        [[/*]]
+        Access-Control-Allow-Origin = "*"
+    }

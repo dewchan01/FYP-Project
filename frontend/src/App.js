@@ -28,8 +28,9 @@ function App() {
       alert(` Wallet Connection Error: ${error.message}`);
     },
     onSuccess: () => {
-      const res = axios.post(baseURL + "/db", { address, time: new Date().toLocaleDateString() });
+      const res = axios.post(baseURL + "/db", { address, time: new Date().toISOString() });
       if (res.status === 200) {
+
         console.log("Data inserted successfully");
       } else {
         console.error("Error when inserting data to db:", res.statusText);

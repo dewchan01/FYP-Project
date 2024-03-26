@@ -56,7 +56,8 @@ router.get("/user_last_log_in", async (req, res) => {
       console.log(results);
       res.send(results).status(200);
     } else {
-      res.status(404).json({ error: "User not found" });
+      const timestampString = new Date().toJSON();
+      res.send(timestampString).status(200);
     }
   } catch (error) {
     console.error("Error when fetching user log in time from db:", error);

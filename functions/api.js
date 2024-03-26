@@ -37,7 +37,12 @@ const VoucherContract = new web3.eth.Contract(VoucherContractABI, VoucherContrac
 router.get("/db", async (req, res) => {
   try {
     let collection = await db.collection("visited_user");
-    let results = await collection.countDocuments();
+    let distinctAddresses = await collection.aggregate([
+      { $group: { _id: "$address" } },
+      { $count: "count" }
+    ]).next();
+    
+    let results = distinctAddresses ? distinctAddresses.count : 0;    
     console.log("Total visited user:", results);
     res.send(results.toString()).status(200);
   } catch (error) {

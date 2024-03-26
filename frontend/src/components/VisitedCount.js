@@ -19,7 +19,7 @@ function VisitedCount() {
             {count>0 ? (
                 <p>
                     <Avatar size="large" src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${count}`} />
-                    You are our <strong>{count}<sup>{count > 0 ? (count%10 === 1 ? "st" : count%10 === 2 ? "nd" : count%10 === 3 ? "rd" : "th") : "th"}</sup></strong> customer!
+                    Total Visitors: <strong>{count}</strong>
                 </p>
             ) : (
                 <Spin size="large" />

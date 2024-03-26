@@ -1,8 +1,8 @@
 [build]
     functions = "functions"
 [[headers]]
-    for = “/.netlify/functions/api”
+    for = "/.netlify/functions/api"
     [headers.values]
-        Access-Control-Allow-Origin = “*”
-        Access-Control-Allow-Methods = “Access-Control-Allow-Methods", "GET,PATCH,OPTIONS,POST,PUT,DELETE”
-        Access-Control-Allow-Headers = “Content-Type”
+        Access-Control-Allow-Origin = "*"
+        Access-Control-Allow-Methods = "Access-Control-Allow-Methods", "GET,PATCH,OPTIONS,POST,PUT,DELETE"
+        Access-Control-Allow-Headers = "Content-Type"

@@ -11,8 +11,7 @@ const db = require('../db/conn');
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,PATCH,OPTIONS,POST,PUT,DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With,Content,Content-Type, Accept, Authorization");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   next();
 });
 

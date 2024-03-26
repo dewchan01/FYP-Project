@@ -5,8 +5,8 @@ import { UserOutlined } from "@ant-design/icons";
 import matic from "../matic.png";
 
 function AccountDetails({ address, balance, lastLoginDate }) {
-  const date = new Date(lastLoginDate);
 
+  const date = new Date(lastLoginDate);
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0'); 
   const day = date.getDate().toString().padStart(2, '0');
@@ -57,7 +57,7 @@ function AccountDetails({ address, balance, lastLoginDate }) {
       <div className="accountDetailRow">
         <ClockCircleOutlined style={{ color: "#767676", fontSize: "25px" }} />
         <div>
-          <div className="accountDetailHead"> Last Login: {readable_duration} ago</div>
+          <div className="accountDetailHead">Last Login: {dur_seconds < 5 ? 'Just now' : readable_duration + ' ago'} </div>
           <div className="accountDetailBody">
             {formattedDate} Singapore Time (GMT+8)
           </div>

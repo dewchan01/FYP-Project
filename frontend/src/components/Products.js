@@ -158,7 +158,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
 
     const hideBuyModal = () => {
         setBuyModal(false);
-        setAllowedVouchers([]);
+        setSelectedVouchers([]);
         setShouldBuy(false);
         setShouldRate(false);
     }
@@ -189,6 +189,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
             || (shouldBuy && isFXRateAvailable && isSuccessRate && !isSuccessBuy && getLabelByKey(selectedCurrency).slice(1,) !== priceCurrency)) {
             console.log("TRRY")
             writeBuy?.();
+            setShouldBuy(false);
         }
 
         if (isSuccessBuy) {
@@ -267,7 +268,6 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
                     >
                         <Select
                             mode="multiple"
-                            allowClear
                             style={{
                                 width: '100%',
                             }}
@@ -275,10 +275,11 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
                             required={true}
                             options={allowedVouchers.filter((o) => !selectedVouchers.includes(o)).map(voucher => ({ label: voucher, value: voucher }))}
                             loading={allowedVouchers.length === 0}
-                            disabled={allowedVouchers.length === 0}
+                            // disabled={allowedVouchers.length === 0}
                             onDeselect={(value) => setSelectedVouchers((prevIds) => prevIds.filter((id) => id !== value))}
                             onSelect={(value) => setSelectedVouchers((prevIds) => [...prevIds, value])}
                             onFocus={() => showBuyModal(product)}
+                            value={selectedVouchers}
                         />
                     </Space>
                 </p>

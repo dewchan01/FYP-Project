@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { sepolia } from "@wagmi/chains";
 import { List, Card, Button, Modal, Form, Input, InputNumber, Select, Space, BackTop, DatePicker, Alert } from "antd";
-import { LoginOutlined } from "@ant-design/icons"
+import { LoginOutlined, WindowsFilled } from "@ant-design/icons"
 import axios from "axios";
 import VoucherABI from "../ABI/VoucherContract.json"
 import { NFTStorage, Blob } from "nft.storage";
@@ -229,6 +229,8 @@ function Voucher({ address, isValidUser, myr, sgd }) {
             getClaimedList();
             setIsCidAvailable(false);
             setCid("");
+            alert("Claimed or created successfully!");
+            window.location.href = "/";
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccessClaimVoucher, isSuccessCreateVoucher, isSuccessBurnVoucher, isSuccessUpdateAllowance, allProducts, voucherId, cid, valueCurrency, shouldClaim, createVoucherForm, allowanceCurrency, updateAllowanceForm, expirationUTCDate, suitableProductIds])

@@ -10,8 +10,8 @@ To start this program, you need to prepare your own env scripts for env variable
 
 ```
 ALCHEMY_API_KEY/REACT_APP_ALCHEMY_API_KEY = ""
-POLYGON_RPC_URL = ""
-POLYGONSCAN_API_KEY = ""
+SEPOLIA_RPC_URL = ""
+ETHERSCAN_API_KEY = ""
 COIN_MARKET_API_KEY=""
 NFT_STORAGE_TOKEN/REACT_APP_NFT_STORAGE_TOKEN = ""
 
@@ -41,6 +41,5 @@ cd frontend && npm run start
 Other Useful Commands:
 ```shell
 npx hardhat test
-REPORT_GAS=true npx hardhat test
 npx hardhat run scripts/deploy.js
 ```

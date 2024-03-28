@@ -1,6 +1,6 @@
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import ECommerceABI from "../ABI/ECommerce.json";
-import { polygonMumbai } from "@wagmi/chains";
+import { sepolia } from "@wagmi/chains";
 import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Modal, Table, InputNumber, Divider, Select, Alert } from "antd";
 import axios from "axios";
@@ -34,7 +34,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     const [isLoadingOrdersPlaced, setIsLoadingOrdersPlaced] = useState(true);
 
     const { config: configSellerSignUp } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "sellerSignUp",
@@ -47,7 +47,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     })
 
     const { config: configAddProduct } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "addProduct",
@@ -60,7 +60,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     })
 
     const { config: configDeleteProduct } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "deleteProduct",
@@ -73,7 +73,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     })
 
     const { config: configUpdateShipment } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "updateShipment",
@@ -86,7 +86,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
     })
 
     const { config: configRefund } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "refund",

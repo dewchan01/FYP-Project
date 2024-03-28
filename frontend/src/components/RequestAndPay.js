@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { DollarOutlined, SwapOutlined, TransactionOutlined, DownOutlined } from "@ant-design/icons";
 import { Modal, Input, InputNumber, Table, Button, Dropdown, Space, Menu, Alert, Checkbox } from "antd";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
-import { polygonMumbai } from "@wagmi/chains";
+import { sepolia } from "@wagmi/chains";
 import MCBDCABI from "../ABI/MCBDC.json";
 import ECommerceABI from "../ABI/ECommerce.json";
 import { getLabelByKey, tokenConfig } from "./tokenConfig";
@@ -54,7 +54,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
 }
 
   const { config: configPay } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
+    chainId: sepolia.id,
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "payRequest",
@@ -64,7 +64,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const { write: writePay, data: dataPay } = useContractWrite(configPay);
 
   const { config: configRequest } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
+    chainId: sepolia.id,
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "createRequest",
@@ -74,7 +74,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const { write: writeRequest, data: dataRequest } = useContractWrite(configRequest);
 
   const { config: configDeleteRequest } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
+    chainId: sepolia.id,
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "deleteRequest",
@@ -84,7 +84,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const { write: writeDeleteRequest, data: dataDeleteRequest } = useContractWrite(configDeleteRequest);
 
   const { config: configRate } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
+    chainId: sepolia.id,
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "requestFxRate",
@@ -94,7 +94,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   const { write: writeRate, data: dataRate } = useContractWrite(configRate);
 
   const { config: configSwap } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
+    chainId: sepolia.id,
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "swapToken",
@@ -127,7 +127,7 @@ function RequestAndPay({ requests, getBalance, address, selectedCurrency, rate, 
   })
 
   const { config: configRefund } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
+    chainId: sepolia.id,
     address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
     abi: ECommerceABI,
     functionName: "refund",

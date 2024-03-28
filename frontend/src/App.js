@@ -151,7 +151,7 @@ function App() {
             banner
             message={
               <Marquee pauseOnHover gradient={false}>
-                <span> Contribute to fund MCBDC Contract LINK TOKEN for requesting FX rate. Current MCBDC Contract ({process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS}) has {(readData) / 1e18} LINK. At least 0.1 LINK Token to support request FX rate. <a href="https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB#writeContract#F5" target="blank">Fund here by transferring LINK Token to MCBDC Contract.</a></span>
+                <span> Contribute to fund MCBDC Contract LINK TOKEN for requesting FX rate. Current MCBDC Contract ({process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS}) has {(readData) / 1e18} LINK. At least 0.1 LINK Token to support request FX rate. <a href="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789#writeContract#F6" target="blank">Fund here by transferring LINK Token to MCBDC Contract.</a></span>
               </Marquee>
             }
           />
@@ -256,7 +256,7 @@ function App() {
             </>
           ) : (!isConnected) ?
             <div><p style={{ fontWeight: "bold", fontSize: "1.5rem" }}>Please Connect Your MetaMask Wallet !</p>
-              <Alert showIcon type="error" message="Access is restricted solely to the MetaMask Extension configured with the Polygon Mumbai Network and Alchemy RPC URL for web browsers."></Alert>
+              <Alert showIcon type="error" message="Access is restricted solely to the MetaMask Extension configured with the Ethereum Sepolia Network and Alchemy RPC URL for web browsers."></Alert>
               <br />
               <Alert showIcon type="warning" message="Please take note this wallet app does not give any warranties and will not be liable for any loss, direct or indirect through continued use of this feature."></Alert>
               <p><br />Disclamers:

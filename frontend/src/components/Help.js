@@ -41,7 +41,7 @@ function Help() {
                     <List.Item>
                         <List.Item.Meta
                             avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
-                            title={<a target="blank" href={`https://mumbai.polygonscan.com/address/${item.address}`}>{item.title}</a>}
+                            title={<a target="blank" href={`https://sepolia.etherscan.io/address/${item.address}`}>{item.title}</a>}
                             description={item.address}
                         />
                     </List.Item>

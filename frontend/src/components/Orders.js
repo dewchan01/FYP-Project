@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
-import { polygonMumbai } from "@wagmi/chains";
+import { sepolia } from "@wagmi/chains";
 import ECommerceABI from "../ABI/ECommerce.json";
 import { Button, Space, Table } from 'antd';
 import apiUrl from "../apiConfig";
@@ -14,7 +14,7 @@ function Orders({ address }) {
     const [isLoadingOrders, setIsLoadingOrders] = useState(true);
 
     const { config: configCancelOrder } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "cancelOrder",

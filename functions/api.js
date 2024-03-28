@@ -7,7 +7,7 @@ const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 const app = express();
 app.use(express.json());
 const router = express.Router();
-const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
+const web3 = createAlchemyWeb3(process.env.SEPOLIA_RPC_URL);
 const db = require('../db/conn');
 
 app.use((req, res, next) => {

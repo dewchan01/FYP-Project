@@ -1,6 +1,6 @@
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import ECommerceABI from "../ABI/ECommerce.json";
-import { polygonMumbai } from "@wagmi/chains";
+import { sepolia } from "@wagmi/chains";
 import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Card } from "antd";
 import axios from "axios";
@@ -16,7 +16,7 @@ function UserSignUp({ address }) {
     const baseURL = apiUrl();
 
     const { config: configCreateAccount } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "createAccount",

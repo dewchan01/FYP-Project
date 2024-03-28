@@ -50,8 +50,8 @@ function AccountDetails({ address, balance, lastLoginDate }) {
       <div className="accountDetailRow">
         <img src={matic} alt="maticLogo" width={25} />
         <div>
-          <div className="accountDetailHead"> Native Matic Tokens</div>
-          <div className="accountDetailBody">{balance} Matic</div>
+          <div className="accountDetailHead"> Native Sepolia Tokens</div>
+          <div className="accountDetailBody">{balance} SepoliaETH</div>
         </div>
       </div>
       <div className="accountDetailRow">

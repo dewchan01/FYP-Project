@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import ECommerceABI from "../ABI/ECommerce.json";
 import MCBDCABI from "../ABI/MCBDC.json";
-import { polygonMumbai } from "@wagmi/chains";
+import { sepolia } from "@wagmi/chains";
 import { List, Card, Button, Select, Space, Modal, BackTop, Alert } from "antd";
 import axios from "axios";
 import { DownOutlined } from '@ant-design/icons';
@@ -99,7 +99,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         );
     };
     const { config: configBuy } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_ECOMMERCE_CONTRACT_ADDRESS,
         abi: ECommerceABI,
         functionName: "buyProduct",
@@ -112,7 +112,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
     })
 
     const { config: configRate } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
         abi: MCBDCABI,
         functionName: "requestFxRate",

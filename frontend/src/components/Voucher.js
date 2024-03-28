@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
-import { polygonMumbai } from "@wagmi/chains";
+import { sepolia } from "@wagmi/chains";
 import { List, Card, Button, Modal, Form, Input, InputNumber, Select, Space, BackTop, DatePicker, Alert } from "antd";
 import { LoginOutlined } from "@ant-design/icons"
 import axios from "axios";
@@ -116,7 +116,7 @@ function Voucher({ address, isValidUser, myr, sgd }) {
     }
 
     const { config: configCreateVoucher } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_VOUCHER_CONTRACT_ADDRESS,
         abi: VoucherABI,
         functionName: "createVoucher",
@@ -130,7 +130,7 @@ function Voucher({ address, isValidUser, myr, sgd }) {
     })
 
     const { config: configClaimVoucher } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_VOUCHER_CONTRACT_ADDRESS,
         abi: VoucherABI,
         functionName: "claimVoucher",
@@ -144,7 +144,7 @@ function Voucher({ address, isValidUser, myr, sgd }) {
     })
 
     const { config: configBurnVoucher } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: process.env.REACT_APP_VOUCHER_CONTRACT_ADDRESS,
         abi: VoucherABI,
         functionName: "burnVoucher",
@@ -157,7 +157,7 @@ function Voucher({ address, isValidUser, myr, sgd }) {
     })
 
     const { config: configUpdateAllowance } = usePrepareContractWrite({
-        chainId: polygonMumbai.id,
+        chainId: sepolia.id,
         address: getContractAddressByKey(allowanceCurrency),
         abi: getContractABIByKey(allowanceCurrency),
         functionName: "approve",

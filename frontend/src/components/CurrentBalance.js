@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, Modal, InputNumber, Input, Dropdown, Space, Menu } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-import { polygonMumbai } from "@wagmi/chains";
+import { sepolia } from "@wagmi/chains";
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from "wagmi";
 import { tokenConfig, getLabelByKey, getContractABIByKey, getContractAddressByKey, getContractOwnerByKey } from "./tokenConfig";
 import MCBDCABI from "../ABI/MCBDC.json";
@@ -51,7 +51,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
   };
 
   const { config: configTransfer } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
+    chainId: sepolia.id,
     address: process.env.REACT_APP_MCBDC_CONTRACT_ADDRESS,
     abi: MCBDCABI,
     functionName: "localTransfer",
@@ -61,7 +61,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
   const { write: writeTransfer, data: dataTransfer } = useContractWrite(configTransfer);
 
   const { config: configMint } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
+    chainId: sepolia.id,
     address: getContractAddressByKey(selectedCurrency),
     abi: getContractABIByKey(selectedCurrency),
     functionName: "mint",
@@ -72,7 +72,7 @@ function CurrentBalance({ address, sgd, myr, getBalance, selectedCurrency, setSe
 
   console.log(address, String(burnAmount), getContractAddressByKey(selectedCurrency))
   const { config: configBurn } = usePrepareContractWrite({
-    chainId: polygonMumbai.id,
+    chainId: sepolia.id,
     address: getContractAddressByKey(selectedCurrency),
     abi: getContractABIByKey(selectedCurrency),
     functionName: "burn",

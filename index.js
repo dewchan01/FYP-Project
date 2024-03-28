@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 const db = require('./db/conn');
 const port = 3001;
-const web3 = createAlchemyWeb3(process.env.POLYGON_RPC_URL);
+const web3 = createAlchemyWeb3(process.env.SEPOLIA_RPC_URL);
 
 const DSGDTokenAddress = process.env.DSGDTOKEN_CONTRACT_ADDRESS;
 const DMYRTokenAddress = process.env.DMYRTOKEN_CONTRACT_ADDRESS;

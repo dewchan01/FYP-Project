@@ -40,8 +40,8 @@ contract MCBDC is ChainlinkClient {
     event RequestVolume(bytes32 indexed requestId, uint256 fxRateResponse);
 
     constructor() {
-        setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
-        setChainlinkOracle(0x40193c8518BB267228Fc409a613bDbD8eC5a97b3);
+        setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
+        setChainlinkOracle(0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD);
         jobId = "ca98366cc7314957b8c012c72f05aeeb";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0.1 * 10**18 (Varies by network and job)
         owner = msg.sender;

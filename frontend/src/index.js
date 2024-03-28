@@ -4,14 +4,13 @@ import './index.css';
 import App from './App';
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
-import { mainnet, polygonMumbai } from '@wagmi/chains';
+import { mainnet, sepolia } from '@wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { BrowserRouter } from 'react-router-dom';
 
-
 const { chains, provider } = configureChains(
-  [mainnet, polygonMumbai],
+  [mainnet, sepolia],
   [alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_API_KEY }),
   publicProvider(),
   ]

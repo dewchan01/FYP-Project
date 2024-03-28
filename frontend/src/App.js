@@ -266,7 +266,7 @@ function App() {
                   <li>Front-end is referred to <a href="https://youtu.be/IwfIxAJiNiw" target="blank">this video</a> to improve.</li>
                 </ol>
               </p>All rights of other resources are reserved to <a target="blank" href="https://github.com/dewchan01">this developer</a>. Your feedback is welcome.<br />
-              <br /><ReactPlayer controls="true" url="https://youtu.be/fdhfVwJP334" width="45%" style={{ display: "inline-block" }} /><ReactPlayer controls="true" url="https://youtu.be/_h6NsYREW-w" width="45%" style={{ display: "inline-block", marginLeft: "10px" }} />
+              <br /><ReactPlayer controls="true" url="https://youtu.be/fdhfVwJP334"/>
 
             </div>
             : <div></div>

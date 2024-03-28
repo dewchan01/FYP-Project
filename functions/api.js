@@ -62,7 +62,11 @@ router.get("/user_last_log_in", async (req, res) => {
       res.send(results).status(200);
     } else {
       const timestampString = new Date().toJSON();
-      res.send(timestampString).status(200);
+      const response = {
+        address: userAddress,
+        time: timestampString
+      }
+      res.send(response).status(200);
     }
   } catch (error) {
     console.error("Error when fetching user log in time from db:", error);

@@ -39,7 +39,7 @@ function App() {
   });
 
 
-  const LINK_CONTRACT_ADDRESS = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB";
+  const LINK_CONTRACT_ADDRESS = "0x779877A7B0D9E8603169DdbD7836e478b4624789";
   const [balance, setBalance] = useState("...");
   const [sgd, setSGD] = useState("...");
   const [myr, setMYR] = useState("...");

@@ -71,8 +71,8 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
     const [isSiderCollapsed, setIsSiderCollapsed] = useState(false);
     return (
         <>
-            <Layout style={{ minHeight: '90vh' }}>
-                <Sider width={"15vw"} theme='light' collapsible collapsed={isSiderCollapsed}
+            <Layout style={{ minHeight: '90%' }}>
+                <Sider width={"15%"} theme='light' collapsible collapsed={isSiderCollapsed}
                     onCollapse={() => setIsSiderCollapsed(!isSiderCollapsed)}
                     style={{
                         position: 'fixed',
@@ -88,7 +88,7 @@ function SiderPanel({ address, isValidUser, sgd, myr, checkValidSeller, isValidS
                         ))}
                     </Menu>
                 </Sider>
-                <div style={{ marginLeft: isSiderCollapsed ? '8vw' : '15vw', transition: 'margin-left 0.2s' }}>
+                <div style={{ marginLeft: isSiderCollapsed ? '8%' : '15%', transition: 'margin-left 0.2s' }}>
                     <ItemContent title={title} getBalance={getBalance} />
                 </div>
             </Layout>

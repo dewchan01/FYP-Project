@@ -236,7 +236,7 @@ function Voucher({ address, isValidUser, myr, sgd }) {
     }, [isSuccessClaimVoucher, isSuccessCreateVoucher, isSuccessBurnVoucher, isSuccessUpdateAllowance, allProducts, voucherId, cid, valueCurrency, shouldClaim, createVoucherForm, allowanceCurrency, updateAllowanceForm, expirationUTCDate, suitableProductIds])
     return (
         <>
-            <div style={{ margin: "20px 0 0 20px" }}>
+            <div style={{ margin: "20px 0 0 20px", display: "flex", flexDirection: "column" }}>
                 <p><LoginOutlined /> Sign Up as user to claim your voucher or <a onClick={showCreateModal}>create your own voucher</a> &nbsp;
                     {address === process.env.REACT_APP_VOUCHER_CONTRACT_OWNER ?
                         <>
@@ -476,7 +476,7 @@ function Voucher({ address, isValidUser, myr, sgd }) {
                 </Modal>
 
                 <List
-                    style={{ margin: "20px 0 0 0", width: 1000 }}
+                    style={{ margin: "20px 0 0 0", width: "200%" }}
                     grid={{ gutter: 8, column: 4 }}
                     dataSource={allVouchers}
                     loading={isLoadingVoucher && allVouchers.length === 0}

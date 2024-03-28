@@ -85,7 +85,7 @@ function Orders({ address }) {
     }, [productId, purchaseId, isSuccessCancelOrder])
 
     return (
-        <div style={{ width: '85vw' }} >
+        <div style={{ width: '150%' }} >
             <Table columns={columns}
                 dataSource={myOrders}
                 pagination={{ position: ["bottomCenter"], pageSize: 9 }}

@@ -78,7 +78,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
         return (
             <Select
                 value={selectedCurrency}
-                style={{ width: "80vw" }}
+                style={{ width: "400%" }}
                 onChange={handleChange}
                 suffixIcon={<DownOutlined />}
             >
@@ -217,7 +217,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
                     />
                 </div>
                 <List
-                    style={{ margin: "20px 0 0 0", width: 1000 }}
+                    style={{ margin: "20px 0 0 0", width: "100%" }}
                     grid={{ gutter: 16, column: 4 }}
                     dataSource={allProducts}
                     loading={allProducts.length === 0 && isLoadingProducts}
@@ -249,6 +249,7 @@ function Products({ address, isValidUser, myr, sgd, getBalance, expiredVouchers,
                 }}
                 cancelButtonProps={{ disabled: (isLoadingBuy || isLoadingRate || isSuccessRate) }}
                 closable={false}
+
             >
                 <Alert showIcon message="There could be a issue when the allowance of platform owner is insufficient for using voucher." type="warning"></Alert>
                 <p style={{ fontSize: "smaller" }}>Product ID: {product?.productId} /

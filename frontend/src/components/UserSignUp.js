@@ -55,25 +55,24 @@ function UserSignUp({ address }) {
     };
 
     return (
-        <div style={{ margin: "2% 0 0 5%" }}>
+        <div style={{ width: "280%"}}>
             {(!isValidUser) ?
-                <Card title="User Sign Up" style={{ width: "70vw" }}>
-                    <Form
-                        form={form}
-                        labelCol={{ flex: '200px' }}
-                        labelAlign="left"
-                        wrapperCol={{ flex: 1 }}
-                        layout="horizontal"
-                        size="large"
-                        onFinish={writeCreateAccount}
-                        onValuesChange={handleFormValuesChange}
-                        onFieldsChange={() =>
-                            setButtonDisabled(
-                                form.getFieldsError().some((field) => field.errors.length > 0)
-                            )
-                        }
-                        style={{ width: "65vw" }}
-                    >
+            <Card title="User Sign Up" style={{ width: "90%" }}>
+                <Form
+                    form={form}
+                    labelCol={{ flex: '20%' }}
+                    labelAlign="left"
+                    wrapperCol={{ flex: 1 }}
+                    layout="horizontal"
+                    size="large"
+                    onFinish={writeCreateAccount}
+                    onValuesChange={handleFormValuesChange}
+                    onFieldsChange={() =>
+                        setButtonDisabled(
+                            form.getFieldsError().some((field) => field.errors.length > 0)
+                        )
+                    }
+                >
                         <Form.Item
                             name="buyerName"
                             label="Name"
@@ -102,11 +101,10 @@ function UserSignUp({ address }) {
                         </Form.Item>
                     </Form>
                 </Card>
-                : <Card title="User Sign Up" style={{ width: "70vw" }}>
+                : <Card title="User Sign Up" style={{ width: "100%" }}>
                     <Form
                         layout="horizontal"
                         size="large"
-                        style={{ width: 1100 }}
                     >
                         <Form.Item>
                             You have already signed up as user!

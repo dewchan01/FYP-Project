@@ -409,7 +409,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                     </Form>
                 </Modal>
 
-                <div style={{ width: '85vw' }} >
+                <div style={{ width: '100%' }} >
                     <Divider>Orders Placed</Divider>
                     <Table columns={columns}
                         dataSource={ordersPlaced}
@@ -564,7 +564,7 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                     </Form>
                 </Modal>
 
-                <div style={{ width: '85vw' }} >
+                <div style={{ width: '100%' }} >
                     <Divider>My Products</Divider>
                     <Table columns={myProductsColumn}
                         dataSource={allProducts}
@@ -573,8 +573,8 @@ function Seller({ isValidSeller, address, checkValidSeller }) {
                     />
                 </div>
             </>
-            : <div style={{ margin: "2% 0 0 5%", minWidth: "60vw" }}>
-                <Form name="Sign Up" >
+            : <div style={{ margin: "2% 0 0 5%", width: "300%" }}>
+                <Form name="Sign Up">
                     <p>You are not a seller! Please sign up as a seller.</p>
                     <Form layout="vertical">
                         <Form.Item label="Seller Name">

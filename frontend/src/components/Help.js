@@ -30,7 +30,7 @@ function Help() {
 
     ];
     return (
-        <div style={{ margin: "20px 0 0 10px", width: "98vw", minHeight: "88vh" }}>
+        <div style={{ margin: "20px 0 0 10px", width: "98%", minHeight: "88vh" }}>
             <Paragraph>
                 Welcome to the Help section. Here you can find information and assistance on various topics.
             </Paragraph>

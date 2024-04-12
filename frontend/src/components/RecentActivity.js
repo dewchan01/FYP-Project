@@ -1,7 +1,8 @@
 import React,{useState} from "react";
 import { Card, Table } from "antd";
-
+import refreshAlert from "../refreshAlert";
 function RecentActivity({ history, address }) {
+  refreshAlert({ address });
   const [isLoadingHistory] = useState(true);
   console.log("history", history);
   history = history?.slice()?.reverse();

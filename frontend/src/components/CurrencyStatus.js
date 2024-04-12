@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import CurrentBalance from "./CurrentBalance";
 import RequestAndPay from "./RequestAndPay";
+import refreshAlert from "../refreshAlert";
 
 function CurrencyStatus({ sgd, myr, address, getBalance, requests, rate, expiringTime, isFXRateResponseValid, getFXRate, getHistory, getRequests }) {
     const [selectedCurrency, setSelectedCurrency] = useState('1');
 
+    refreshAlert({ address });
     return (
         <div>
             <CurrentBalance

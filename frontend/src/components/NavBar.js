@@ -1,4 +1,4 @@
-import { Spin } from 'antd';
+import { Spin, Button } from 'antd';
 import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
@@ -23,8 +23,18 @@ function NavBar({ sgd, myr, address, getBalance, requests, rate, isFXRateRespons
           <Route path="/shopping/seller" element={<Shopping sgd={sgd} myr={myr} address={address} getBalance={getBalance} requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid} expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory} getRequests={getRequests} />}></Route>
           <Route path="/shopping/vouchers" element={<Shopping sgd={sgd} myr={myr} address={address} getBalance={getBalance} requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid} expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory} getRequests={getRequests} />}></Route>
           <Route path="/shopping/sign-up" element={<Shopping sgd={sgd} myr={myr} address={address} getBalance={getBalance} requests={requests} rate={rate} isFXRateResponseValid={isFXRateResponseValid} expiringTime={expiringTime} getFXRate={getFXRate} getHistory={getHistory} getRequests={getRequests} />}></Route>
-          <Route path="/help" element={<Help />}></Route>
-          <Route path="*" element={<div style={{ fontWeight: "bold", fontSize: "1.5rem", textAlign: "center", backgroundColor: "white" }}>404 Not Found</div>}></Route>
+          <Route path="/help" element={<Help address={address}/>}></Route>
+          <Route path="*" element={
+            <div style={{ fontWeight: "bold", fontSize: "1.5rem", textAlign: "center", backgroundColor: "white" }}>
+              404 Not Found
+              <br/>
+              <br/>
+              <Button  type="primary" href="mailto:deweichan@gmail.com?subject=Report%20on%20404%20error%20on%20Blockchain%20Wallet%20Application">
+                Report this issue
+              </Button>
+            </div>
+          }></Route>
+
         </Routes>
       </Suspense>
     </div>

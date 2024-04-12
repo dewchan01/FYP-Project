@@ -207,7 +207,7 @@ function App() {
             )}
 
           </div>
-          {! isConnected && (<VisitedCount/>)}
+          {! isConnected && window.location.pathname === "/" && (<VisitedCount/>)}
           {isConnected ? (
             <Button type={"primary"} onClick={disconnectAndSetNull}>
               Disconnect Wallet
@@ -254,7 +254,7 @@ function App() {
                 <RecentActivity history={history} address={address} />
               </div>
             </>
-          ) : (!isConnected) ?
+          ) : (!isConnected && window.location.pathname === "/") ?
             <div><p style={{ fontWeight: "bold", fontSize: "1.5rem" }}>Please Connect Your MetaMask Wallet !</p>
               <Alert showIcon type="error" message="Access is restricted solely to the MetaMask Extension configured with the Ethereum Sepolia Network and Alchemy RPC URL for web browsers."></Alert>
               <br />

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import SiderPanel from "./SiderPanel";
 import apiUrl from "../apiConfig";
+import refreshAlert from "../refreshAlert";
 
 function Shopping({address,sgd,myr,getFXRate,getBalance}) {
+    refreshAlert({ address });
     console.log("Address",address)
     const baseURL = apiUrl();
     const [isValidUser, setIsValidUser] = useState(false);

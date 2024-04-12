@@ -3,9 +3,11 @@ import { Card } from "antd";
 import { ClockCircleOutlined } from "@ant-design/icons";
 import { UserOutlined } from "@ant-design/icons";
 import matic from "../matic.png";
+import refreshAlert from "../refreshAlert";
 
 function AccountDetails({ address, balance, lastLoginDate }) {
 
+  refreshAlert({ address });
   const date = new Date(lastLoginDate);
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0'); 

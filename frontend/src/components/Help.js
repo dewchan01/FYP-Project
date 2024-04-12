@@ -1,11 +1,13 @@
 import React from 'react';
 import ReactPlayer from 'react-player';
 import { Typography, Collapse, Button, List, Avatar } from 'antd';
+import refreshAlert from '../refreshAlert';
 
 const { Paragraph } = Typography;
 const { Panel } = Collapse;
 
-function Help() {
+function Help({ address }) {
+    refreshAlert({ address });
     const data = [
         {
             title: 'Account 1: Campaign Organizer / Seller / MCBDC Contract Owner',
@@ -49,7 +51,7 @@ function Help() {
             />
             <Collapse accordion>
                 <Panel header="How to Get Started for Cross-border Transaction ?" key="1">
-                    <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/-D72El9FEYw"/>
+                    <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/-D72El9FEYw" />
                     <Paragraph>
                         To get started, create contract and set up the environment for cross-border transaction:
                         <ol>
@@ -68,7 +70,7 @@ function Help() {
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Requesting Payment and Pay by Another Currency ?" key="2">
-                <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/n0-mmq9vaBA"/>
+                    <ReactPlayer width="20%" height="20%" controls="true" url="https://youtu.be/n0-mmq9vaBA" />
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction is set up:
                         <ol>
@@ -82,8 +84,8 @@ function Help() {
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Selling Product and Creating Voucher ?" key="3">
-                <ReactPlayer width="20%" height="20%" controls="true" style={{display: "inline-block"}} url="https://youtu.be/lvz4gB6DE0c"/>
-                <ReactPlayer width="20%" height="20%" controls="true" style={{display: "inline-block", marginLeft: "10px"}} url="https://youtu.be/eUzGpOjnW4U"/>
+                    <ReactPlayer width="20%" height="20%" controls="true" style={{ display: "inline-block" }} url="https://youtu.be/lvz4gB6DE0c" />
+                    <ReactPlayer width="20%" height="20%" controls="true" style={{ display: "inline-block", marginLeft: "10px" }} url="https://youtu.be/eUzGpOjnW4U" />
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction is set up:
                         <ol>
@@ -102,9 +104,9 @@ function Help() {
                     </Paragraph>
                 </Panel>
                 <Panel header="How to Get Started for Buying Product with Voucher ?" key="4">
-                <ReactPlayer style={{display: "inline-block"}} width="20%" height="20%" controls="true" url="https://youtu.be/N6CapDnUXbI"/>
-                <ReactPlayer style={{display: "inline-block", marginLeft: "10px"}} width="20%" height="20%" controls="true" url="https://youtu.be/lvz4gB6DE0c"/>
-                <ReactPlayer style={{display: "inline-block", marginLeft: "10px"}} width="20%" height="20%" controls="true" url="https://youtu.be/eUzGpOjnW4U"/>
+                    <ReactPlayer style={{ display: "inline-block" }} width="20%" height="20%" controls="true" url="https://youtu.be/N6CapDnUXbI" />
+                    <ReactPlayer style={{ display: "inline-block", marginLeft: "10px" }} width="20%" height="20%" controls="true" url="https://youtu.be/lvz4gB6DE0c" />
+                    <ReactPlayer style={{ display: "inline-block", marginLeft: "10px" }} width="20%" height="20%" controls="true" url="https://youtu.be/eUzGpOjnW4U" />
                     <Paragraph>
                         Assume that the enviroment for cross-border transaction, e-commerce platform is set up:
                         <ol>
@@ -134,7 +136,7 @@ function Help() {
             </Collapse>
             <Paragraph>
                 If you still have questions or need further assistance, feel free to reach out to us via email.&nbsp;
-                <Button type="primary" href="mailto:deweichan@gmail.com" style={{ color: 'white' }}>
+                <Button type="primary" style={{ color: "white" }} href="mailto:deweichan@gmail.com?subject=Queries%20About%20Blockchain%20Wallet%20Application">
                     Email Us
                 </Button>
             </Paragraph>

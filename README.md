@@ -4,7 +4,7 @@
 
 This project demonstrates a blockchain Wallet that can facilitate cross-border transaction and e-commerce payment. It comes with four contracts, tests for all contracts, and scripts that deploy the contracts.
 
-Real Time Website: https://web3wallet-migrate-api.netlify.app/
+Real Time Website: https://web3wallet-migrate.netlify.app/
 
 To start this program, you need to prepare your own env scripts for env variables for frontend and backend part.
 
